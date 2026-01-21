@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useId } from "react";
 import {
   Box,
   Paper,
@@ -137,7 +137,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const [duration, setDuration] = useState<number>(initialDuration || 2);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const  t = useTranslations();
+  const t = useTranslations();
   const locale = useLocale();
   const now = dayjs();
   const hours = Array.from(
@@ -181,54 +181,54 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
         return hourNum <= now.hour(); // disable những giờ đã qua
       })
     : [];
-    const handleDateSelect = (date: Dayjs, isSecondCalendar: boolean = false) => {
-      if (bookingType === "overnight") {
-        setCheckIn(date);
-        setCheckOut(date.add(1, "day"));
-      } else if (bookingType === "daily") {
-        // Logic mới: Phân biệt theo calendar
-        if (isSecondCalendar) {
-          // Click ở calendar bên phải (tháng sau) → ưu tiên đặt checkOut
-          if (!checkIn) {
-            // Nếu chưa có checkIn → đặt checkIn trước
-            setCheckIn(date);
-            setCheckOut(null);
-          } else if (date.isAfter(checkIn)) {
-            // Đã có checkIn và ngày click sau checkIn → đặt checkOut
-            setCheckOut(date);
-          } else {
-            // Ngày click trước checkIn → reset checkIn thành ngày mới
-            setCheckIn(date);
-            setCheckOut(null);
-          }
+  const handleDateSelect = (date: Dayjs, isSecondCalendar: boolean = false) => {
+    if (bookingType === "overnight") {
+      setCheckIn(date);
+      setCheckOut(date.add(1, "day"));
+    } else if (bookingType === "daily") {
+      // Logic mới: Phân biệt theo calendar
+      if (isSecondCalendar) {
+        // Click ở calendar bên phải (tháng sau) → ưu tiên đặt checkOut
+        if (!checkIn) {
+          // Nếu chưa có checkIn → đặt checkIn trước
+          setCheckIn(date);
+          setCheckOut(null);
+        } else if (date.isAfter(checkIn)) {
+          // Đã có checkIn và ngày click sau checkIn → đặt checkOut
+          setCheckOut(date);
         } else {
-          // Click ở calendar bên trái (tháng hiện tại) → ưu tiên đặt checkIn
-          if (!checkIn || (checkOut && date.isBefore(checkIn))) {
-            setCheckIn(date);
-            setCheckOut(null);
-          } else if (!checkOut && date.isAfter(checkIn)) {
-            setCheckOut(date);
-          } else {
-            setCheckIn(date);
-            setCheckOut(null);
-          }
+          // Ngày click trước checkIn → reset checkIn thành ngày mới
+          setCheckIn(date);
+          setCheckOut(null);
         }
-      } else if (bookingType === "hourly") {
-        setCheckIn(date);
-    
-        const selectedIsToday = date.isSame(now, "day");
-    
-        if (selectedIsToday) {
-          const nextHour = now.hour() + 1;
-          const nextHourStr = hours[nextHour] || hours[hours.length - 1];
-          setTime(nextHourStr);
+      } else {
+        // Click ở calendar bên trái (tháng hiện tại) → ưu tiên đặt checkIn
+        if (!checkIn || (checkOut && date.isBefore(checkIn))) {
+          setCheckIn(date);
+          setCheckOut(null);
+        } else if (!checkOut && date.isAfter(checkIn)) {
+          setCheckOut(date);
         } else {
-          setTime("00:00");
+          setCheckIn(date);
+          setCheckOut(null);
         }
-    
-        setDuration(2);
       }
-    };
+    } else if (bookingType === "hourly") {
+      setCheckIn(date);
+
+      const selectedIsToday = date.isSame(now, "day");
+
+      if (selectedIsToday) {
+        const nextHour = now.hour() + 1;
+        const nextHourStr = hours[nextHour] || hours[hours.length - 1];
+        setTime(nextHourStr);
+      } else {
+        setTime("00:00");
+      }
+
+      setDuration(2);
+    }
+  };
 
   if (!open || !anchorEl) return null;
 
@@ -244,7 +244,6 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
       open={open}
       anchorEl={anchorEl}
       placement='bottom-start'
-      
       sx={{ zIndex: 50 }}>
       <Paper
         elevation={8}
@@ -322,7 +321,8 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 <Box sx={{ flex: 1, p: 2, bgcolor: "#fafafa" }}>
                   {/* Giờ nhận */}
                   <Box mb={2}>
-                    <Typography suppressHydrationWarning 
+                    <Typography
+                      suppressHydrationWarning
                       fontWeight={500}
                       mb={1}
                       color='#666'
@@ -405,7 +405,8 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
                   {/* Số giờ */}
                   <Box mb={2}>
-                    <Typography suppressHydrationWarning 
+                    <Typography
+                      suppressHydrationWarning
                       fontWeight={500}
                       mb={1}
                       color='#666'
@@ -478,14 +479,18 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     bgcolor='white'
                     borderRadius='12px'
                     border='1px solid #eee'>
-                    <Typography suppressHydrationWarning 
+                    <Typography
+                      suppressHydrationWarning
                       fontWeight={500}
                       color='#666'
                       fontSize='0.9rem'
                       mb={0.5}>
                       {t("search_bar_checkout_label")}
                     </Typography>
-                    <Typography suppressHydrationWarning  fontWeight={600} color='#333'>
+                    <Typography
+                      suppressHydrationWarning
+                      fontWeight={600}
+                      color='#333'>
                       {endTime
                         ? `${endTime.format("HH:mm, DD/MM/YYYY")}`
                         : t("search_bar_not_selected")}
@@ -581,7 +586,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                           return (
                             <Button
                               {...props}
-                              onClick={() => handleDateSelect(props.day,true)}
+                              onClick={() => handleDateSelect(props.day, true)}
                               sx={{
                                 minWidth: 36,
                                 height: 36,
@@ -677,10 +682,10 @@ export default function SearchBarWithDropdown({ locationAddress }) {
   const selectingRef = useRef(false);
   const [data, setData] = useState([]);
   const [dataLoading, setDataLoading] = useState(false);
-  const  t  = useTranslations();
+  const t = useTranslations();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
+  const inputId = useId();
   useEffect(() => {
     // nếu chưa nhập gì thì không call
     if (!searchValue.trim()) return;
@@ -768,7 +773,10 @@ export default function SearchBarWithDropdown({ locationAddress }) {
       ...newParams,
     };
     if (pathname != "/") {
-      navigate.replace(`${pathname}?${new URLSearchParams(updated).toString()}`, { scroll: false });
+      navigate.replace(
+        `${pathname}?${new URLSearchParams(updated).toString()}`,
+        { scroll: false }
+      );
     }
   };
 
@@ -921,7 +929,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                 bgcolor: "white",
                 border: isMobile ? "none" : "1px solid #ddd",
                 p: isMobile ? 1.5 : 0.5,
-                width:"100%"
+                width: "100%",
               }}>
               {isMobile ? (
                 // MOBILE VERSION - Layout dọc
@@ -1063,7 +1071,8 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                                 sx={{ color: "#98b720", fontSize: 18 }}
                               />
                             )}
-                            <Typography suppressHydrationWarning 
+                            <Typography
+                              suppressHydrationWarning
                               sx={{
                                 fontWeight: 500,
                                 color: "#333",
@@ -1112,7 +1121,8 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                             <CalendarToday
                               sx={{ color: "#98b720", fontSize: 18 }}
                             />
-                            <Typography suppressHydrationWarning 
+                            <Typography
+                              suppressHydrationWarning
                               sx={{
                                 fontWeight: 500,
                                 color: "#333",
@@ -1159,10 +1169,18 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                 </Box>
               ) : (
                 // DESKTOP VERSION - Giữ nguyên layout cũ
-                <Stack direction='row' justifyContent={"space-between"} alignItems="center">
+                <Stack
+                  direction='row'
+                  justifyContent={"space-between"}
+                  alignItems='center'>
                   {/* Địa điểm */}
-                  <Box sx={{ flex:pathname == "/" ?"180px 0 0": "250px 0 0", position: "relative" }}>
+                  <Box
+                    sx={{
+                      flex: pathname == "/" ? "180px 0 0" : "250px 0 0",
+                      position: "relative",
+                    }}>
                     <TextField
+                      id={inputId}
                       fullWidth
                       disabled={name}
                       placeholder='Bạn muốn đi đâu?'
@@ -1235,7 +1253,9 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                             maxHeight: 300,
                             overflowY: "auto",
                           }}>
-                          <Typography suppressHydrationWarning  color='rgba(152, 159, 173, 1)'>
+                          <Typography
+                            suppressHydrationWarning
+                            color='rgba(152, 159, 173, 1)'>
                             {t("search_bar_no_data_found")}
                           </Typography>
                         </Paper>
@@ -1250,7 +1270,8 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                             padding: 0.5,
                           }}>
                           <Box p={2} bgcolor='#f9f9f9'>
-                            <Typography suppressHydrationWarning 
+                            <Typography
+                              suppressHydrationWarning
                               variant='subtitle2'
                               color='#666'
                               fontWeight={600}>
@@ -1295,7 +1316,8 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                           </List>
 
                           <Box p={2} bgcolor='#f9f9f9'>
-                            <Typography suppressHydrationWarning 
+                            <Typography
+                              suppressHydrationWarning
                               variant='subtitle2'
                               color='#666'
                               fontWeight={600}>
@@ -1403,7 +1425,11 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                   {/* Loại đặt phòng */}
                   <Box
                     ref={typeRef}
-                    sx={{ cursor: "pointer", flex:pathname == "/" ?"0 0 150px": "0 0 170px", mx: 1 }}
+                    sx={{
+                      cursor: "pointer",
+                      flex: pathname == "/" ? "0 0 150px" : "0 0 170px",
+                      mx: 1,
+                    }}
                     onClick={() => setTypeDropdownOpen(!typeDropdownOpen)}>
                     <Box
                       sx={{
@@ -1433,7 +1459,8 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                             sx={{ color: "#98b720", fontSize: 18 }}
                           />
                         )}
-                        <Typography suppressHydrationWarning 
+                        <Typography
+                          suppressHydrationWarning
                           sx={{
                             fontWeight: 500,
                             color: "#333",
@@ -1458,7 +1485,11 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                   {/* Ngày giờ */}
                   <Box
                     ref={dateRef}
-                    sx={{ flex:pathname == "/"?1:1, cursor: "pointer", mr: 1 }}
+                    sx={{
+                      flex: pathname == "/" ? 1 : 1,
+                      cursor: "pointer",
+                      mr: 1,
+                    }}
                     onClick={() => setPickerOpen(true)}>
                     <Box
                       sx={{
@@ -1473,7 +1504,8 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                         gap: 1,
                       }}>
                       <CalendarToday sx={{ color: "#98b720", fontSize: 18 }} />
-                      <Typography suppressHydrationWarning 
+                      <Typography
+                        suppressHydrationWarning
                         sx={{
                           flex: 1,
                           color: "#333",

@@ -1,7 +1,9 @@
+"use client";
 import React, { useEffect, useRef, useState } from "react";
 import RoomsView from "./RoomsView";
 import dayjs, { Dayjs } from "dayjs";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { usePathname } from "@/translation/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getAmenities, getAttribute, searchHotel } from "../../service/hotel";
 import { facilities } from "../../utils/utils";
 
@@ -11,8 +13,8 @@ const RoomsController = (props: Props) => {
   const [queryHotel, setQueryHotel] = useState({});
   const [dataHotel, setDataHotel] = useState([]);
   const [amenities, setAmenities] = useState([]);
-  const location = useLocation();
-  const [searchParams] = useSearchParams();
+  const location = usePathname();
+  const searchParams = useSearchParams();
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(1);
   const [totalAll, setTotalAll] = useState(1);
@@ -33,7 +35,7 @@ const RoomsController = (props: Props) => {
       limit,
       page,
     });
-  }, [location.pathname, searchParams.get("search"), page]);
+  }, [location, searchParams.get("search"), page]);
   useEffect(() => {
     (async () => {
       try {

@@ -1,5 +1,5 @@
-'use client';
-import React, { useEffect, useState } from "react";
+"use client";
+import React, { useEffect, useRef, useState } from "react";
 
 import {
   Box,
@@ -20,6 +20,7 @@ import google from "../../images/Social media logo.png";
 import apple from "../../images/Group.png";
 import vn from "../../images/VN - Vietnam.png";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import AppleSignin from "react-apple-signin-auth";
 import {
   Login,
   LoginApple,
@@ -31,11 +32,11 @@ import {
 } from "../../service/admin";
 import { toast } from "react-toastify";
 
-
+import dynamic from "next/dynamic";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 const AppleLogin = dynamic(
-  () => import('react-apple-login').then(mod => mod.default),  // hoặc mod.AppleLogin nếu export tên
-  { ssr: false }  // ← Quan trọng: tắt server-side render
+  () => import("react-apple-login").then((mod) => mod.default), // hoặc mod.AppleLogin nếu export tên
+  { ssr: false } // ← Quan trọng: tắt server-side render
 );
 import { useGoogleLogin } from "@react-oauth/google";
 import {
@@ -48,13 +49,12 @@ import { useTranslations } from "next-intl";
 import { useBookingContext } from "@/lib/context";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import dynamic from "next/dynamic";
 
 const GOOGLE_CLIENT_ID =
   "285312507829-8puo8pp5kikc3ahdivtr9ehq1fm3kkks.apps.googleusercontent.com";
 
 const LoginView = () => {
-  const  t  = useTranslations();
+  const t = useTranslations();
   const theme = useTheme();
   const [currentStep, setCurrentStep] = useState("register");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -155,7 +155,7 @@ export default LoginView;
 
 // ==================== PIN CREATION GOOGLE ====================
 const PinCreationGoogle = ({ onNext, onBack, pin, setPin }: any) => {
-  const  t  = useTranslations();
+  const t = useTranslations();
   const [showPin, setShowPin] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -201,7 +201,6 @@ const PinCreationGoogle = ({ onNext, onBack, pin, setPin }: any) => {
             justifyContent: "center",
           }}>
           <Image
-           
             src={image_left}
             alt='illustration'
             style={{ width: "592px", height: "557px", maxWidth: "100%" }}
@@ -210,7 +209,8 @@ const PinCreationGoogle = ({ onNext, onBack, pin, setPin }: any) => {
 
         <Grid item xs={12} md={6} display='flex' justifyContent='end'>
           <Box sx={{ width: { xs: "100%", sm: "400px", md: "486px" } }}>
-            <Typography suppressHydrationWarning 
+            <Typography
+              suppressHydrationWarning
               sx={{
                 fontSize: { xs: "26px", md: "30px" },
                 fontWeight: 700,
@@ -230,10 +230,15 @@ const PinCreationGoogle = ({ onNext, onBack, pin, setPin }: any) => {
 
             <Box
               sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-              <Typography suppressHydrationWarning  fontSize={14} color='#5D6679' fontWeight={500}>
+              <Typography
+                suppressHydrationWarning
+                fontSize={14}
+                color='#5D6679'
+                fontWeight={500}>
                 {t("pin_usage_description")}
               </Typography>
-              <Typography suppressHydrationWarning 
+              <Typography
+                suppressHydrationWarning
                 onClick={() => setShowPin(!showPin)}
                 sx={{ cursor: "pointer", fontSize: 14, color: "#5D6679" }}>
                 {showPin ? t("hide_pin") : t("show_pin")}
@@ -303,7 +308,7 @@ const PinCreationConfirm = ({
   dataUser,
   phoneNumber,
 }: any) => {
-  const  t  = useTranslations();
+  const t = useTranslations();
   const [pin, setPin] = useState("");
   const [showPin, setShowPin] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -349,7 +354,6 @@ const PinCreationConfirm = ({
     if (pin.length === 6 && !loading) {
       handleSubmit();
     }
-
   }, [pin]);
   return (
     <Container
@@ -365,7 +369,6 @@ const PinCreationConfirm = ({
             justifyContent: "center",
           }}>
           <Image
-           
             src={image_left}
             alt='illustration'
             style={{ width: "592px", height: "557px", maxWidth: "100%" }}
@@ -374,7 +377,8 @@ const PinCreationConfirm = ({
 
         <Grid item xs={12} md={6} display='flex' justifyContent='end'>
           <Box sx={{ width: { xs: "100%", sm: "400px", md: "486px" } }}>
-            <Typography suppressHydrationWarning 
+            <Typography
+              suppressHydrationWarning
               sx={{
                 fontSize: { xs: "26px", md: "30px" },
                 fontWeight: 700,
@@ -394,10 +398,15 @@ const PinCreationConfirm = ({
 
             <Box
               sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-              <Typography suppressHydrationWarning  fontSize={14} color='#5D6679' fontWeight={500}>
+              <Typography
+                suppressHydrationWarning
+                fontSize={14}
+                color='#5D6679'
+                fontWeight={500}>
                 {t("pin_usage_description")}
               </Typography>
-              <Typography suppressHydrationWarning 
+              <Typography
+                suppressHydrationWarning
                 onClick={() => setShowPin(!showPin)}
                 sx={{ cursor: "pointer", fontSize: 14, color: "#5D6679" }}>
                 {showPin ? t("hide_pin") : t("show_pin")}
@@ -432,7 +441,8 @@ const PinCreationConfirm = ({
               />
 
               {showConfirm && pin !== pinConfirm && (
-                <Typography suppressHydrationWarning 
+                <Typography
+                  suppressHydrationWarning
                   sx={{
                     color: "#f44336",
                     fontSize: "14px",
@@ -492,7 +502,7 @@ const OtpVerification = ({
   onBack,
   dataLoginGoogle,
 }: any) => {
-  const  t  = useTranslations();
+  const t = useTranslations();
   const [loading, setLoading] = useState(false);
   const [otpKey, setOtpKey] = useState(0);
   const formatTime = (seconds: number) => {
@@ -519,11 +529,11 @@ const OtpVerification = ({
           onSuccess(result);
         } else {
           toast.error(getErrorMessage(result.code) || result.detail);
-          setOtp("");                    // xóa
+          setOtp(""); // xóa
           toast.error(getErrorMessage(result.code) || result.message);
 
           // Force re-mount MuiOtpInput → tự động focus ô đầu
-          setOtpKey(prev => prev + 1);
+          setOtpKey((prev) => prev + 1);
         }
       } catch (error) {
         console.error(error);
@@ -536,7 +546,6 @@ const OtpVerification = ({
     if (otp.length === 4 && !loading) {
       handleSubmit();
     }
-
   }, [otp]);
   return (
     <Container
@@ -552,7 +561,6 @@ const OtpVerification = ({
             justifyContent: "center",
           }}>
           <Image
-           
             src={image_left}
             alt='illustration'
             style={{ width: "592px", height: "557px", maxWidth: "100%" }}
@@ -561,7 +569,8 @@ const OtpVerification = ({
 
         <Grid item xs={12} md={6} display='flex' justifyContent='end'>
           <Box sx={{ width: { xs: "100%", sm: "400px", md: "486px" } }}>
-            <Typography suppressHydrationWarning 
+            <Typography
+              suppressHydrationWarning
               sx={{
                 fontSize: { xs: "26px", md: "30px" },
                 fontWeight: 700,
@@ -577,7 +586,8 @@ const OtpVerification = ({
               {t("enter_otp_title")}
             </Typography>
 
-            <Typography suppressHydrationWarning 
+            <Typography
+              suppressHydrationWarning
               sx={{ fontSize: "16px", mb: 4, color: "text.secondary" }}>
               {t("otp_sent_to")} <b>+84{normalizePhoneForAPI(phoneNumber)}</b>
             </Typography>
@@ -611,7 +621,8 @@ const OtpVerification = ({
                 }}
               />
 
-              <Typography suppressHydrationWarning 
+              <Typography
+                suppressHydrationWarning
                 sx={{
                   mb: 4,
                   color: "#FF7A00",
@@ -674,13 +685,13 @@ const RegistrationForm = ({
   dataLoginGoogle,
   setDataLoginGoogle,
 }: any) => {
-  const  t  = useTranslations();
+  const t = useTranslations();
   const [loading, setLoading] = useState(false);
   const [touched, setTouched] = useState(false);
   const [errorExits, setErrorExits] = useState(false);
   const context = useBookingContext();
   const navigate = useRouter();
-
+  const appleRef = useRef<any>(null);
   const isValidVietnamPhone = (phone: string) => {
     if (!phone) return false;
     const normalized = phone.replace(/\D/g, "");
@@ -811,7 +822,6 @@ const RegistrationForm = ({
             justifyContent: "center",
           }}>
           <Image
-           
             src={image_left}
             alt='Hotel illustration'
             style={{ width: "592px", height: "557px", maxWidth: "100%" }}
@@ -824,7 +834,8 @@ const RegistrationForm = ({
               px: { xs: 3, sm: 4, md: 0 },
               width: { xs: "100%", sm: "400px", md: "486px" },
             }}>
-            <Typography suppressHydrationWarning 
+            <Typography
+              suppressHydrationWarning
               sx={{
                 fontSize: { xs: "28px", md: "32px" },
                 fontWeight: 700,
@@ -843,7 +854,8 @@ const RegistrationForm = ({
               )}
             </Typography>
 
-            <Typography suppressHydrationWarning 
+            <Typography
+              suppressHydrationWarning
               sx={{ fontSize: "16px", mb: 4, color: "text.secondary" }}>
               {isLoginGoogle
                 ? t("enter_phone_to_continue")
@@ -851,7 +863,11 @@ const RegistrationForm = ({
             </Typography>
 
             <Box>
-              <Typography suppressHydrationWarning  fontSize={14} fontWeight={500} mb={0.5}>
+              <Typography
+                suppressHydrationWarning
+                fontSize={14}
+                fontWeight={500}
+                mb={0.5}>
                 {t("phone_number_label")}
               </Typography>
 
@@ -897,13 +913,21 @@ const RegistrationForm = ({
                           marginRight: 8,
                         }}
                       />
-                      <Typography suppressHydrationWarning  sx={{ fontSize: 14, mr: 1 }}>+84</Typography>
+                      <Typography
+                        suppressHydrationWarning
+                        sx={{ fontSize: 14, mr: 1 }}>
+                        +84
+                      </Typography>
                     </InputAdornment>
                   ),
                 }}
               />
 
-              <Typography suppressHydrationWarning  sx={{ mb: 3, mt: 0.5 }} fontSize='12px' color='red'>
+              <Typography
+                suppressHydrationWarning
+                sx={{ mb: 3, mt: 0.5 }}
+                fontSize='12px'
+                color='red'>
                 {errorExits && t("phone_already_registered")}
               </Typography>
 
@@ -991,7 +1015,8 @@ const RegistrationForm = ({
 
               {!isLoginGoogle && (
                 <>
-                  <Typography suppressHydrationWarning 
+                  <Typography
+                    suppressHydrationWarning
                     variant='body2'
                     align='center'
                     mb={2}
@@ -1001,43 +1026,56 @@ const RegistrationForm = ({
 
                   <Grid container spacing={2} mb={3}>
                     <Grid item xs={12} sm={6}>
-                    {AppleLogin ?   <AppleLogin
-                        clientId='com.zeezoo.hotelbooking.login'
-                        redirectURI='https://booking-hotel-liard.vercel.app'
-                        responseType='code'
-                        responseMode='query'
-                        usePopup={true}
-                        scope='name email'
-                        callback={handleAppleResponse}
-                        render={(renderProps: any) => (
-                          <Button
-                            variant='outlined'
-                            onClick={renderProps.onClick}
-                            fullWidth
-                            sx={{
-                              py: 1.2,
-                              textTransform: "none",
-                              fontWeight: 500,
-                              borderRadius: 3,
-                              borderColor: "#e0e0e0",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: 1,
-                              "&:hover": { borderColor: "#bdbdbd" },
-                            }}>
-                            <Image
-                             
-                              src={apple}
-                              alt='Apple'
-                              style={{ width: 20, marginTop: -0.7 }}
-                            />
-                            {t("sign_up_with_apple")}
-                          </Button>
-                        )}
-                      />:(
-                        <CircularProgress />  // Hoặc button disabled
-                      )}
+                      <>
+                        {/* Apple Signin – ẨN */}
+                        <div style={{ display: "block" }}>
+                          <AppleSignin
+                            ref={appleRef}
+                            authOptions={{
+                              clientId: "com.zeezoo.hotelbooking.login",
+                              scope: "name email",
+                              redirectURI:
+                                "https://booking-hotel-liard.vercel.app",
+                              responseType: "code",
+                              responseMode: "query",
+                              usePopup: true,
+                            }}
+                            onSuccess={handleAppleResponse}
+                            onError={(error) => {
+                              console.error("Apple login error", error);
+                            }}
+                            render={(props) => (
+                              <Button
+                                variant='outlined'
+                                fullWidth
+                                {...props}
+                                sx={{
+                                  py: 1.2,
+                                  textTransform: "none",
+                                  fontWeight: 500,
+                                  borderRadius: 3,
+                                  borderColor: "#e0e0e0",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  gap: 1,
+                                  "&:hover": { borderColor: "#bdbdbd" },
+                                }}>
+                                <Image
+                                  src={apple}
+                                  alt='Apple'
+                                  width={20}
+                                  height={20}
+                                  style={{ marginTop: -0.7 }}
+                                />
+                                {t("sign_up_with_apple")}
+                              </Button>
+                            )}
+                          />
+                        </div>
+
+                        {/* Custom UI */}
+                      </>
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
@@ -1050,7 +1088,10 @@ const RegistrationForm = ({
                     </Grid>
                   </Grid>
 
-                  <Typography suppressHydrationWarning  sx={{ fontSize: "14px" }} color='text.secondary'>
+                  <Typography
+                    suppressHydrationWarning
+                    sx={{ fontSize: "14px" }}
+                    color='text.secondary'>
                     {t("no_account_yet")}
                     <Link
                       onClick={() => navigate.push("/register")}
@@ -1076,7 +1117,7 @@ const RegistrationForm = ({
 
 // ==================== PIN LOGIN (khi đã có tài khoản) ====================
 const PinCreation = ({ phoneNumber, setCurrentStep }: any) => {
-  const  t  = useTranslations();
+  const t = useTranslations();
   const [pin, setPin] = useState("");
   const [showPin, setShowPin] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -1145,7 +1186,6 @@ const PinCreation = ({ phoneNumber, setCurrentStep }: any) => {
     if (pin.length === 6 && !loading && attemptsLeft > 0) {
       handleSubmit();
     }
-
   }, [pin]);
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -1171,7 +1211,6 @@ const PinCreation = ({ phoneNumber, setCurrentStep }: any) => {
             justifyContent: "center",
           }}>
           <Image
-           
             src={image_left}
             alt='Hotel illustration'
             style={{ width: "592px", height: "557px", maxWidth: "100%" }}
@@ -1180,7 +1219,8 @@ const PinCreation = ({ phoneNumber, setCurrentStep }: any) => {
 
         <Grid item xs={12} md={6} display='flex' justifyContent='end'>
           <Box sx={{ width: { xs: "100%", sm: "400px", md: "486px" } }}>
-            <Typography suppressHydrationWarning 
+            <Typography
+              suppressHydrationWarning
               sx={{
                 fontSize: { xs: "26px", md: "30px" },
                 fontWeight: 700,
@@ -1203,10 +1243,15 @@ const PinCreation = ({ phoneNumber, setCurrentStep }: any) => {
                   justifyContent: "space-between",
                   mb: 2,
                 }}>
-                <Typography suppressHydrationWarning  fontSize={14} color='#5D6679' fontWeight={500}>
+                <Typography
+                  suppressHydrationWarning
+                  fontSize={14}
+                  color='#5D6679'
+                  fontWeight={500}>
                   {t("pin_login_description")}
                 </Typography>
-                <Typography suppressHydrationWarning 
+                <Typography
+                  suppressHydrationWarning
                   onClick={() => setShowPin(!showPin)}
                   sx={{ cursor: "pointer", fontSize: 14, color: "#5D6679" }}>
                   {showPin ? t("hide_pin") : t("show_pin")}
@@ -1242,7 +1287,11 @@ const PinCreation = ({ phoneNumber, setCurrentStep }: any) => {
                 <Alert severity='error' sx={{ mb: 2 }} icon={<ErrorOutline />}>
                   {errorMessage}
                   {attemptsLeft > 0 && (
-                    <Typography suppressHydrationWarning  variant='body2' component='span' sx={{ ml: 1 }}>
+                    <Typography
+                      suppressHydrationWarning
+                      variant='body2'
+                      component='span'
+                      sx={{ ml: 1 }}>
                       Còn <strong>{attemptsLeft}</strong> lần thử
                     </Typography>
                   )}
@@ -1264,7 +1313,8 @@ const PinCreation = ({ phoneNumber, setCurrentStep }: any) => {
                   Bạn đã hết số lần thử. Vui lòng khôi phục mã PIN.
                 </Alert>
               )}
-              <Typography suppressHydrationWarning 
+              <Typography
+                suppressHydrationWarning
                 sx={{
                   mb: 4,
                   color: "#FF7A00",
@@ -1315,7 +1365,7 @@ const PinCreation = ({ phoneNumber, setCurrentStep }: any) => {
 
 // ==================== GOOGLE CUSTOM BUTTON ====================
 const GoogleCustomButton = ({ onSuccess, onError }: any) => {
-  const  t  = useTranslations();
+  const t = useTranslations();
   const login = useGoogleLogin({ onSuccess, onError });
   return (
     <Button
@@ -1334,7 +1384,7 @@ const GoogleCustomButton = ({ onSuccess, onError }: any) => {
         gap: 1,
         "&:hover": { borderColor: "#bdbdbd" },
       }}>
-      <Image  src={google} alt='Google' style={{ width: 23 }} />
+      <Image src={google} alt='Google' style={{ width: 23 }} />
       {t("sign_up_with_google")}
     </Button>
   );

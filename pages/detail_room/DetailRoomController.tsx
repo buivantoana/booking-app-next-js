@@ -1,6 +1,7 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import DetailRoomView from "./DetailRoomView";
-import { useParams, useSearchParams } from "react-router-dom";
+
 import {
   getAmenities,
   getAttribute,
@@ -12,11 +13,13 @@ import {
 import { getHashtags } from "../../service/profile";
 import { facilities } from "../../utils/utils";
 
+import { useParams, useSearchParams } from "next/navigation";
+
 type Props = {};
 
 const DetailRoomController = (props: Props) => {
   const { id: idPrams } = useParams();
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const [detailHotel, setDetailHotel] = useState({});
   const [loading, setLoading] = useState(true);
   const [recommend, setRecommend] = useState([]);
@@ -80,7 +83,7 @@ const DetailRoomController = (props: Props) => {
     (async () => {
       try {
         let result = await getAttribute();
-        setAttribute(result)
+        setAttribute(result);
         if (result?.amenities?.length > 0) {
           setAmenities(
             result?.amenities.map((item) => {

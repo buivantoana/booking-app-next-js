@@ -42,9 +42,11 @@ import BorderColorIcon from "@mui/icons-material/BorderColor";
 import remove from "../../images/delete.png";
 import { editReviewBooking, reviewDelete } from "../../service/booking";
 import { toast } from "react-toastify";
-import { useBookingContext } from "../../App";
+
 import { facilities, getErrorMessage } from "../../utils/utils";
 import { useTranslation } from "react-i18next";
+import { useBookingContext } from "@/lib/context";
+import { useTranslations } from "next-intl";
 interface Review {
   id: number;
   author: string;
@@ -66,7 +68,7 @@ const HotelDetailInfo = ({
   amenities,
 }) => {
   const theme = useTheme();
-  const { t, i18n } = useTranslation();
+  const t = useTranslations();
   const currentLang = i18n.language;
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -121,12 +123,21 @@ const HotelDetailInfo = ({
       <Stack spacing={5} sx={{ mx: "auto" }}>
         {/* === 1. GIỚI THIỆU KHÁCH SẠN === */}
         <Stack ref={section2Ref} spacing={2}>
-          <Typography suppressHydrationWarning  fontWeight={600} fontSize='1.1rem' color='#333'>
+          <Typography
+            suppressHydrationWarning
+            fontWeight={600}
+            fontSize='1.1rem'
+            color='#333'>
             {t("hotel_intro_title")}
           </Typography>
-          <Typography suppressHydrationWarning  fontSize='0.95rem' color='#666' lineHeight={1.7}>
+          <Typography
+            suppressHydrationWarning
+            fontSize='0.95rem'
+            color='#666'
+            lineHeight={1.7}>
             {info?.description?.vi}
-            <Typography suppressHydrationWarning 
+            <Typography
+              suppressHydrationWarning
               component='span'
               color='#98b720'
               sx={{ cursor: "pointer", textDecoration: "underline" }}>
@@ -137,7 +148,11 @@ const HotelDetailInfo = ({
 
         {/* === 2. TIỆN ÍCH KHÁCH SẠN === */}
         <Stack ref={section3Ref} spacing={3}>
-          <Typography suppressHydrationWarning  fontWeight={600} fontSize='1.1rem' color='#333'>
+          <Typography
+            suppressHydrationWarning
+            fontWeight={600}
+            fontSize='1.1rem'
+            color='#333'>
             {t("hotel_amenities_title")}
           </Typography>
           <Grid container spacing={2}>
@@ -166,7 +181,10 @@ const HotelDetailInfo = ({
 
               if (selectedFacilities.length === 0) {
                 return (
-                  <Typography suppressHydrationWarning  color='#999' fontStyle='italic'>
+                  <Typography
+                    suppressHydrationWarning
+                    color='#999'
+                    fontStyle='italic'>
                     {t("no_amenities")}
                   </Typography>
                 );
@@ -193,7 +211,10 @@ const HotelDetailInfo = ({
                         alt={fac.name.vi}
                         sx={{ width: 20, height: 20, objectFit: "contain" }}
                       />
-                      <Typography suppressHydrationWarning  fontWeight={500} fontSize='0.85rem'>
+                      <Typography
+                        suppressHydrationWarning
+                        fontWeight={500}
+                        fontSize='0.85rem'>
                         {fac.name[currentLang]}
                       </Typography>
                     </Box>
@@ -206,7 +227,11 @@ const HotelDetailInfo = ({
 
         {/* === 3. ĐÁNH GIÁ === */}
         <Stack ref={section4Ref} spacing={4}>
-          <Typography suppressHydrationWarning  fontWeight={600} fontSize='1.1rem' color='#333'>
+          <Typography
+            suppressHydrationWarning
+            fontWeight={600}
+            fontSize='1.1rem'
+            color='#333'>
             {t("reviews")}
           </Typography>
 
@@ -236,16 +261,22 @@ const HotelDetailInfo = ({
                       justifyContent: "center",
                       alignItems: "center",
                     }}>
-                    <Typography suppressHydrationWarning  variant='h2'>{avgRate.toFixed(1)}</Typography>
+                    <Typography suppressHydrationWarning variant='h2'>
+                      {avgRate.toFixed(1)}
+                    </Typography>
                   </Box>
                   <Box>
-                    <Typography suppressHydrationWarning 
+                    <Typography
+                      suppressHydrationWarning
                       fontWeight={600}
                       fontSize='1.4rem'
                       color='rgba(152, 183, 32, 1)'>
                       {t("excellent")}
                     </Typography>
-                    <Typography suppressHydrationWarning  fontSize='0.85rem' color='rgba(43, 47, 56, 1)'>
+                    <Typography
+                      suppressHydrationWarning
+                      fontSize='0.85rem'
+                      color='rgba(43, 47, 56, 1)'>
                       {t("from_reviews", { count: reviews.length })}
                     </Typography>
                     {/* <Typography suppressHydrationWarning  fontSize='0.8rem' color='#999'>
@@ -264,7 +295,8 @@ const HotelDetailInfo = ({
                       direction='row'
                       alignItems='center'
                       spacing={2}>
-                      <Typography suppressHydrationWarning 
+                      <Typography
+                        suppressHydrationWarning
                         width={40}
                         fontSize='0.9rem'
                         display={"flex"}
@@ -288,7 +320,8 @@ const HotelDetailInfo = ({
                           }}
                         />
                       </Box>
-                      <Typography suppressHydrationWarning 
+                      <Typography
+                        suppressHydrationWarning
                         fontWeight={600}
                         fontSize='0.9rem'
                         color='#98b720'>
@@ -334,7 +367,8 @@ const HotelDetailInfo = ({
                           width={"90%"}
                           justifyContent={"space-between"}>
                           <Box>
-                            <Typography suppressHydrationWarning 
+                            <Typography
+                              suppressHydrationWarning
                               fontWeight={600}
                               fontSize='0.95rem'
                               color='#333'>
@@ -346,7 +380,10 @@ const HotelDetailInfo = ({
                           </Box>
 
                           <Box display={"flex"} alignItems={"start"} gap={1}>
-                            <Typography suppressHydrationWarning  fontSize='0.75rem' color='#999'>
+                            <Typography
+                              suppressHydrationWarning
+                              fontSize='0.75rem'
+                              color='#999'>
                               {review.created_at}
                             </Typography>
                             {Object.keys(context?.state?.user).length > 0 &&
@@ -377,7 +414,8 @@ const HotelDetailInfo = ({
                         </Box>
                       </Stack>
 
-                      <Typography suppressHydrationWarning 
+                      <Typography
+                        suppressHydrationWarning
                         fontSize='0.9rem'
                         color='#666'
                         lineHeight={1.6}
@@ -419,7 +457,11 @@ const HotelDetailInfo = ({
 
         {/* === 4. CHÍNH SÁCH NHẬN - TRẢ PHÒNG === */}
         <Stack ref={section5Ref} spacing={3}>
-          <Typography suppressHydrationWarning  fontWeight={600} fontSize='1.1rem' color='#333'>
+          <Typography
+            suppressHydrationWarning
+            fontWeight={600}
+            fontSize='1.1rem'
+            color='#333'>
             {t("checkin_policy_title")}
           </Typography>
           <Grid container>
@@ -441,27 +483,42 @@ const HotelDetailInfo = ({
               .map((item) => (
                 <Grid item xs={12} sm={2} key={item.label}>
                   <Stack>
-                    <Typography suppressHydrationWarning  fontWeight={600} color='#333'>
+                    <Typography
+                      suppressHydrationWarning
+                      fontWeight={600}
+                      color='#333'>
                       {item.label}
                     </Typography>
-                    <Typography suppressHydrationWarning  fontSize='0.9rem' color='#666' mt={0.5}>
+                    <Typography
+                      suppressHydrationWarning
+                      fontSize='0.9rem'
+                      color='#666'
+                      mt={0.5}>
                       {item.time}
                     </Typography>
                   </Stack>
                 </Grid>
               ))}
           </Grid>
-          <Typography suppressHydrationWarning  fontSize='0.85rem' color='#999'>
+          <Typography suppressHydrationWarning fontSize='0.85rem' color='#999'>
             {t("cancellation_note")}
           </Typography>
         </Stack>
 
         {/* === 5. CHÍNH SÁCH KHÁCH SẠN === */}
         <Stack ref={section6Ref} spacing={2}>
-          <Typography suppressHydrationWarning  fontWeight={600} fontSize='1.1rem' color='#333'>
+          <Typography
+            suppressHydrationWarning
+            fontWeight={600}
+            fontSize='1.1rem'
+            color='#333'>
             {t("hotel_policy_title")}
           </Typography>
-          <Typography suppressHydrationWarning  fontSize='0.9rem' color='#666' lineHeight={1.7}>
+          <Typography
+            suppressHydrationWarning
+            fontSize='0.9rem'
+            color='#666'
+            lineHeight={1.7}>
             <strong>{t("policy_checkin_out_label")}</strong>{" "}
             {t("policy_checkin_time")} - {t("policy_checkout_time")} -{" "}
             {t("policy_early_checkin")}
@@ -494,7 +551,11 @@ const HotelDetailInfo = ({
               justifyContent='space-between'
               alignItems='center'
               mb={3}>
-              <Typography suppressHydrationWarning  fontWeight={700} fontSize='1.25rem' color='#333'>
+              <Typography
+                suppressHydrationWarning
+                fontWeight={700}
+                fontSize='1.25rem'
+                color='#333'>
                 {t("reviews_title")}
               </Typography>
               <IconButton onClick={() => setOpenModal(false)}>
@@ -524,23 +585,28 @@ const HotelDetailInfo = ({
                           justifyContent: "center",
                           alignItems: "center",
                         }}>
-                        <Typography suppressHydrationWarning  variant='h2'>
+                        <Typography suppressHydrationWarning variant='h2'>
                           {avgRate.toFixed(1)}
                         </Typography>
                       </Box>
                       <Box>
-                        <Typography suppressHydrationWarning 
+                        <Typography
+                          suppressHydrationWarning
                           fontWeight={600}
                           fontSize='1.4rem'
                           color='rgba(152, 183, 32, 1)'>
                           {t("excellent")}
                         </Typography>
-                        <Typography suppressHydrationWarning 
+                        <Typography
+                          suppressHydrationWarning
                           fontSize='0.85rem'
                           color='rgba(43, 47, 56, 1)'>
                           {t("from_reviews", { count: reviews.length })}
                         </Typography>
-                        <Typography suppressHydrationWarning  fontSize='0.8rem' color='#999'>
+                        <Typography
+                          suppressHydrationWarning
+                          fontSize='0.8rem'
+                          color='#999'>
                           {t("by_users")}
                         </Typography>
                       </Box>
@@ -555,7 +621,8 @@ const HotelDetailInfo = ({
                           direction='row'
                           alignItems='center'
                           spacing={2}>
-                          <Typography suppressHydrationWarning 
+                          <Typography
+                            suppressHydrationWarning
                             width={40}
                             fontSize='0.9rem'
                             display={"flex"}
@@ -579,7 +646,8 @@ const HotelDetailInfo = ({
                               }}
                             />
                           </Box>
-                          <Typography suppressHydrationWarning 
+                          <Typography
+                            suppressHydrationWarning
                             fontWeight={600}
                             fontSize='0.9rem'
                             color='#98b720'>
@@ -610,7 +678,7 @@ const HotelDetailInfo = ({
                     />
 
                     <Box>
-                      <Typography suppressHydrationWarning  fontWeight={600}>
+                      <Typography suppressHydrationWarning fontWeight={600}>
                         {review.user_name}
                         <br />
                         {renderStars(review.rate)}
@@ -619,7 +687,10 @@ const HotelDetailInfo = ({
                     <Box sx={{ flex: 1 }} />
                     <Stack direction='row' spacing={0.3}></Stack>
                     <Box display={"flex"} alignItems={"start"} gap={1}>
-                      <Typography suppressHydrationWarning  fontSize='0.8rem' color='#999'>
+                      <Typography
+                        suppressHydrationWarning
+                        fontSize='0.8rem'
+                        color='#999'>
                         {review.created_at}
                       </Typography>
                       {Object.keys(context?.state?.user).length > 0 &&
@@ -648,7 +719,11 @@ const HotelDetailInfo = ({
                         )}
                     </Box>
                   </Stack>
-                  <Typography suppressHydrationWarning  fontSize='0.9rem' color='#666' lineHeight={1.6}>
+                  <Typography
+                    suppressHydrationWarning
+                    fontSize='0.9rem'
+                    color='#666'
+                    lineHeight={1.6}>
                     {review.comment}
                   </Typography>
                 </Paper>
@@ -701,10 +776,14 @@ const HotelDetailInfo = ({
           </Box>
         </DialogTitle>
         <DialogContent sx={{ textAlign: "center", px: 4, pb: 3 }}>
-          <Typography suppressHydrationWarning  fontWeight={600} fontSize='18px' mb={1}>
+          <Typography
+            suppressHydrationWarning
+            fontWeight={600}
+            fontSize='18px'
+            mb={1}>
             {t("delete_review_title")}
           </Typography>
-          <Typography suppressHydrationWarning  fontSize='14px' color='#666'>
+          <Typography suppressHydrationWarning fontSize='14px' color='#666'>
             {t("delete_confirm")}
           </Typography>
         </DialogContent>
@@ -785,7 +864,7 @@ function ReviewModal({
 }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const { t } = useTranslation();
+  const t = useTranslations();
   const [rating, setRating] = useState<number | null>(0);
   const [reviewText, setReviewText] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -913,7 +992,7 @@ function ReviewModal({
       fullWidth
       fullScreen={isMobile}>
       <DialogTitle sx={{ pb: 1, position: "relative" }}>
-        <Typography suppressHydrationWarning  variant='h6' fontWeight={700}>
+        <Typography suppressHydrationWarning variant='h6' fontWeight={700}>
           {reviewDetail ? t("edit_title") : t("create_title")}
         </Typography>
 
@@ -960,7 +1039,7 @@ function ReviewModal({
           ))}
         </Stack>
 
-        <Typography suppressHydrationWarning  fontWeight={600} mb={1}>
+        <Typography suppressHydrationWarning fontWeight={600} mb={1}>
           {t("write_review")}
         </Typography>
         <TextField
@@ -976,7 +1055,7 @@ function ReviewModal({
           sx={{ mb: 3 }}
         />
 
-        <Typography suppressHydrationWarning  fontWeight={600} mb={2}>
+        <Typography suppressHydrationWarning fontWeight={600} mb={2}>
           {t("images_videos")}
         </Typography>
         <Stack direction='row' gap={2} flexWrap='wrap'>
