@@ -179,21 +179,18 @@ export const normalizePhoneForAPI = (phone) => {
 
   return p;
 };
-
-export const parseName = (name?: string) => {
-  let currentLanguage = localStorage.getItem("i18nextLng")
+// utils/utils.ts
+export const parseName = (name?: string, locale: string = 'vi') => {
   if (!name) return "Không có tên";
 
   try {
-    if (typeof name == "object") {
-      return name?.[currentLanguage] || "Không có tên";
+    if (typeof name === "object") {
+      return (name as any)?.[locale] || (name as any)?.vi || "Không có tên";
     }
     const parsed = JSON.parse(name);
-    return parsed?.[currentLanguage]  || "Không có tên";
+    return parsed?.[locale] || parsed?.vi || "Không có tên";
   } catch {
-    console.log("AAAAA test");
-    // name là plain text (ví dụ: "Suite")
-    return name;
+    return name; // plain text fallback
   }
 };
 

@@ -27,12 +27,12 @@ import {
   Bathtub as BathIcon,
   Close as CloseIcon,
 } from "@mui/icons-material";
-import Slider from "react-slick";
+import Slider, { Settings } from "react-slick";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import vn from "../../images/VN - Vietnam.png";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { useBookingContext } from "../../App";
+import NextLink from 'next/link';
+
 import { Login, checkUser } from "../../service/admin";
 import { toast } from "react-toastify";
 import { MuiOtpInput } from "mui-one-time-password-input";
@@ -44,7 +44,11 @@ import {
   parseName,
   validateChar,
 } from "../../utils/utils";
-import { useTranslation } from "react-i18next";
+
+import { useBookingContext } from "@/lib/context";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import Image from "next/image";
 interface Room {
   id: number;
   name: string;
@@ -73,19 +77,19 @@ const RoomCard = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const { t, i18n } = useTranslation();
-  const currentLang = i18n.language;
+  const t = useTranslations();
+  const currentLang = useLocale();
   const context = useBookingContext();
   const sliderRef = useRef<any>(null);
+  const locale = useLocale();
   const settings = {
     dots: true,
     infinite: true,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
-    arrows: true,
-    prevArrow: <></>, // ẩn arrow mặc định
-    nextArrow: <></>,
+    arrows: false,
+
     appendDots: (dots: React.ReactNode) => (
       <div
         style={{
@@ -106,15 +110,18 @@ const RoomCard = ({
         </ul>
       </div>
     ),
-    customPaging: () => (
-      <div
-        style={{
-          width: 6,
-          height: 6,
-          background: "rgba(255,255,255,0.7)",
-          borderRadius: "50%",
-        }}
-      />
+    customPaging: (i: number) => (
+      // THÊM wrapper div với key hợp lệ
+      <div key={i}>
+        <div
+          style={{
+            width: 6,
+            height: 6,
+            background: "rgba(255,255,255,0.7)",
+            borderRadius: "50%",
+          }}
+        />
+      </div>
     ),
   };
 
@@ -132,8 +139,10 @@ const RoomCard = ({
       }
     }
   };
+
   return (
     <Paper
+
       elevation={0}
       sx={{
         borderRadius: "20px",
@@ -171,22 +180,27 @@ const RoomCard = ({
       {/* SLIDER ẢNH - react-slick */}
       {/* SLIDER + CUSTOM ARROWS HOẠT ĐỘNG 100% */}
       <Box
+
         sx={{ position: "relative", borderRadius: "16px", overflow: "hidden" }}>
-        <Slider ref={sliderRef} {...settings}>
-          {room?.images.map((img, i) => (
-            <div key={i}>
-              <img
-                src={img}
-                alt={`room ${i + 1}`}
-                style={{
-                  width: "100%",
-                  height: isMobile ? "180px" : "220px",
-                  objectFit: "cover",
-                }}
-              />
-            </div>
-          ))}
-        </Slider>
+        <div>
+          <Slider ref={sliderRef} {...settings}>
+            {room?.images.map((img, i) => (
+
+              <div key={i}>
+                <div style={{ position: 'relative', width: '100%', height: 200 }}>
+                  <Image
+                    src={img}
+                    alt={`room ${i + 1}`}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                </div>
+              </div>
+
+            ))}
+          </Slider>
+        </div>
 
         {/* NÚT PREV - HOẠT ĐỘNG */}
         <IconButton
@@ -240,14 +254,14 @@ const RoomCard = ({
           justifyContent='space-between'
           alignItems='flex-start'>
           <Box>
-            <Typography suppressHydrationWarning  fontWeight={600} fontSize='1rem' color='#333'>
-              {parseName(room?.name)}
+            <Typography suppressHydrationWarning fontWeight={600} fontSize='1rem' color='#333'>
+              {parseName(room?.name,locale)}
             </Typography>
-            <Typography suppressHydrationWarning  fontSize='0.85rem' color='#666'>
+            <Typography suppressHydrationWarning fontSize='0.85rem' color='#666'>
               {room.type}
             </Typography>
           </Box>
-          <Typography suppressHydrationWarning 
+          <Typography suppressHydrationWarning
             onClick={() => {
               setSelectedRoom(room);
               setOpenModalDetail(true);
@@ -288,7 +302,7 @@ const RoomCard = ({
             console.log("AAA selectedFacilities", selectedFacilities);
             if (selectedFacilities.length === 0) {
               return (
-                <Typography suppressHydrationWarning  color='#999' fontStyle='italic'>
+                <Typography suppressHydrationWarning color='#999' fontStyle='italic'>
                   {t("no_amenities")}
                 </Typography>
               );
@@ -315,7 +329,7 @@ const RoomCard = ({
                       alt={fac?.name?.vi}
                       sx={{ width: 20, height: 20, objectFit: "contain" }}
                     />
-                    <Typography suppressHydrationWarning  fontWeight={500} fontSize='0.85rem'>
+                    <Typography suppressHydrationWarning fontWeight={500} fontSize='0.85rem'>
                       {fac?.name?.[currentLang]}
                     </Typography>
                   </Box>
@@ -334,7 +348,7 @@ const RoomCard = ({
           {!isSoldOut && (
             <Stack>
               {room.remaining !== null && (
-                <Typography suppressHydrationWarning 
+                <Typography suppressHydrationWarning
                   fontSize='0.8rem'
                   color={isLowStock ? "#d32f2f" : "#666"}>
                   {isLowStock
@@ -342,7 +356,7 @@ const RoomCard = ({
                     : t("low_stock", { count: room.available_rooms || 2 })}
                 </Typography>
               )}
-              <Typography suppressHydrationWarning 
+              <Typography suppressHydrationWarning
                 fontWeight={700}
                 fontSize='1.1rem'
                 color='rgba(234, 106, 0, 1)'>
@@ -378,7 +392,7 @@ const RoomCard = ({
 
         {/* THÔNG BÁO HẾT PHÒNG */}
         {isSoldOut && (
-          <Typography suppressHydrationWarning  fontSize='0.8rem' color='#d32f2f' mt={1}>
+          <Typography suppressHydrationWarning fontSize='0.8rem' color='#d32f2f' mt={1}>
             {t("no_room_available")}
           </Typography>
         )}
@@ -388,9 +402,8 @@ const RoomCard = ({
 };
 
 const RoomList = ({ loading, data, hotel, section1Ref, amenities, attribute }) => {
-  let booking = localStorage.getItem("booking")
-    ? JSON.parse(localStorage.getItem("booking"))
-    : {};
+  const [booking, setBooking] = useState({});
+
   const [openModal, setOpenModal] = useState(false);
   const [openModalDetail, setOpenModalDetail] = useState(false);
   const [lodingLogin, setLoadingLogin] = useState(false);
@@ -400,10 +413,22 @@ const RoomList = ({ loading, data, hotel, section1Ref, amenities, attribute }) =
   const [openDetail, setOpenDetail] = useState(false);
   const [touched, setTouched] = useState(false);
   const [password, setPassword] = useState(false);
-  const [searchParams] = useSearchParams();
-  const { t } = useTranslation();
+  const searchParams = useSearchParams();
+  const t = useTranslations();
   console.log("AAAA searchParams", searchParams.get("type"));
-  const navigate = useNavigate();
+  const navigate = useRouter();
+  useEffect(() => {
+    // Chỉ chạy ở client-side
+    const storedBooking = localStorage.getItem("booking");
+    if (storedBooking) {
+      try {
+        setBooking(JSON.parse(storedBooking));
+      } catch (error) {
+        console.error("Error parsing booking data:", error);
+        setBooking({});
+      }
+    }
+  }, []);
   const normalizePhone = (phone) => {
     if (!phone) return "";
     let p = phone.trim().replace(/\D/g, "");
@@ -438,7 +463,7 @@ const RoomList = ({ loading, data, hotel, section1Ref, amenities, attribute }) =
   return (
     <Box ref={section1Ref} sx={{ bgcolor: "#f9f9f9", py: { xs: 2, md: 4 } }}>
       <Stack spacing={3} sx={{}}>
-        <Typography suppressHydrationWarning 
+        <Typography suppressHydrationWarning
           fontWeight={700}
           fontSize='1.1rem'
           color='#333'>
@@ -471,20 +496,20 @@ const RoomList = ({ loading, data, hotel, section1Ref, amenities, attribute }) =
                   direction='row'
                   justifyContent='space-between'
                   alignItems='center'>
-                  <Typography suppressHydrationWarning  fontWeight={700} fontSize='1.25rem' color='#333'>
+                  <Typography suppressHydrationWarning fontWeight={700} fontSize='1.25rem' color='#333'>
                     {t("verify_phone_title")}
                   </Typography>
                   <IconButton onClick={() => setOpenModal(false)}>
                     <CloseIcon />
                   </IconButton>
                 </Stack>
-                <Typography suppressHydrationWarning 
+                <Typography suppressHydrationWarning
                   my={3}
                   fontSize={"14px"}
                   color='rgba(152, 159, 173, 1)'>
                   {t("verify_phone_desc")}
                 </Typography>
-                <Typography suppressHydrationWarning  fontSize={14} fontWeight={500} mb={0.5}>
+                <Typography suppressHydrationWarning fontSize={14} fontWeight={500} mb={0.5}>
                   {t("phone_label")}
                 </Typography>
                 <TextField
@@ -530,7 +555,8 @@ const RoomList = ({ loading, data, hotel, section1Ref, amenities, attribute }) =
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position='start'>
-                        <img
+                        <Image
+
                           src={vn}
                           alt='vn'
                           style={{
@@ -541,7 +567,7 @@ const RoomList = ({ loading, data, hotel, section1Ref, amenities, attribute }) =
                             marginRight: 8,
                           }}
                         />
-                        <Typography suppressHydrationWarning  sx={{ fontSize: 14, marginRight: 1 }}>
+                        <Typography suppressHydrationWarning sx={{ fontSize: 14, marginRight: 1 }}>
                           +84
                         </Typography>
                       </InputAdornment>
@@ -612,14 +638,14 @@ const RoomList = ({ loading, data, hotel, section1Ref, amenities, attribute }) =
                     t("login_button")
                   )}
                 </Button>
-                <Typography suppressHydrationWarning 
+                <Typography suppressHydrationWarning
                   my={2}
                   fontSize={"14px"}
                   color='rgba(152, 159, 173, 1)'>
                   {t("no_account")}
-                  <Typography suppressHydrationWarning 
+                  <Typography suppressHydrationWarning
                     onClick={() => {
-                      navigate("/register");
+                      navigate.push("/register");
                     }}
                     fontSize={"14px"}
                     variant='span'
@@ -653,6 +679,7 @@ const RoomList = ({ loading, data, hotel, section1Ref, amenities, attribute }) =
               {[1, 2, 3].map((item) => {
                 return (
                   <Paper
+                    key={item}
                     elevation={0}
                     sx={{
                       borderRadius: "20px",
@@ -699,38 +726,45 @@ const RoomList = ({ loading, data, hotel, section1Ref, amenities, attribute }) =
                   gap={2}
                   alignItems={"center"}
                   justifyContent={"center"}>
-                  <img src={no_room} alt='' />
-                  <Typography suppressHydrationWarning  color='#2B2F38' fontWeight={600}>
+                  <Image
+                    src={no_room} alt='' />
+                  <Typography suppressHydrationWarning color='#2B2F38' fontWeight={600}>
                     {t("no_room_title")}
                   </Typography>
-                  <Typography suppressHydrationWarning  color='#2B2F38'>
+                  <Typography suppressHydrationWarning color='#2B2F38'>
                     {t("no_room_available")}
                   </Typography>
                 </Box>
               </>
             ) : (
-              <Grid
-                container
-                justifyContent={data.length >= 3 ? "space-between" : "start"}
-                gap={data.length <= 3 ? 3 : 0}>
-                {data?.map((room) => (
-                  <Grid item xs={12} md={3.8} key={room.id}>
-                    <RoomCard
-                      room={room}
-                      setOpenModal={setOpenModal}
-                      loading={loading}
-                      setOpenDetail={setOpenDetail}
-                      setSelectedRoom={setSelectedRoom}
-                      booking={booking}
-                      searchParams={searchParams}
-                      isNotLogin={isNotLogin}
-                      setOpenModalDetail={setOpenModalDetail}
-                      openModalDetail={openModalDetail}
-                      amenities={amenities}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
+              <div data-role="rooms-container">
+                <Grid
+                  container
+                  justifyContent={data.length >= 3 ? "space-between" : "start"}
+                  gap={data.length <= 3 ? 3 : 0}
+                >
+                  {data?.map((room) => (
+                    <Grid item xs={12} key={room.id} md={3.8} >
+                      <div data-role="room-card">
+                        <RoomCard
+
+                          room={room}
+                          setOpenModal={setOpenModal}
+                          loading={loading}
+                          setOpenDetail={setOpenDetail}
+                          setSelectedRoom={setSelectedRoom}
+                          booking={booking}
+                          searchParams={searchParams}
+                          isNotLogin={isNotLogin}
+                          setOpenModalDetail={setOpenModalDetail}
+                          openModalDetail={openModalDetail}
+                          amenities={amenities}
+                        />
+                      </div>
+                    </Grid>
+                  ))}
+                </Grid>
+              </div>
             )}
           </>
         )}
@@ -754,29 +788,31 @@ const RoomDetailModal = ({
   amenities,
   attribute
 }) => {
-  if (!room) return null;
+  
   const sliderRef = useRef<any>(null);
   const thumbRef = useRef<any>(null);
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [navMain, setNavMain] = useState(null);
   const [navThumb, setNavThumb] = useState(null);
-  const { t, i18n } = useTranslation();
-  const currentLang = i18n.language;
-  const sliderMain = useRef();
-  const sliderThumb = useRef();
+  const sliderMain = useRef(null);
+  const sliderThumb = useRef(null);
+  const t = useTranslations();
+  const locale = useLocale();
+
 
   const getLabelsByIds = (ids: string[] | null | undefined, list) => {
     if (!ids || !Array.isArray(ids) || ids.length === 0) return [];
     return ids
-      .map((id) => list.find((item) => item.id === id)?.name[currentLang])
+      .map((id) => list.find((item) => item.id === id)?.name[locale])
       .filter(Boolean) as string[];
   };
   const settingsMain = {
     asNavFor: navThumb,
     arrows: false,
     infinite: true,
+    
   };
 
   const settingsThumb = {
@@ -802,17 +838,17 @@ const RoomDetailModal = ({
             },
           ],
           price: room.price_daily,
-          address: parseName(hotel?.address),
-          name: parseName(hotel?.name),
+          address: parseName(hotel?.address,locale),
+          name: parseName(hotel?.name,locale),
           image: hotel?.images?.[0],
           ...Object.fromEntries([...searchParams]),
           phone: "+84" + phoneNumber,
           rent_types: hotel.rent_types,
-          room_name:parseName(room?.name)
+          room_name: parseName(room?.name,locale)
         })
       );
       setTimeout(() => {
-        navigate("/check-out");
+        navigate.push("/check-out");
       }, 300);
     }
   };
@@ -844,7 +880,7 @@ const RoomDetailModal = ({
   console.log("AAAA bedTypeIds", bedTypeIds)
   const bedTypeLabels = getLabelsByIds(bedTypeIds, attribute?.bed_type || []);
   const directionLabels = getLabelsByIds(directionIds, attribute?.direction || []);
-  console.log("AAAA bedTypeIds",  attribute?.bed_type)
+  console.log("AAAA bedTypeIds", attribute?.bed_type)
   console.log("AAAA amenities?.bed_type", amenities)
   return (
     <Modal
@@ -868,8 +904,8 @@ const RoomDetailModal = ({
         }}>
         {/* HEADER */}
         <Stack direction='row' justifyContent='space-between' mb={2}>
-          <Typography suppressHydrationWarning  fontSize='1.4rem' fontWeight={700}>
-            {parseName(room.name)}
+          <Typography suppressHydrationWarning fontSize='1.4rem' fontWeight={700}>
+            {parseName(room?.name,locale)}
           </Typography>
 
           <IconButton
@@ -885,24 +921,32 @@ const RoomDetailModal = ({
           <Box width={isMobile ? "100%" : "60%"} position='relative'>
             <Box mb={1}>
               <Slider
+              className="main-slider"
                 {...settingsMain}
                 ref={(slider) => {
                   sliderMain.current = slider;
                   setNavMain(slider);
                 }}>
-                {room.images.map((img, i) => (
-                  <Box height={"360px !important"}>
-                    <img
-                      key={i}
-                      src={img}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        borderRadius: 12,
-                      }}
-                    />
-                  </Box>
+                {room?.images.map((img, i) => (
+                   <Box
+                   key={i}
+                   sx={{
+                     position: 'relative',
+                     height: 360,
+                     borderRadius: 2,
+                     overflow: 'hidden',
+                   }}
+                 >
+                   <Image
+                     src={img}
+                     alt={`room-${i}`}
+                     fill
+                     sizes="100vw"
+                     style={{
+                       objectFit: 'cover',
+                     }}
+                   />
+                 </Box>
                 ))}
               </Slider>
 
@@ -990,7 +1034,7 @@ const RoomDetailModal = ({
                 // Đảm bảo tất cả ảnh đều có kích thước cố định và không bị co giãn do border/outline
                 img: {
                   display: "block",
-                  width: "100%",
+                  width: "95%",
                   height: "100px",
                   objectFit: "cover",
                   borderRadius: 1,
@@ -1000,56 +1044,72 @@ const RoomDetailModal = ({
                 },
               }}>
               <Slider
+              
                 {...settingsThumb}
                 ref={(slider) => {
                   sliderThumb.current = slider;
                   setNavThumb(slider);
                 }}>
-                {room.images.map((img, i) => (
-                  <Box width={"95% !important"} height={"100px"}>
-                    <img key={i} src={img} />
-                  </Box>
+                {room?.images.map((img, i) => (
+                   <Box
+                   key={i}
+                   sx={{
+                     position: 'relative',
+                     width: '90% !important',
+                     height: 100,
+                     borderRadius: 1,
+                     overflow: 'hidden',
+                   }}
+                 >
+                   <Image
+                     src={img}
+                     alt={`thumb-${i}`}
+                     fill
+                     sizes="100px"
+                     style={{ objectFit: 'cover' }}
+                   />
+                 </Box>
                 ))}
               </Slider>
             </Box>
           </Box>
           {/* RIGHT: ROOM INFO */}
           <Box width={isMobile ? "100%" : "37%"}>
-            <Typography suppressHydrationWarning  fontWeight={600} fontSize='1.1rem' mb={1}>
+            <Typography suppressHydrationWarning fontWeight={600} fontSize='1.1rem' mb={1}>
               {t("room_info_title")}
             </Typography>
-            <Typography suppressHydrationWarning  sx={{mt:1}} fontSize='0.9rem' >{t("bed_type")}   {bedTypeLabels.length > 0 ? (
+            <Typography component="div" suppressHydrationWarning sx={{ mt: 1 }} fontSize='0.9rem' >{t("bed_type")}   {bedTypeLabels.length > 0 ? (
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                 {bedTypeLabels.map((label, i) => (
-                  <Typography suppressHydrationWarning  color='gray' fontSize='0.9rem' >{label}</Typography>
+                  <Typography variant="span" key={i} suppressHydrationWarning color='gray' fontSize='0.9rem' >{label}</Typography>
                 ))}
               </Box>
             ) : (
               "-"
             )}</Typography>
-           
-             <Typography suppressHydrationWarning   sx={{mt:1}} fontSize='0.9rem' >{t("room_direction")}  {directionLabels.length > 0 ? (
+
+            <Typography component="div" suppressHydrationWarning sx={{ mt: 1 }} fontSize='0.9rem' >{t("room_direction")}  {directionLabels.length > 0 ? (
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                 {directionLabels.map((label, i) => (
-                   <Typography suppressHydrationWarning  color='gray' fontSize='0.9rem' >{label}</Typography>
+                  <Typography variant="span" key={i} suppressHydrationWarning color='gray' fontSize='0.9rem' >{label}</Typography>
                 ))}
               </Box>
             ) : (
               "-"
             )}</Typography>
-           
-             <Typography suppressHydrationWarning   sx={{mt:1}} fontSize='0.9rem' >{t("area_room")}  <Typography suppressHydrationWarning  color='gray' fontSize='0.9rem' >{  room?.area_m2 ? `${room.area_m2}m²` : "-"}</Typography></Typography>
-          
+
+            <Typography component="div" suppressHydrationWarning sx={{ mt: 1 }} fontSize='0.9rem' >{t("area_room")}  <Typography suppressHydrationWarning color='gray' fontSize='0.9rem' >{room?.area_m2 ? `${room.area_m2}m²` : "-"}</Typography></Typography>
+
             <FacilitiesList facilities={room?.facilities || {}} />
 
-            <Typography suppressHydrationWarning  fontWeight={600} mb={1}>
+            <Typography suppressHydrationWarning fontWeight={600} mb={1}>
               {t("booking_benefits")}
             </Typography>
-            <Typography suppressHydrationWarning  color='gray' fontSize='0.9rem' mb={2}>
+            <Typography suppressHydrationWarning color='gray' fontSize='0.9rem' mb={2}>
               {t("all_payment_methods")}
             </Typography>
 
-            <Typography suppressHydrationWarning  fontWeight={600} mb={1}>
+            <Typography suppressHydrationWarning fontWeight={600} mb={1}>
               {t("amenities_title")}
             </Typography>
 
@@ -1080,7 +1140,7 @@ const RoomDetailModal = ({
 
                 if (selectedFacilities.length === 0) {
                   return (
-                    <Typography suppressHydrationWarning  color='#999' fontStyle='italic'>
+                    <Typography suppressHydrationWarning color='#999' fontStyle='italic'>
                       {t("no_amenities")}
                     </Typography>
                   );
@@ -1108,8 +1168,8 @@ const RoomDetailModal = ({
                           alt={fac?.name?.vi}
                           sx={{ width: 20, height: 20, objectFit: "contain" }}
                         />
-                        <Typography suppressHydrationWarning  fontWeight={500} fontSize='0.85rem'>
-                          {fac?.name?.[currentLang]}
+                        <Typography suppressHydrationWarning fontWeight={500} fontSize='0.85rem'>
+                          {fac?.name?.[locale]}
                         </Typography>
                       </Box>
                     ))}
@@ -1118,11 +1178,11 @@ const RoomDetailModal = ({
               })()}
             </Stack>
 
-            <Typography suppressHydrationWarning  fontWeight={600} my={2}>
+            <Typography suppressHydrationWarning fontWeight={600} my={2}>
               {t("room_description_title")}
             </Typography>
-            <Typography suppressHydrationWarning  color='gray' fontSize='0.9rem' mb={3}>
-              {parseName(room.description)}
+            <Typography suppressHydrationWarning color='gray' fontSize='0.9rem' mb={3}>
+              {parseName(room?.description,locale)}
             </Typography>
             <Divider sx={{ mb: 2 }} />
             {/* PRICE + BUTTON */}
@@ -1131,16 +1191,16 @@ const RoomDetailModal = ({
               alignItems='center'
               justifyContent={"space-between"}
               gap={2}>
-              <Typography suppressHydrationWarning 
+              <Typography suppressHydrationWarning
                 fontWeight={700}
                 color='rgba(234, 106, 0, 1)'
                 fontSize='1.3rem'>
                 {searchParams.get("type") == "hourly" &&
-                  room.price_hourly.toLocaleString("vi-VN") + "đ"}
+                  room?.price_hourly.toLocaleString("vi-VN") + "đ"}
                 {searchParams.get("type") == "daily" &&
-                  room.price_daily.toLocaleString("vi-VN") + "đ"}
+                  room?.price_daily.toLocaleString("vi-VN") + "đ"}
                 {searchParams.get("type") == "overnight" &&
-                  room.price_overnight.toLocaleString("vi-VN") + "đ"}
+                  room?.price_overnight.toLocaleString("vi-VN") + "đ"}
               </Typography>
 
               {!openModalDetail && (
@@ -1170,8 +1230,8 @@ const PinCreation = ({ phoneNumber, setOpenModal }) => {
   const [pin, setPin] = useState("");
   const [showPin, setShowPin] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { t } = useTranslation();
-  const navigate = useNavigate();
+  const t = useTranslations();
+
   const context = useBookingContext();
   const handleSubmit = async (e) => {
     setLoading(true);
@@ -1211,12 +1271,12 @@ const PinCreation = ({ phoneNumber, setOpenModal }) => {
       sx={{
         display: "flex",
         flexDirection: "column",
-        width: { xs: "100%", sm: "400px", md: "486px" },
+        width: { xs: "100%", sm: "100%", md: "100%" },
       }}>
       {/* TITLE */}
 
       <Box>
-        <Typography suppressHydrationWarning 
+        <Typography suppressHydrationWarning
           sx={{
             fontSize: { xs: "26px", md: "30px" },
             fontWeight: 700,
@@ -1236,10 +1296,10 @@ const PinCreation = ({ phoneNumber, setOpenModal }) => {
       <Box component='form' onSubmit={handleSubmit}>
         {/* NHẬP MÃ PIN */}
         <Box display={"flex"} mb={2} justifyContent={"space-between"}>
-          <Typography suppressHydrationWarning  fontSize={14} color='#5D6679' fontWeight={500} mb={1.5}>
+          <Typography suppressHydrationWarning fontSize={14} color='#5D6679' fontWeight={500} mb={1.5}>
             {t("pin_label")}
           </Typography>
-          <Typography suppressHydrationWarning 
+          <Typography suppressHydrationWarning
             color='#5D6679'
             onClick={toggleShowPin}
             fontSize={14}
@@ -1308,7 +1368,7 @@ const PinCreation = ({ phoneNumber, setOpenModal }) => {
           />
         </Box>
 
-        <Typography suppressHydrationWarning 
+        <Typography suppressHydrationWarning
           variant='body2'
           sx={{
             mb: 4,
@@ -1316,15 +1376,15 @@ const PinCreation = ({ phoneNumber, setOpenModal }) => {
             fontSize: "14px",
             fontWeight: 500,
           }}>
-          <Link
+          <NextLink
             href='/forgot-password'
-            sx={{
+            style={{
               cursor: "pointer",
               color: "#FF7A00",
               textDecoration: "underline",
             }}>
             {t("forgot_pin")}
-          </Link>
+          </NextLink>
         </Typography>
 
         <Button
@@ -1384,3 +1444,5 @@ const FacilitiesList = ({ facilities }) => {
     </Box>
   );
 };
+
+

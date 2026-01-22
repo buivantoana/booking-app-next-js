@@ -294,10 +294,11 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     }}
                     slots={{
                       day: (props) => {
+                        const { disableHighlightToday, ...validProps } = props; 
                         const isSelected = checkIn?.isSame(props.day, "day");
                         return (
                           <Button
-                            {...props}
+                            {...validProps}
                             onClick={() => handleDateSelect(props.day)}
                             sx={{
                               minWidth: 36,
@@ -676,7 +677,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
   const [checkInDuration, setCheckInDuration] = useState<number>(2);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [name, setName] = useState<string>("");
-
+  const locale = useLocale()
   const addressOldRef = useRef("");
   const isMobile = useMediaQuery("(max-width:900px)"); // Thêm breakpoint cho mobile
   const selectingRef = useRef(false);
@@ -1380,7 +1381,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                                     navigate.push(
                                       `/room/${loc.id}?${new URLSearchParams(
                                         current
-                                      ).toString()}&name=${parseName(loc.name)}`
+                                      ).toString()}&name=${parseName(loc.name,locale)}`
                                     );
                                   }}
                                   sx={{
@@ -1397,7 +1398,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                                   </ListItemIcon>
                                   <Box>
                                     <ListItemText
-                                      primary={parseName(loc?.name)}
+                                      primary={parseName(loc?.name,locale)}
                                       primaryTypographyProps={{
                                         fontSize: "0.95rem",
                                         color: "#333",
@@ -1405,7 +1406,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                                       }}
                                     />
                                     <ListItemText
-                                      primary={parseName(loc?.address)}
+                                      primary={parseName(loc?.address,locale)}
                                       primaryTypographyProps={{
                                         fontSize: "0.95rem",
                                         color: "#333",

@@ -46,7 +46,7 @@ import { toast } from "react-toastify";
 import { facilities, getErrorMessage } from "../../utils/utils";
 import { useTranslation } from "react-i18next";
 import { useBookingContext } from "@/lib/context";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 interface Review {
   id: number;
   author: string;
@@ -69,7 +69,7 @@ const HotelDetailInfo = ({
 }) => {
   const theme = useTheme();
   const t = useTranslations();
-  const currentLang = i18n.language;
+  const currentLang = useLocale();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [reviewDetail, setReviewDetail] = useState(null);
@@ -232,7 +232,7 @@ const HotelDetailInfo = ({
             fontWeight={600}
             fontSize='1.1rem'
             color='#333'>
-            {t("reviews")}
+            {t("tab_reviews")}
           </Typography>
 
           {/* TỔNG ĐIỂM */}

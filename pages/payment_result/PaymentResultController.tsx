@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import PaymentResultView from "./PaymentResultView";
 import { getDetailBooking } from "../../service/booking";

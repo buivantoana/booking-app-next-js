@@ -288,7 +288,7 @@ interface UserDropdownMenuV2Props {
 }
 
 function UserDropdownMenuV2({ context }: UserDropdownMenuV2Props) {
-  const t = useTranslations("Header");
+  const t = useTranslations("");
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -376,7 +376,7 @@ function UserDropdownMenuV2({ context }: UserDropdownMenuV2Props) {
                 height: 56,
                 bgcolor: "rgba(152, 183, 32, 1)",
               }}>
-              <PersonIcon sx={{ color: "#98b720", fontSize: 32 }} />
+              <PersonIcon sx={{ color: "white", fontSize: 32 }} />
             </Avatar>
             <Box>
               <Typography

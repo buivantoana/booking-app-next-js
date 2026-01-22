@@ -1,17 +1,19 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import CheckOutView from "./CheckOutView";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
+
 
 type Props = {};
 
 const CheckOutController = (props: Props) => {
   const [dataCheckout,setDataCheckOut] = useState({})
-  const navigate = useNavigate()
+  const navigate = useRouter()
   useEffect(()=>{
     if(localStorage.getItem("booking")){
       setDataCheckOut(JSON.parse(localStorage.getItem("booking")))
     }else{
-      navigate("/")
+      navigate.push("/")
     }
   },[])
   return <CheckOutView dataCheckout={dataCheckout}/>;

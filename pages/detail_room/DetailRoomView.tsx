@@ -30,10 +30,12 @@ import HotelDetailInfo from "./HotelDetailInfo";
 import ListRoom from "../home/ListRoom";
 import SearchBarWithDropdown from "../../components/SearchBarWithDropdownHeader";
 import { getLocation } from "../../service/hotel";
-import { useLocation } from "react-router-dom";
+
 import { Phone } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
+import { usePathname } from "@/translation/navigation";
+import { useTranslations } from "next-intl";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -69,11 +71,11 @@ const DetailRoomView = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
-  const {t} = useTranslation()
+  const t = useTranslations()
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [tabValue, setTabValue] = useState(0);
-  const location = useLocation()
+  const location = usePathname()
   const section1Ref = useRef(null);
   const section2Ref = useRef(null);
   const section3Ref = useRef(null);
@@ -137,7 +139,7 @@ const DetailRoomView = ({
   useEffect(() => {
     (async () => {
       try {
-        if (location.pathname == "/rooms") {
+        if (location == "/rooms") {
           let result = await getLocation();
           console.log("AAA location", result);
           if (result?.locations) {
@@ -148,7 +150,7 @@ const DetailRoomView = ({
         console.log(error);
       }
     })();
-  }, [location.pathname]);
+  }, [location]);
   const handleShare = async () => {
     try {
       const url = window.location.href;

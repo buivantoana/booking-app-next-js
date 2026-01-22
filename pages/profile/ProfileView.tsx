@@ -1,30 +1,42 @@
+// app/profile/ProfileView.tsx
+// hoặc components/profile/ProfileView.tsx tùy cấu trúc dự án
+
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
+import Image from "next/image";
+
 import {
   Box,
-  Stack,
-  Typography,
-  Paper,
   Button,
+  CircularProgress,
   Container,
-  useTheme,
-  useMediaQuery,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
-  IconButton,
   Drawer,
+  Grid,
+  IconButton,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
   Avatar,
-  Grid,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
 } from "@mui/material";
+
 import {
   ArrowBack as ArrowBackIcon,
   CheckCircle as CheckCircleIcon,
@@ -34,23 +46,288 @@ import {
   Settings as SettingsIcon,
   Room as RoomIcon,
   Logout as LogoutIcon,
-  Home as HomeIcon,
-  Close,
+  Close as CloseIcon,
 } from "@mui/icons-material";
-import image_room from "../../images/Rectangle 29975.png";
-import logout from "../../images/logout2.png";
-import success from "../../images/15. Hotel.png";
-import cancel from "../../images/cancel.png";
-import pending from "../../images/pending.png";
-import pendingpayment from "../../images/pendingpayment.png";
+
+import image_room from "@/images/Rectangle 29975.png";
+import logoutImg from "@/images/logout2.png";
+import successImg from "@/images/15. Hotel.png";
+import cancelImg from "@/images/cancel.png";
+import pendingImg from "@/images/pending.png";
+import pendingPaymentImg from "@/images/pendingpayment.png";
+
+import { cancelBooking } from "@/service/booking";
+import { toast } from "react-toastify";
+
+import { getErrorMessage, parseName } from "@/utils/utils";
+import { getStatusPayment, retryPayment } from "@/service/payment";
+import dayjs from "dayjs";
+
 import Account from "./Account";
 import AccountSettingsPage from "./AccountSetting";
 import MyBookingsPage from "./MyBookingsPage";
-import dayjs from "dayjs";
-import { cancelBooking } from "../../service/booking";
-import { toast } from "react-toastify";
-import { useBookingContext } from "../../App";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useBookingContext } from "@/lib/context";
+import { useNavigateToRoom } from "@/components/useNavigateToRoom";
+
+// ────────────────────────────────────────────────
+// Constants
+// ────────────────────────────────────────────────
+
+const REASON_KEYS = [
+  "change_time",
+  "change_room",
+  "change_hotel",
+  "no_need",
+  "hotel_request",
+  "try_experience",
+  "price_higher",
+  "other",
+];
+
+// ────────────────────────────────────────────────
+// Reason Modal (lý do hủy - dạng text tự do)
+// ────────────────────────────────────────────────
+
+const ReasonModal = ({ open, onClose, onSubmit, loadingSubmit }) => {
+  const t = useTranslations();
+  const [reason, setReason] = useState("");
+
+  const handleSubmit = async () => {
+    onSubmit(reason);
+    setReason("");
+  };
+
+  const handleClose = () => {
+    setReason("");
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
+      <DialogTitle>{t("reason_modal_title")}</DialogTitle>
+      <DialogContent>
+        <TextField
+          multiline
+          rows={3}
+          placeholder={t("reason_placeholder")}
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          fullWidth
+          variant="outlined"
+          inputProps={{ maxLength: 1000 }}
+          helperText={`${reason.length}/1000`}
+          sx={{
+            mb: 3,
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "12px",
+              "&.Mui-focused fieldset": { borderColor: "#98b720", borderWidth: 1.5 },
+            },
+          }}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button
+          variant="outlined"
+          sx={{ borderColor: "#98b720", color: "#98b720" }}
+          onClick={handleClose}
+        >
+          {t("reason_cancel_button")}
+        </Button>
+        <Button
+          variant="contained"
+          sx={{ bgcolor: "#98b720", color: "white" }}
+          onClick={handleSubmit}
+          disabled={!reason.trim() || loadingSubmit}
+        >
+          {loadingSubmit ? (
+            <CircularProgress size={20} sx={{ color: "#fff", mr: 1 }} />
+          ) : (
+            t("reason_submit_button")
+          )}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+// ────────────────────────────────────────────────
+// Cancel Booking Modal (chọn lý do có sẵn + other)
+// ────────────────────────────────────────────────
+
+const CancelBookingModal = ({ open, onClose, getHistoryBooking, detailBooking }) => {
+  const t = useTranslations();
+  const [reason, setReason] = useState("");
+  const [note, setNote] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    if (!confirmOpen) {
+      setReason("");
+      setNote("");
+    }
+  }, [confirmOpen]);
+
+  const handleSubmit = async () => {
+    if (!reason) return;
+    try {
+      const fullReason = reason + (reason === t(`cancel_booking.reasons.other`) ? ` - ${note}` : "");
+      const result = await cancelBooking({ id: detailBooking.booking_id, reason: fullReason });
+      if (result?.code === "OK") {
+        toast.success(result?.message);
+        getHistoryBooking();
+        setConfirmOpen(false);
+        onClose();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const isDisableSubmit = !reason || (reason === t(`cancel_booking.reasons.other`) && !note.trim());
+
+  return (
+    <>
+      <Dialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: "16px" } }}
+      >
+        <DialogTitle sx={{ textAlign: "center", pt: 4, pb: 1 }}>
+          <Box sx={{ position: "relative" }}>
+            <Box
+              sx={{
+                width: 64,
+                height: 64,
+                bgcolor: "#ffebee",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mx: "auto",
+                mb: 2,
+              }}
+            >
+              <Image src={logoutImg} alt="Logout" width={40} height={40} />
+            </Box>
+            <IconButton
+              onClick={() => setConfirmOpen(false)}
+              sx={{ position: "absolute", top: -40, left: -30 }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ textAlign: "center", px: 4, pb: 3 }}>
+          <Typography fontWeight={600} fontSize="18px" mb={1}>
+            {t("button_cancel_booking")}
+          </Typography>
+          <Typography fontSize="14px" color="#666">
+            {t("cancel_booking_confirm")}
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center", pb: 4, gap: 2, flexDirection: "column" }}>
+          <Button
+            onClick={handleSubmit}
+            variant="contained"
+            sx={{
+              borderRadius: "24px",
+              textTransform: "none",
+              bgcolor: "#98b720",
+              "&:hover": { bgcolor: "#8ab020" },
+              width: "100%",
+            }}
+          >
+            {t("logout_confirm_button")}
+          </Button>
+          <Button
+            onClick={() => setConfirmOpen(false)}
+            variant="outlined"
+            sx={{
+              borderRadius: "24px",
+              textTransform: "none",
+              borderColor: "#ddd",
+              color: "#666",
+              width: "100%",
+            }}
+          >
+            {t("logout_cancel_button")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: "1.1rem" }}>
+          {t("cancel_booking.title")}
+          <IconButton onClick={onClose} sx={{ position: "absolute", right: 40, top: 26 }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <RadioGroup value={reason} onChange={(e) => setReason(e.target.value)}>
+            {REASON_KEYS.map((key) => (
+              <FormControlLabel
+                key={key}
+                value={t(`cancel_booking.reasons.${key}`)}
+                control={<Radio />}
+                label={t(`cancel_booking.reasons.${key}`)}
+                labelPlacement="start"
+                sx={{
+                  mb: 0.5,
+                  justifyContent: "space-between",
+                  width: "100%",
+                  marginLeft: 0,
+                }}
+              />
+            ))}
+          </RadioGroup>
+
+          {reason === t(`cancel_booking.reasons.other`) && (
+            <Box mt={1}>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                placeholder={t("cancel_booking.placeholder_other")}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                inputProps={{ maxLength: 1000 }}
+              />
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block", textAlign: "right", mt: 0.5 }}>
+                {note.length}/1000
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button
+            fullWidth
+            variant="contained"
+            disabled={isDisableSubmit}
+            onClick={() => {
+              setConfirmOpen(true);
+              onClose();
+            }}
+            sx={{
+              height: 44,
+              borderRadius: 999,
+              fontWeight: 600,
+              bgcolor: "#98b720",
+              "&.Mui-disabled": { bgcolor: "#e0e0e0", color: "#9e9e9e" },
+            }}
+          >
+            {t("cancel_booking.submit")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+};
+
+// ────────────────────────────────────────────────
+// Main Component: ProfileView
+// ────────────────────────────────────────────────
 
 const ProfileView = ({
   historyBooking,
@@ -60,67 +337,60 @@ const ProfileView = ({
   pagination,
   onPageChange,
 }) => {
+  const t = useTranslations();
+  const locale = useLocale();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const { t,i18n } = useTranslation();
-  const currentLang = i18n.language;
+  const navigateToRoom = useNavigateToRoom();
+  const context = useBookingContext();
+
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState(`${t("profile_menu")}`);
+  const [activeMenu, setActiveMenu] = useState(t("profile_menu"));
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [detailBooking, setDetailBooking] = useState(null);
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [openCancelBooking, setOpenCancelBooking] = useState(false);
-  const navigateToRoom = useNavigateToRoom();
+  const [openReason, setOpenReason] = useState(false);
+
   const menuItems = [
     { text: t("profile_menu"), icon: <PersonIcon />, active: false },
     { text: t("account_settings_menu"), icon: <SettingsIcon />, active: false },
     { text: t("my_bookings_menu"), icon: <RoomIcon />, active: true },
     { text: t("logout_menu"), icon: <LogoutIcon />, active: false },
   ];
-  const context = useBookingContext();
+
   useEffect(() => {
     if (detailBooking) {
-      setDetailBooking(
-        historyBooking.find(
-          (item) => item.booking_id == detailBooking.booking_id
-        )
-      );
+      setDetailBooking(historyBooking.find((item) => item.booking_id === detailBooking.booking_id));
     }
   }, [historyBooking]);
+
   useEffect(() => {
     const type = searchParams.get("type");
     if (type) {
-      if (type == "booking") {
+      if (type === "booking") {
         setActiveMenu(t("my_bookings_menu"));
-        searchParams.delete("type");
-        setSearchParams(searchParams, { replace: true });
       }
-      if (type == "profile") {
+      if (type === "profile") {
         setActiveMenu(t("profile_menu"));
-        searchParams.delete("type");
-        setSearchParams(searchParams, { replace: true });
       }
+      const newParams = new URLSearchParams(searchParams.toString());
+      newParams.delete("type");
+      router.replace(`?${newParams.toString()}`, { scroll: false });
     }
-  }, [searchParams]);
-  const handleClickItemMenu = (active) => {
+  }, [searchParams, router, t]);
+
+  const handleClickItemMenu = (text) => {
     setDetailBooking(null);
-    setActiveMenu(active);
+    setActiveMenu(text);
   };
 
-  const Sidebar = ({}) => {
-    // Thêm state để quản lý trạng thái mở/đóng sidebar trên mobile
+  // ── Sidebar ──
+  const Sidebar = () => {
     const [mobileOpen, setMobileOpen] = useState(false);
-
-    // Sử dụng theme breakpoints
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
-    // Hàm đóng sidebar trên mobile
-    const handleDrawerToggle = () => {
-      setMobileOpen(!mobileOpen);
-    };
+    const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
 
     const sidebarContent = (
       <Paper
@@ -137,46 +407,29 @@ const ProfileView = ({
           zIndex: { xs: 1200, md: 1 },
           overflowY: "auto",
           boxSizing: "border-box",
-        }}>
-        {/* Header cho mobile */}
+        }}
+      >
         {isMobile && (
-          <Stack
-            direction='row'
-            justifyContent='space-between'
-            alignItems='center'
-            mb={2}>
-            <Typography suppressHydrationWarning  variant='h6' fontWeight={600} color='#333'>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+            <Typography variant="h6" fontWeight={600} color="#333">
               Menu
             </Typography>
             <IconButton onClick={handleDrawerToggle} sx={{ color: "#98b720" }}>
-              <Close />
+              <CloseIcon />
             </IconButton>
           </Stack>
         )}
 
         <Stack spacing={3}>
-          {/* USER INFO */}
-          <Stack direction='row' spacing={2} alignItems='center'>
-            <Avatar
-              sx={{
-                width: { xs: 40, md: 48 },
-                height: { xs: 40, md: 48 },
-                bgcolor: "#e8f5e8",
-              }}>
-              <PersonIcon
-                sx={{ color: "#98b720", fontSize: { xs: 24, md: 28 } }}
-              />
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Avatar sx={{ width: { xs: 40, md: 48 }, height: { xs: 40, md: 48 }, bgcolor: "#e8f5e8" }}>
+              <PersonIcon sx={{ color: "#98b720", fontSize: { xs: 24, md: 28 } }} />
             </Avatar>
             <Stack>
-              <Typography suppressHydrationWarning 
-                fontWeight={600}
-                fontSize={{ xs: "0.9rem", md: "1rem" }}
-                color='#333'>
+              <Typography fontWeight={600} fontSize={{ xs: "0.9rem", md: "1rem" }} color="#333">
                 {context?.state?.user?.name || "Người dùng"}
               </Typography>
-              <Typography suppressHydrationWarning 
-                fontSize={{ xs: "0.75rem", md: "0.8rem" }}
-                color='#666'>
+              <Typography fontSize={{ xs: "0.75rem", md: "0.8rem" }} color="#666">
                 +84 {context?.state?.user?.phone?.slice(3) || "123456789"}
               </Typography>
             </Stack>
@@ -184,7 +437,6 @@ const ProfileView = ({
 
           <Divider sx={{ bgcolor: "#eee" }} />
 
-          {/* MENU */}
           <List disablePadding sx={{ cursor: "pointer" }}>
             {menuItems.map((item) => (
               <React.Fragment key={item.text}>
@@ -196,48 +448,35 @@ const ProfileView = ({
                     } else {
                       handleClickItemMenu(item.text);
                     }
-                    // Đóng sidebar trên mobile sau khi chọn menu
-                    if (isMobile) {
-                      setMobileOpen(false);
-                    }
+                    if (isMobile) setMobileOpen(false);
                   }}
                   disablePadding
                   sx={{
                     borderRadius: "12px",
                     mb: 1,
-                    bgcolor:
-                      activeMenu === item.text ? "#f0f8f0" : "transparent",
-                    border:
-                      activeMenu === item.text ? "1px solid #98b720" : "none",
+                    bgcolor: activeMenu === item.text ? "#f0f8f0" : "transparent",
+                    border: activeMenu === item.text ? "1px solid #98b720" : "none",
                     px: 1,
                     py: { xs: 1.5, md: 1 },
-                    "&:hover": {
-                      bgcolor: activeMenu === item.text ? "#f0f8f0" : "#f9f9f9",
-                    },
-                  }}>
+                    "&:hover": { bgcolor: activeMenu === item.text ? "#f0f8f0" : "#f9f9f9" },
+                  }}
+                >
                   <ListItemIcon
                     sx={{
                       minWidth: { xs: 32, md: 36 },
-                      color:
-                        activeMenu === item.text
-                          ? "rgba(152, 183, 32, 1)"
-                          : "#999",
-                      "& .MuiSvgIcon-root": {
-                        fontSize: { xs: "1.25rem", md: "1.375rem" },
-                      },
-                    }}>
+                      color: activeMenu === item.text ? "rgba(152, 183, 32, 1)" : "#999",
+                      "& .MuiSvgIcon-root": { fontSize: { xs: "1.25rem", md: "1.375rem" } },
+                    }}
+                  >
                     {React.cloneElement(item.icon)}
                   </ListItemIcon>
                   <ListItemText
                     primary={
-                      <Typography suppressHydrationWarning 
+                      <Typography
                         fontWeight={activeMenu === item.text ? 600 : 500}
                         fontSize={{ xs: "0.85rem", md: "0.9rem" }}
-                        color={
-                          activeMenu === item.text
-                            ? "rgba(152, 183, 32, 1)"
-                            : "#666"
-                        }>
+                        color={activeMenu === item.text ? "rgba(152, 183, 32, 1)" : "#666"}
+                      >
                         {item.text}
                       </Typography>
                     }
@@ -250,11 +489,9 @@ const ProfileView = ({
       </Paper>
     );
 
-    // Nếu là mobile, hiển thị với Drawer
     if (isMobile) {
       return (
         <>
-          {/* Nút mở sidebar trên mobile - đặt ở nơi phù hợp trong layout chính */}
           <IconButton
             onClick={handleDrawerToggle}
             sx={{
@@ -263,128 +500,89 @@ const ProfileView = ({
               right: 20,
               bgcolor: "#98b720",
               color: "white",
-              "&:hover": {
-                bgcolor: "#7a9a1a",
-              },
+              "&:hover": { bgcolor: "#7a9a1a" },
               zIndex: 1100,
               width: 56,
               height: 56,
               boxShadow: 3,
               display: { xs: "flex", md: "none" },
-            }}>
+            }}
+          >
             <MenuIcon />
           </IconButton>
 
           <Drawer
-            variant='temporary'
+            variant="temporary"
             open={mobileOpen}
             onClose={handleDrawerToggle}
-            ModalProps={{
-              keepMounted: true, // Better open performance on mobile
-            }}
+            ModalProps={{ keepMounted: true }}
             sx={{
               display: { xs: "block", md: "none" },
-              "& .MuiDrawer-paper": {
-                boxSizing: "border-box",
-                width: "100%",
-                bgcolor: "transparent",
-                boxShadow: "none",
-              },
-            }}>
+              "& .MuiDrawer-paper": { boxSizing: "border-box", width: "100%", bgcolor: "transparent", boxShadow: "none" },
+            }}
+          >
             {sidebarContent}
           </Drawer>
         </>
       );
     }
 
-    // Nếu là desktop, hiển thị bình thường
     return sidebarContent;
   };
 
+  // ── Booking Detail Content ──
   const MainContent = () => {
     if (!detailBooking) return null;
-    console.log("AAAAAA detailBooking", detailBooking);
-    // Parse JSON string fields
-    const hotelName =
-      JSON.parse(detailBooking.hotel_name)?.vi ||
-      JSON.parse(detailBooking.hotel_name)?.en ||
-      "Khách sạn";
-    const roomName = parseName(detailBooking.rooms[0]?.room_name)
-      
-    const hotelAddress =
-      JSON.parse(detailBooking.hotel_address)?.vi ||
-      JSON.parse(detailBooking.hotel_address)?.en ||
-      "Chưa có địa chỉ";
 
-    // Xử lý ảnh phòng
-    const roomImages = detailBooking.rooms[0]?.images
-      ? JSON.parse(detailBooking.rooms[0].images)
-      : [];
-    const roomThumbnail =
-      roomImages[0] || detailBooking.thumbnail_url || image_room;
+    const hotelName = JSON.parse(detailBooking.hotel_name)?.vi || JSON.parse(detailBooking.hotel_name)?.en || "Khách sạn";
+    const roomName = parseName(detailBooking.rooms[0]?.room_name, locale);
+    const hotelAddress = JSON.parse(detailBooking.hotel_address)?.vi || JSON.parse(detailBooking.hotel_address)?.en || "Chưa có địa chỉ";
 
-    // Format ngày giờ
-    const formatDateTime = (isoString) => {
-      return dayjs(isoString).format("HH:mm, D/M");
-    };
+    const roomImages = detailBooking.rooms[0]?.images ? JSON.parse(detailBooking.rooms[0].images) : [];
+    const roomThumbnail = roomImages[0] || detailBooking.thumbnail_url || image_room;
+
+    const formatDateTime = (isoString) => dayjs(isoString).format("HH:mm, D/M");
 
     const checkInTime = formatDateTime(detailBooking.check_in);
     const checkOutTime = formatDateTime(detailBooking.check_out);
 
-    // Tính số giờ / đêm
     const getDurationLabel = () => {
       if (detailBooking.rent_type === "hourly") {
-        const hours = dayjs(detailBooking.check_out).diff(
-          dayjs(detailBooking.check_in),
-          "hour"
-        );
+        const hours = dayjs(detailBooking.check_out).diff(dayjs(detailBooking.check_in), "hour");
         return `${hours < 10 ? "0" + hours : hours} giờ`;
       }
       if (detailBooking.rent_type === "overnight") return "01 đêm";
       if (detailBooking.rent_type === "daily") {
-        const days = dayjs(detailBooking.check_out).diff(
-          dayjs(detailBooking.check_in),
-          "day"
-        );
+        const days = dayjs(detailBooking.check_out).diff(dayjs(detailBooking.check_in), "day");
         return `${days} đêm`;
       }
       return "01";
     };
 
-    // Loại đặt phòng
     const getRentTypeLabel = () => {
       switch (detailBooking.rent_type) {
-        case "hourly":
-          return t("rent_type_hourly");
-        case "overnight":
-          return t("rent_type_overnight");
-        case "daily":
-          return t("rent_type_daily");
-        default:
-          return t("rent_type_hourly");
+        case "hourly": return t("rent_type_hourly");
+        case "overnight": return t("rent_type_overnight");
+        case "daily": return t("rent_type_daily");
+        default: return t("rent_type_hourly");
       }
     };
+
     const getBestPayment = (payments = []) => {
       if (!payments.length) return null;
-
       const priority = ["paid", "pending", "failed", "cancelled", "refunded"];
-
       for (const st of priority) {
         const found = payments.find((p) => p.status === st);
         if (found) return found;
       }
       return null;
     };
+
     const getPaymentTextStatus = (payments = []) => {
-      if (!payments || payments.length === 0) {
-        return t("payment_status_at_hotel"); // không có thông tin thanh toán
-      }
+      if (!payments || payments.length === 0) return t("payment_status_at_hotel");
 
-      // Thứ tự ưu tiên
       const priority = ["paid", "pending", "failed", "cancelled", "refunded"];
-
-      let status: string | null = null;
-
+      let status = null;
       for (const st of priority) {
         const found = payments.find((p) => p.status === st);
         if (found) {
@@ -393,32 +591,20 @@ const ProfileView = ({
         }
       }
 
-      // Map sang text tiếng Việt
       switch (status) {
-        case "paid":
-          return t("payment_status_paid");
-        case "pending":
-          return t("payment_status_pending");
-        case "failed":
-          return t("payment_status_failed");
-        case "cancelled":
-          return t("payment_status_cancelled");
-        case "refunded":
-          return t("payment_status_refunded");
-        default:
-          return t("payment_status_refunded");
+        case "paid": return t("payment_status_paid");
+        case "pending": return t("payment_status_pending");
+        case "failed": return t("payment_status_failed");
+        case "cancelled": return t("payment_status_cancelled");
+        case "refunded": return t("payment_status_refunded");
+        default: return t("payment_status_refunded");
       }
     };
-    // Trạng thái thanh toán
+
     const payments = detailBooking.payments || [];
-
-    // Lấy payment "quan trọng nhất"
     const bestPayment = getBestPayment(payments);
-
-    // Lấy text status
     const paymentStatus = getPaymentTextStatus(payments);
 
-    // Lấy label method đúng
     const paymentMethodLabel = bestPayment?.method
       ? bestPayment.method === "momo"
         ? "Ví MoMo"
@@ -426,20 +612,17 @@ const ProfileView = ({
         ? "VNPay"
         : t("payment_status_at_hotel")
       : t("payment_status_at_hotel");
-    const totalPrice = Number(detailBooking.total_price || 0).toLocaleString(
-      "vi-VN"
-    );
 
-    // Copy mã đặt phòng
+    const totalPrice = Number(detailBooking.total_price || 0).toLocaleString("vi-VN");
+
     const handleCopyCode = () => {
       navigator.clipboard.writeText(detailBooking.booking_code);
-      alert("Đã sao chép mã đặt phòng!");
+      toast.success("Đã sao chép mã đặt phòng!");
     };
+
     const getPaymentStatus = (payments = []) => {
       if (!payments.length) return null;
-
       const priority = ["paid", "pending", "failed", "cancelled", "refunded"];
-
       for (const status of priority) {
         const found = payments.find((p) => p.status === status);
         if (found) return found.status;
@@ -447,96 +630,64 @@ const ProfileView = ({
       return null;
     };
 
-    const getBookingNameStatus = (detailBooking: any) => {
-      const paymentStatus = getPaymentStatus(detailBooking.payments);
+    const getBookingNameStatus = () => {
+      const paymentStatus = getPaymentStatus(payments);
       const bookingStatus = detailBooking.status;
 
-      // -----------------------------
-      // LOGIC NÚT HIỂN THỊ
-      // -----------------------------
-
-      // booking đã hoàn thành hoặc bị hủy -> nút "Đặt lại"
-      if (
-        bookingStatus === "checked_out" ||
-        bookingStatus === "cancelled" ||
-        detailBooking.status === "no_show"
-      ) {
+      if (bookingStatus === "checked_out" || bookingStatus === "cancelled" || detailBooking.status === "no_show") {
         return t("button_rebook");
       }
 
-      // đã xác nhận và đã thanh toán → có thể hủy
       if (bookingStatus === "confirmed" && paymentStatus === "paid") {
         return t("button_cancel_booking");
       }
 
-      // chưa thanh toán đủ hoặc payment lỗi
-      if (
-        paymentStatus === "failed" ||
-        paymentStatus === "pending" ||
-        bookingStatus === "pending"
-      ) {
+      if (paymentStatus === "failed" || paymentStatus === "pending" || bookingStatus === "pending") {
         return t("button_continue_payment");
       }
 
-      // fallback – mặc định vẫn hiển thị tiếp tục thanh toán
       return t("button_continue_payment");
     };
+
     const handleSubmit = async () => {
       setLoadingSubmit(true);
+      const action = getBookingNameStatus();
+
       try {
-        if (getBookingNameStatus(detailBooking) == t("button_cancel_booking")) {
+        if (action === t("button_cancel_booking")) {
           setOpenCancelBooking(true);
-          // let result = await cancelBooking(detailBooking.booking_id);
-          // if (result?.code == "OK") {
-          //   toast.success(result?.message);
-          //   getHistoryBooking();
-          // }
-        } else if (getBookingNameStatus(detailBooking) == t("rebook_button")) {
+        } else if (action === t("button_rebook")) {
           navigateToRoom(detailBooking);
-        } else if (
-          getBookingNameStatus(detailBooking) == t("button_continue_payment")
-        ) {
-          handleRetryPayment({
-            booking_id: detailBooking?.booking_id,
-            method: detailBooking.payments[0]?.method,
-          });
+        } else if (action === t("button_continue_payment")) {
+          await handleRetryPayment({ booking_id: detailBooking?.booking_id, method: detailBooking.payments[0]?.method });
         }
       } catch (error) {
-        console.log(error);
-      }
-      if (
-        !(getBookingNameStatus(detailBooking) == t("button_continue_payment"))
-      ) {
-        setLoadingSubmit(false);
+        console.error(error);
+      } finally {
+        if (action !== t("button_continue_payment")) setLoadingSubmit(false);
       }
     };
 
     const handleRetryPayment = async (body) => {
       setLoadingSubmit(true);
-
       try {
-        // 1️⃣ GỌI API RETRY
         const result = await retryPayment(body);
-
         if (result?.payment_id) {
-          checkPaymentStatusLoop(result?.payment_id);
+          checkPaymentStatusLoop(result.payment_id);
         } else {
           toast.error(getErrorMessage(result.code) || result.message);
-          setLoadingSubmit(false);
         }
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     };
 
     const checkPaymentStatusLoop = async (paymentId) => {
       let retry = 0;
-
       const interval = setInterval(async () => {
         retry++;
-
         try {
-          let result = await getStatusPayment(paymentId);
+          const result = await getStatusPayment(paymentId);
           const status = result?.status;
 
           switch (status) {
@@ -546,107 +697,88 @@ const ProfileView = ({
               toast.success("Thanh toán thành công!");
               getHistoryBooking();
               return;
-
             case "failed":
               clearInterval(interval);
               setLoadingSubmit(false);
               toast.error("Thanh toán thất bại!");
               return;
-
             case "refunded":
               clearInterval(interval);
               setLoadingSubmit(false);
               toast.info("Thanh toán đã được hoàn tiền!");
               return;
-
             case "cancelled":
               clearInterval(interval);
               setLoadingSubmit(false);
               toast.warning("Thanh toán đã bị hủy!");
               return;
-
-            case "pending":
             default:
-              // vẫn pending → tiếp tục call
               break;
           }
         } catch (error) {
-          console.log("Error:", error);
+          console.error("Error:", error);
         }
 
-        // ❌ quá 30 lần → xem như fail
         if (retry >= 30) {
           clearInterval(interval);
           setLoadingSubmit(false);
-          toast.error("Thanh toán quá thời gian! Vui lòng thử lại.", {
-            position: "top-center",
-          });
+          toast.error("Thanh toán quá thời gian! Vui lòng thử lại.", { position: "top-center" });
         }
       }, 2000);
     };
 
-    const [openReason, setOpenReason] = React.useState(false);
-
     const handleSubmitReason = async (value) => {
       setLoadingSubmit(true);
-      console.log("Lý do:", value);
       try {
-        let result = await cancelBooking({
-          id: detailBooking.booking_id,
-          reason: value,
-        });
-        if (result?.code == "OK") {
+        const result = await cancelBooking({ id: detailBooking.booking_id, reason: value });
+        if (result?.code === "OK") {
           toast.success(result?.message);
           getHistoryBooking();
         }
       } catch (error) {
-        console.log(error);
+        console.error(error);
+      } finally {
+        setLoadingSubmit(false);
+        setOpenReason(false);
       }
-      setLoadingSubmit(false);
-      setOpenReason(false);
     };
+
     return (
       <Stack spacing={3}>
-        {/* HEADER */}
-        <Stack direction='row' alignItems='center' spacing={1}>
-          <IconButton size='small' onClick={() => setDetailBooking(false)}>
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <IconButton size="small" onClick={() => setDetailBooking(null)}>
             <ArrowBackIcon sx={{ fontSize: 20 }} />
           </IconButton>
-          <Typography suppressHydrationWarning  fontWeight={600} fontSize='1.1rem' color='#333'>
+          <Typography fontWeight={600} fontSize="1.1rem" color="#333">
             {t("booking_detail_title")}
           </Typography>
         </Stack>
+
         <ReasonModal
           open={openReason}
           onClose={() => setOpenReason(false)}
           onSubmit={handleSubmitReason}
           loadingSubmit={loadingSubmit}
         />
-        {/* BANNER HOÀN THÀNH */}
+
+        {/* Các banner trạng thái */}
         {detailBooking.status === "checked_out" && (
-          <Paper
-            elevation={0}
-            sx={{ borderRadius: "16px", bgcolor: "white", p: 2.5 }}>
-            <Stack
-              direction='row'
-              justifyContent='space-between'
-              alignItems='center'>
-              <Stack direction='row' spacing={2} alignItems='center'>
-                <img src={success} alt='Thành công' width={48} />
+          <Paper elevation={0} sx={{ borderRadius: "16px", bgcolor: "white", p: 2.5 }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Image src={successImg} alt="Thành công" width={48} height={48} />
                 <Stack>
-                  <Typography suppressHydrationWarning  fontWeight={700} fontSize='1rem' color='#98b720'>
+                  <Typography fontWeight={700} fontSize="1rem" color="#98b720">
                     {t("status_completed")}
                   </Typography>
-                  <Typography suppressHydrationWarning  fontSize='0.8rem' color='#666' lineHeight={1.4}>
+                  <Typography fontSize="0.8rem" color="#666" lineHeight={1.4}>
                     {t("completed_message")}
                   </Typography>
                 </Stack>
               </Stack>
               <Button
-                variant='contained'
-                onClick={()=>{
-                  navigateToRoom(detailBooking)
-                }}
+                variant="contained"
+                onClick={() => navigateToRoom(detailBooking)}
                 sx={{
                   bgcolor: "#98b720",
                   color: "white",
@@ -658,65 +790,49 @@ const ProfileView = ({
                   fontSize: "0.9rem",
                   minWidth: 120,
                   "&:hover": { bgcolor: "#7a9a1a" },
-                }}>
+                }}
+              >
                 {t("button_rebook")}
               </Button>
             </Stack>
           </Paper>
         )}
-        {detailBooking.status === "confirmed" &&
-          bestPayment?.status === "paid" && (
-            <Paper
-              elevation={0}
-              sx={{ borderRadius: "16px", bgcolor: "white", p: 2.5 }}>
-              <Stack
-                direction='row'
-                justifyContent='space-between'
-                alignItems='center'>
-                <Stack direction='row' spacing={2} alignItems='center'>
-                  <img src={pending} alt='Thành công' width={48} />
-                  <Stack>
-                    <Typography suppressHydrationWarning 
-                      fontWeight={700}
-                      fontSize='1rem'
-                      color='#98b720'>
-                      {t("status_waiting_checkin")}
-                    </Typography>
-                    <Typography suppressHydrationWarning  fontSize='0.8rem' color='#666' lineHeight={1.4}>
-                      {t("waiting_checkin_message")}
-                    </Typography>
-                  </Stack>
+
+        {detailBooking.status === "confirmed" && bestPayment?.status === "paid" && (
+          <Paper elevation={0} sx={{ borderRadius: "16px", bgcolor: "white", p: 2.5 }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Image src={pendingImg} alt="Pending" width={48} height={48} />
+                <Stack>
+                  <Typography fontWeight={700} fontSize="1rem" color="#98b720">
+                    {t("status_waiting_checkin")}
+                  </Typography>
+                  <Typography fontSize="0.8rem" color="#666" lineHeight={1.4}>
+                    {t("waiting_checkin_message")}
+                  </Typography>
                 </Stack>
               </Stack>
-            </Paper>
-          )}
+            </Stack>
+          </Paper>
+        )}
 
         {detailBooking.status === "pending" &&
-          (bestPayment?.status == "failed" ||
-            bestPayment?.status == "pending") && (
-            <Paper
-              elevation={0}
-              sx={{ borderRadius: "16px", bgcolor: "white", p: 2.5 }}>
-              <Stack
-                direction='row'
-                justifyContent='space-between'
-                alignItems='center'>
-                <Stack direction='row' spacing={2} alignItems='center'>
-                  <img src={pendingpayment} alt='Thành công' width={48} />
+          (bestPayment?.status === "failed" || bestPayment?.status === "pending") && (
+            <Paper elevation={0} sx={{ borderRadius: "16px", bgcolor: "white", p: 2.5 }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Image src={pendingPaymentImg} alt="Pending Payment" width={48} height={48} />
                   <Stack>
-                    <Typography suppressHydrationWarning 
-                      fontWeight={700}
-                      fontSize='1rem'
-                      color='#98b720'>
+                    <Typography fontWeight={700} fontSize="1rem" color="#98b720">
                       {t("status_waiting_payment")}
                     </Typography>
-                    <Typography suppressHydrationWarning  fontSize='0.8rem' color='#666' lineHeight={1.4}>
+                    <Typography fontSize="0.8rem" color="#666" lineHeight={1.4}>
                       {t("waiting_payment_message")}
                     </Typography>
                   </Stack>
                 </Stack>
                 <Button
-                  variant='contained'
+                  variant="contained"
                   disabled={loadingSubmit}
                   onClick={() =>
                     handleRetryPayment({
@@ -735,111 +851,81 @@ const ProfileView = ({
                     fontSize: "0.9rem",
                     minWidth: 120,
                     "&:hover": { bgcolor: "#7a9a1a" },
-                  }}>
+                  }}
+                >
                   {loadingSubmit ? (
                     <>
-                      <CircularProgress
-                        size={20}
-                        sx={{ color: "#fff", mr: 1 }}
-                      />
+                      <CircularProgress size={20} sx={{ color: "#fff", mr: 1 }} />
                       {t("button_loading_continue")}
                     </>
                   ) : (
-                    <> {t("button_continue_payment")}</>
+                    t("button_continue_payment")
                   )}
                 </Button>
               </Stack>
             </Paper>
           )}
-          
-        {(detailBooking.status === "cancelled" ||
-          detailBooking.status === "no_show") && (
-            <Paper
-              elevation={0}
-              sx={{ borderRadius: "16px", bgcolor: "white", p: 2.5 }}>
-              <Stack
-                direction='row'
-                justifyContent='space-between'
-                alignItems='center'>
-                <Stack direction='row' spacing={2} alignItems='center'>
-                  <img src={cancel} alt='Thành công' width={48} />
-                  <Stack>
-                    <Typography suppressHydrationWarning  fontWeight={700} fontSize='1rem' color='red'>
-                      {detailBooking.status === "cancelled" ?t("cancelled_status"): t("status_no_show")}
-                    </Typography>
-                    <Typography suppressHydrationWarning  fontSize='0.8rem' color='#666' lineHeight={1.4}>
-                      {detailBooking.status === "cancelled"?`${t("reason_modal_title") } : ${detailBooking?.cancel_reason}`:t("no_show_message")}
-                    </Typography>
-                  </Stack>
-                </Stack>
-                <Button
-                  variant='contained'
-                  onClick={()=>{
-                    navigateToRoom(detailBooking)
-                  }}
-                  sx={{
-                    bgcolor: "#98b720",
-                    color: "white",
-                    borderRadius: "50px",
-                    fontWeight: 600,
-                    textTransform: "none",
-                    px: 3,
-                    py: 1,
-                    fontSize: "0.9rem",
-                    minWidth: 120,
-                    "&:hover": { bgcolor: "#7a9a1a" },
-                  }}>
-                  {t("button_rebook")}
-                </Button>
-              </Stack>
-            </Paper>
-          )}
 
-        {/* LỰA CHỌN CỦA BẠN */}
-        <Paper
-          elevation={0}
-          sx={{ borderRadius: "16px", bgcolor: "white", p: 2.5 }}>
-          <Typography suppressHydrationWarning  fontWeight={600} mb={2} fontSize='1rem' color='#333'>
+        {(detailBooking.status === "cancelled" || detailBooking.status === "no_show") && (
+          <Paper elevation={0} sx={{ borderRadius: "16px", bgcolor: "white", p: 2.5 }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Image src={cancelImg} alt="Cancelled" width={48} height={48} />
+                <Stack>
+                  <Typography fontWeight={700} fontSize="1rem" color="red">
+                    {detailBooking.status === "cancelled" ? t("cancelled_status") : t("status_no_show")}
+                  </Typography>
+                  <Typography fontSize="0.8rem" color="#666" lineHeight={1.4}>
+                    {detailBooking.status === "cancelled"
+                      ? `${t("reason_modal_title")}: ${detailBooking?.cancel_reason}`
+                      : t("no_show_message")}
+                  </Typography>
+                </Stack>
+              </Stack>
+              <Button
+                variant="contained"
+                onClick={() => navigateToRoom(detailBooking)}
+                sx={{
+                  bgcolor: "#98b720",
+                  color: "white",
+                  borderRadius: "50px",
+                  fontWeight: 600,
+                  textTransform: "none",
+                  px: 3,
+                  py: 1,
+                  fontSize: "0.9rem",
+                  minWidth: 120,
+                  "&:hover": { bgcolor: "#7a9a1a" },
+                }}
+              >
+                {t("button_rebook")}
+              </Button>
+            </Stack>
+          </Paper>
+        )}
+
+        {/* Your Choice */}
+        <Paper elevation={0} sx={{ borderRadius: "16px", bgcolor: "white", p: 2.5 }}>
+          <Typography fontWeight={600} mb={2} fontSize="1rem" color="#333">
             {t("your_choice_title")}
           </Typography>
-          <Stack
-            direction={"row"}
-            flexWrap={"wrap"}
-            gap={2}
-            spacing={2}
-            alignItems='flex-start'>
-            {/* HÌNH ẢNH PHÒNG */}
-            <Box
-              sx={{
-                width: 120,
-                height: 120,
-                bgcolor: "#f0f0f0",
-                borderRadius: "12px",
-                overflow: "hidden",
-                flexShrink: 0,
-              }}>
-              <img
-                src={roomThumbnail}
-                width={120}
-                height={120}
-                style={{ objectFit: "cover" }}
-                alt='Phòng'
-              />
+          <Stack direction="row" flexWrap="wrap" gap={2} alignItems="flex-start">
+            <Box sx={{ width: 120, height: 120, bgcolor: "#f0f0f0", borderRadius: "12px", overflow: "hidden", flexShrink: 0 }}>
+              <Image src={roomThumbnail} alt="Phòng" width={120} height={120} style={{ objectFit: "cover" }} />
             </Box>
 
             <Stack spacing={0.5} flex={1}>
-              <Typography suppressHydrationWarning  fontWeight={600} fontSize='0.95rem' color='#333'>
+              <Typography fontWeight={600} fontSize="0.95rem" color="#333">
                 {hotelName}
               </Typography>
-              <Typography suppressHydrationWarning  fontSize='0.9rem' fontWeight={500} color='#333'>
+              <Typography fontSize="0.9rem" fontWeight={500} color="#333">
                 {roomName}
               </Typography>
-              <Typography suppressHydrationWarning  fontSize='0.8rem' color='#666'>
+              <Typography fontSize="0.8rem" color="#666">
                 {hotelAddress}
               </Typography>
             </Stack>
 
-            {/* BẢNG THỜI GIAN */}
             <Paper
               elevation={0}
               sx={{
@@ -849,47 +935,37 @@ const ProfileView = ({
                 border: "1px solid #98b720",
                 textAlign: "center",
                 width: "300px",
-              }}>
-              <Stack
-                direction='row'
-                spacing={0.5}
-                alignItems='center'
-                justifyContent='start'
-                mb={1}>
+              }}
+            >
+              <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="start" mb={1}>
                 <CheckCircleIcon sx={{ fontSize: 16, color: "#98b720" }} />
-                <Typography suppressHydrationWarning  fontSize='0.75rem' color='#98b720' fontWeight={600}>
+                <Typography fontSize="0.75rem" color="#98b720" fontWeight={600}>
                   {getRentTypeLabel()}
                 </Typography>
               </Stack>
               <Divider />
-              <Grid container spacing={0.5} mt={1} fontSize='0.7rem'>
+              <Grid container spacing={0.5} mt={1} fontSize="0.7rem">
                 <Grid item xs={4}>
-                  <Typography suppressHydrationWarning  color='#888' fontSize='0.75rem'>
+                  <Typography color="#888" fontSize="0.75rem">
                     {t("checkin_label")}
                   </Typography>
-                  <Typography suppressHydrationWarning  fontWeight={600} color='#333' fontSize='0.8rem'>
+                  <Typography fontWeight={600} color="#333" fontSize="0.8rem">
                     {checkInTime}
                   </Typography>
                 </Grid>
-                <Grid
-                  item
-                  xs={4}
-                  sx={{ borderLeft: "1px solid #ddd", textAlign: "center" }}>
-                  <Typography suppressHydrationWarning  color='#888' fontSize='0.75rem'>
+                <Grid item xs={4} sx={{ borderLeft: "1px solid #ddd", textAlign: "center" }}>
+                  <Typography color="#888" fontSize="0.75rem">
                     {t("checkout_label")}
                   </Typography>
-                  <Typography suppressHydrationWarning  fontWeight={600} color='#333' fontSize='0.8rem'>
+                  <Typography fontWeight={600} color="#333" fontSize="0.8rem">
                     {checkOutTime}
                   </Typography>
                 </Grid>
-                <Grid
-                  item
-                  xs={4}
-                  sx={{ borderLeft: "1px solid #ddd", textAlign: "center" }}>
-                  <Typography suppressHydrationWarning  color='#888' fontSize='0.75rem'>
+                <Grid item xs={4} sx={{ borderLeft: "1px solid #ddd", textAlign: "center" }}>
+                  <Typography color="#888" fontSize="0.75rem">
                     {detailBooking.rent_type === "daily" ? "Số đêm" : "Số giờ"}
                   </Typography>
-                  <Typography suppressHydrationWarning  fontWeight={600} color='#333' fontSize='0.8rem'>
+                  <Typography fontWeight={600} color="#333" fontSize="0.8rem">
                     {getDurationLabel()}
                   </Typography>
                 </Grid>
@@ -898,133 +974,117 @@ const ProfileView = ({
           </Stack>
         </Paper>
 
-        {/* THÔNG TIN NHẬN PHÒNG */}
-        <Paper
-          elevation={0}
-          sx={{ borderRadius: "16px", bgcolor: "white", p: 2.5 }}>
-          <Typography suppressHydrationWarning  fontWeight={600} mb={2} fontSize='1rem' color='#333'>
+        {/* Check-in Info */}
+        <Paper elevation={0} sx={{ borderRadius: "16px", bgcolor: "white", p: 2.5 }}>
+          <Typography fontWeight={600} mb={2} fontSize="1rem" color="#333">
             {t("checkin_info_title")}
           </Typography>
           <Stack spacing={2}>
-            <Stack
-              direction='row'
-              justifyContent='space-between'
-              alignItems='center'>
-              <Typography suppressHydrationWarning  fontSize='0.9rem' color='#666'>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography fontSize="0.9rem" color="#666">
                 {t("booking_code_label")}
               </Typography>
-              <Stack direction='row' spacing={0.5} alignItems='center'>
-                <Typography suppressHydrationWarning  fontWeight={600} color='#333' fontSize='0.95rem'>
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                <Typography fontWeight={600} color="#333" fontSize="0.95rem">
                   {detailBooking.booking_code}
                 </Typography>
-                <IconButton
-                  size='small'
-                  onClick={handleCopyCode}
-                  sx={{ color: "#98b720", p: 0.5 }}>
+                <IconButton size="small" onClick={handleCopyCode} sx={{ color: "#98b720", p: 0.5 }}>
                   <CopyIcon sx={{ fontSize: 16 }} />
                 </IconButton>
               </Stack>
             </Stack>
-            <Stack
-              direction='row'
-              justifyContent='space-between'
-              alignItems='center'>
-              <Typography suppressHydrationWarning  fontSize='0.9rem' color='#666'>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography fontSize="0.9rem" color="#666">
                 {t("phone_label")}
               </Typography>
-              <Typography suppressHydrationWarning  fontWeight={600} color='#333' fontSize='0.95rem'>
+              <Typography fontWeight={600} color="#333" fontSize="0.95rem">
                 +84 {context.state?.user?.phone?.slice(3)}
               </Typography>
             </Stack>
-            <Stack
-              direction='row'
-              justifyContent='space-between'
-              alignItems='center'>
-              <Typography suppressHydrationWarning  fontSize='0.9rem' color='#666'>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography fontSize="0.9rem" color="#666">
                 {t("full_name_label")}
               </Typography>
-              <Typography suppressHydrationWarning  fontWeight={600} color='#333' fontSize='0.95rem'>
+              <Typography fontWeight={600} color="#333" fontSize="0.95rem">
                 {context.state?.user?.name}
               </Typography>
             </Stack>
           </Stack>
         </Paper>
 
-        {/* CHI TIẾT THANH TOÁN */}
-        <Paper
-          elevation={0}
-          sx={{ borderRadius: "16px", bgcolor: "white", p: 2.5 }}>
-          <Typography suppressHydrationWarning  fontWeight={600} mb={2} fontSize='1rem' color='#333'>
+        {/* Payment Details */}
+        <Paper elevation={0} sx={{ borderRadius: "16px", bgcolor: "white", p: 2.5 }}>
+          <Typography fontWeight={600} mb={2} fontSize="1rem" color="#333">
             {t("payment_details_title")}
           </Typography>
           <Stack spacing={2}>
-            <Stack direction='row' justifyContent='space-between'>
-              <Typography suppressHydrationWarning  fontSize='0.9rem' color='#666'>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography fontSize="0.9rem" color="#666">
                 {t("payment_status_label")}
               </Typography>
-              <Typography suppressHydrationWarning 
+              <Typography
                 fontWeight={600}
                 color={bestPayment?.status === "paid" ? "#98b720" : "#ff4444"}
-                fontSize='0.95rem'>
+                fontSize="0.95rem"
+              >
                 {paymentStatus}
               </Typography>
             </Stack>
-            <Stack direction='row' justifyContent='space-between'>
-              <Typography suppressHydrationWarning  fontSize='0.9rem' color='#666'>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography fontSize="0.9rem" color="#666">
                 {t("payment_method_label")}
               </Typography>
-              <Typography suppressHydrationWarning  fontWeight={600} color='#333' fontSize='0.95rem'>
+              <Typography fontWeight={600} color="#333" fontSize="0.95rem">
                 {paymentMethodLabel}
               </Typography>
             </Stack>
-            <Stack direction='row' justifyContent='space-between'>
-              <Typography suppressHydrationWarning  fontSize='0.9rem' color='#666'>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography fontSize="0.9rem" color="#666">
                 {t("room_price_label")}
               </Typography>
-              <Typography suppressHydrationWarning  fontWeight={600} color='#333' fontSize='0.95rem'>
+              <Typography fontWeight={600} color="#333" fontSize="0.95rem">
                 {totalPrice}đ
               </Typography>
             </Stack>
             <Divider sx={{ bgcolor: "#eee" }} />
-            <Stack direction='row' justifyContent='space-between'>
-              <Typography suppressHydrationWarning  fontSize='1rem' fontWeight={700} color='#333'>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography fontSize="1rem" fontWeight={700} color="#333">
                 {t("total_payment_label")}
               </Typography>
-              <Typography suppressHydrationWarning  fontSize='1.1rem' fontWeight={700} color='#333'>
+              <Typography fontSize="1.1rem" fontWeight={700} color="#333">
                 {totalPrice}đ
               </Typography>
             </Stack>
           </Stack>
         </Paper>
 
-        {/* FOOTER */}
+        {/* Footer */}
         <Stack
-          direction='row'
-          justifyContent='space-between'
-          alignItems='center'
+          direction={{ xs: "column", sm: "row" }}
+          justifyContent="space-between"
+          alignItems={{ xs: "flex-start", sm: "center" }}
           mt={3}
-          flexDirection={isMobile ? "column" : "row"}
-          spacing={2}>
-          <Typography suppressHydrationWarning 
+          spacing={2}
+        >
+          <Typography
             onClick={() => {
-              if(detailBooking.status =="confirmed" || detailBooking.status=="pending"){
+              if (detailBooking.status === "confirmed" || detailBooking.status === "pending") {
                 setOpenCancelBooking(true);
-
-              }else{
-                toast.warning("Đặt phòng đã quá thời gian huỷ")
+              } else {
+                toast.warning("Đặt phòng đã quá thời gian huỷ");
               }
             }}
-            fontSize='16px'
-            color='rgba(43, 47, 56, 1)'
-            sx={{ textDecoration: "underline", cursor: "pointer" }}>
+            fontSize="16px"
+            color="rgba(43, 47, 56, 1)"
+            sx={{ textDecoration: "underline", cursor: "pointer" }}
+          >
             {t("cancellation_policy")}
           </Typography>
+
           <Button
             fullWidth={isMobile}
-            onClick={() => {
-              handleSubmit();
-            }}
-            variant='contained'
+            onClick={handleSubmit}
+            variant="contained"
             disabled={loadingSubmit}
             sx={{
               bgcolor: "#98b720",
@@ -1037,31 +1097,31 @@ const ProfileView = ({
               fontSize: "1rem",
               "&:hover": { bgcolor: "#7a9a1a" },
               minWidth: isMobile ? "100%" : "220px",
-            }}>
+            }}
+          >
             {loadingSubmit ? (
               <>
                 <CircularProgress size={20} sx={{ color: "#fff", mr: 1 }} />
-                {getBookingNameStatus(detailBooking)}
+                {getBookingNameStatus()}
               </>
             ) : (
-              <>{getBookingNameStatus(detailBooking)}</>
+              getBookingNameStatus()
             )}
           </Button>
         </Stack>
       </Stack>
     );
   };
-  console.log("AAAA historyBooking", historyBooking);
+
   return (
     <Box sx={{ bgcolor: "#f9f9f9", py: { xs: 2, md: 6 } }}>
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
-        maxWidth='xs'
+        maxWidth="xs"
         fullWidth
-        PaperProps={{
-          sx: { borderRadius: "16px" },
-        }}>
+        PaperProps={{ sx: { borderRadius: "16px" } }}
+      >
         <DialogTitle sx={{ textAlign: "center", pt: 4, pb: 1 }}>
           <Box sx={{ position: "relative" }}>
             <Box
@@ -1075,33 +1135,26 @@ const ProfileView = ({
                 justifyContent: "center",
                 mx: "auto",
                 mb: 2,
-              }}>
-              <img src={logout} alt='' />
+              }}
+            >
+              <Image src={logoutImg} alt="Logout" width={40} height={40} />
             </Box>
-            <IconButton
-              onClick={() => setDeleteDialogOpen(false)}
-              sx={{ position: "absolute", top: -40, left: -30 }}>
-              <Close />
+            <IconButton onClick={() => setDeleteDialogOpen(false)} sx={{ position: "absolute", top: -40, left: -30 }}>
+              <CloseIcon />
             </IconButton>
           </Box>
         </DialogTitle>
 
         <DialogContent sx={{ textAlign: "center", px: 4, pb: 3 }}>
-          <Typography suppressHydrationWarning  fontWeight={600} fontSize='18px' mb={1}>
+          <Typography fontWeight={600} fontSize="18px" mb={1}>
             {t("logout_dialog_title")}
           </Typography>
-          <Typography suppressHydrationWarning  fontSize='14px' color='#666'>
+          <Typography fontSize="14px" color="#666">
             {t("logout_dialog_message")}
           </Typography>
         </DialogContent>
 
-        <DialogActions
-          sx={{
-            justifyContent: "center",
-            pb: 4,
-            gap: 2,
-            flexDirection: "column",
-          }}>
+        <DialogActions sx={{ justifyContent: "center", pb: 4, gap: 2, flexDirection: "column" }}>
           <Button
             onClick={() => {
               localStorage.removeItem("user");
@@ -1110,54 +1163,48 @@ const ProfileView = ({
 
               context.dispatch({
                 type: "LOGOUT",
-                payload: {
-                  ...context.state,
-                  user: {},
-                },
+                payload: { ...context.state, user: {} },
               });
-              navigate("/");
-              setDeleteDialogOpen(true);
+              router.push("/");
+              setDeleteDialogOpen(false);
             }}
-            variant='contained'
+            variant="contained"
             sx={{
               borderRadius: "24px",
               textTransform: "none",
               bgcolor: "#98b720",
               "&:hover": { bgcolor: "#8ab020" },
               width: "100%",
-            }}>
+            }}
+          >
             {t("logout_confirm_button")}
           </Button>
           <Button
             onClick={() => setDeleteDialogOpen(false)}
-            variant='outlined'
+            variant="outlined"
             sx={{
               borderRadius: "24px",
               textTransform: "none",
               borderColor: "#ddd",
               color: "#666",
               width: "100%",
-              ml: "0px !important",
-            }}>
+            }}
+          >
             {t("logout_cancel_button")}
           </Button>
         </DialogActions>
       </Dialog>
-     
-      <Container maxWidth='lg'>
+
+      <Container maxWidth="lg">
         <Grid container spacing={3}>
           <Grid item xs={12} md={4} lg={3.5}>
             <Sidebar />
           </Grid>
           <Grid item xs={12} md={8} lg={8.5}>
-            {detailBooking && (
-              <MainContent setDetailBooking={setDetailBooking} />
-            )}
-            {activeMenu == t("profile_menu") && <Account context={context} />}
-            {activeMenu == t("account_settings_menu") && (
-              <AccountSettingsPage setActiveMenu={setActiveMenu} />
-            )}
-            {activeMenu == t("my_bookings_menu") && !detailBooking && (
+            {detailBooking && <MainContent />}
+            {activeMenu === t("profile_menu") && <Account context={context} />}
+            {activeMenu === t("account_settings_menu") && <AccountSettingsPage setActiveMenu={setActiveMenu} />}
+            {activeMenu === t("my_bookings_menu") && !detailBooking && (
               <MyBookingsPage
                 historyBooking={historyBooking}
                 setDetailBooking={setDetailBooking}
@@ -1172,316 +1219,15 @@ const ProfileView = ({
           </Grid>
         </Grid>
       </Container>
+
       <CancelBookingModal
         open={openCancelBooking}
-        onClose={() => {
-          setOpenCancelBooking(false);
-        }}
-        detailBooking={detailBooking}
+        onClose={() => setOpenCancelBooking(false)}
         getHistoryBooking={getHistoryBooking}
+        detailBooking={detailBooking}
       />
     </Box>
   );
 };
 
 export default ProfileView;
-
-import { TextField } from "@mui/material";
-import { getStatusPayment, retryPayment } from "../../service/payment";
-import { getErrorMessage, parseName } from "../../utils/utils";
-import { useTranslation } from "react-i18next";
-
-const ReasonModal = ({ open, onClose, onSubmit, loadingSubmit }) => {
-  const [reason, setReason] = React.useState("");
-  const { t } = useTranslation();
-  const handleSubmit = async () => {
-    onSubmit(reason); // trả lý do về parent
-    setReason(""); // clear input
-  };
-
-  const handleClose = () => {
-    setReason("");
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onClose={handleClose} maxWidth='xs' fullWidth>
-      <DialogTitle>{t("reason_modal_title")}</DialogTitle>
-
-      <DialogContent>
-        <TextField
-          multiline
-          rows={3}
-          placeholder={t("reason_placeholder")}
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          fullWidth
-          variant='outlined'
-          inputProps={{ maxLength: 1000 }}
-          helperText={`${reason.length}/1000`}
-          sx={{
-            mb: 3,
-            "& .MuiOutlinedInput-root": {
-              borderRadius: "12px",
-              "&.Mui-focused fieldset": {
-                borderColor: "#98b720",
-                borderWidth: 1.5,
-              },
-            },
-          }}
-        />
-      </DialogContent>
-
-      <DialogActions>
-        <Button
-          variant='outlined'
-          sx={{ borderColor: "#98b720", color: "#98b720" }}
-          onClick={handleClose}>
-          {t("reason_cancel_button")}
-        </Button>
-        <Button
-          variant='contained'
-          sx={{ background: "#98b720", color: "white" }}
-          onClick={handleSubmit}
-          disabled={!reason.trim()}>
-          {loadingSubmit ? (
-            <CircularProgress size={20} sx={{ color: "#fff", mr: 1 }} />
-          ) : (
-            t("reason_submit_button")
-          )}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
-
-import { Radio, RadioGroup, FormControlLabel } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import { useNavigateToRoom } from "../../components/useNavigateToRoom";
-
-const REASON_KEYS = [
-  "change_time",
-  "change_room",
-  "change_hotel",
-  "no_need",
-  "hotel_request",
-  "try_experience",
-  "price_higher",
-  "other",
-];
-
-function CancelBookingModal({
-  open,
-  onClose,
-  getHistoryBooking,
-  detailBooking,
-}) {
-  const { t } = useTranslation();
-
-  const [reason, setReason] = useState("");
-  const [onfirmCancelDialogOpen, setConfirmCancelDialogOpen] = useState(false);
-  const [note, setNote] = useState("");
-
-  // reset state khi đóng modal
-  useEffect(() => {
-    if (!onfirmCancelDialogOpen) {
-      setReason("");
-      setNote("");
-    }
-  }, [onfirmCancelDialogOpen]);
-
-  const handleSubmit = async () => {
-    console.log("Toan",reason)
-    if (!reason) return;
-    try {
-      let result = await cancelBooking({
-        id: detailBooking.booking_id,
-        reason: reason + note,
-      });
-      if (result?.code == "OK") {
-        toast.success(result?.message);
-        getHistoryBooking();
-        setConfirmCancelDialogOpen(false)
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const isDisableSubmit = !reason || (reason === "other" && !note.trim());
-
-  return (
-    <>
-     <Dialog
-        open={onfirmCancelDialogOpen}
-        onClose={() => setConfirmCancelDialogOpen(false)}
-        maxWidth='xs'
-        fullWidth
-        PaperProps={{
-          sx: { borderRadius: "16px" },
-        }}>
-        <DialogTitle sx={{ textAlign: "center", pt: 4, pb: 1 }}>
-          <Box sx={{ position: "relative" }}>
-            <Box
-              sx={{
-                width: 64,
-                height: 64,
-                bgcolor: "#ffebee",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                mx: "auto",
-                mb: 2,
-              }}>
-              <img src={logout} alt='' />
-            </Box>
-            <IconButton
-              onClick={() => setConfirmCancelDialogOpen(false)}
-              sx={{ position: "absolute", top: -40, left: -30 }}>
-              <Close />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-
-        <DialogContent sx={{ textAlign: "center", px: 4, pb: 3 }}>
-          <Typography suppressHydrationWarning  fontWeight={600} fontSize='18px' mb={1}>
-            {t("button_cancel_booking")}
-          </Typography>
-          <Typography suppressHydrationWarning  fontSize='14px' color='#666'>
-            {t("cancel_booking_confirm")}
-          </Typography>
-        </DialogContent>
-
-        <DialogActions
-          sx={{
-            justifyContent: "center",
-            pb: 4,
-            gap: 2,
-            flexDirection: "column",
-          }}>
-          <Button
-            onClick={() => {
-             
-              handleSubmit()
-              
-            }}
-            variant='contained'
-            sx={{
-              borderRadius: "24px",
-              textTransform: "none",
-              bgcolor: "#98b720",
-              "&:hover": { bgcolor: "#8ab020" },
-              width: "100%",
-            }}>
-            {t("logout_confirm_button")}
-          </Button>
-          <Button
-            onClick={()=>{
-              setConfirmCancelDialogOpen(false);
-            }}
-            variant='outlined'
-            sx={{
-              borderRadius: "24px",
-              textTransform: "none",
-              borderColor: "#ddd",
-              color: "#666",
-              width: "100%",
-              ml: "0px !important",
-            }}>
-            {t("logout_cancel_button")}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
-      {/* ===== HEADER ===== */}
-      <DialogTitle
-        sx={{
-          fontWeight: 600,
-          fontSize: "1.1rem",
-        }}>
-        {t("cancel_booking.title")}
-        <IconButton
-          onClick={onClose}
-          sx={{
-            position: "absolute",
-            right: 40,
-            top: 26,
-          }}>
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-
-      {/* ===== CONTENT ===== */}
-      <DialogContent>
-        <RadioGroup value={reason} onChange={(e) => setReason(e.target.value)}>
-          {REASON_KEYS.map((key) => (
-            <FormControlLabel
-              key={key}
-              value={t(`cancel_booking.reasons.${key}`)}
-              control={<Radio />}
-              label={t(`cancel_booking.reasons.${key}`)}
-              labelPlacement='start'
-              sx={{
-                mb: 0.5,
-                justifyContent: "space-between",
-                width: "100%",
-                marginLeft: 0,
-              }}
-            />
-          ))}
-        </RadioGroup>
-
-        {/* ===== OTHER REASON ===== */}
-        {reason === t(`cancel_booking.reasons.other`) && (
-          <Box mt={1}>
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              placeholder={t("cancel_booking.placeholder_other")}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              inputProps={{ maxLength: 1000 }}
-            />
-            <Typography suppressHydrationWarning 
-              variant='caption'
-              color='text.secondary'
-              sx={{
-                display: "block",
-                textAlign: "right",
-                mt: 0.5,
-              }}>
-              {note.length}/1000
-            </Typography>
-          </Box>
-        )}
-      </DialogContent>
-
-      {/* ===== FOOTER ===== */}
-      <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button
-          fullWidth
-          variant='contained'
-          disabled={isDisableSubmit}
-          onClick={()=>{
-            setConfirmCancelDialogOpen(true)
-            onClose();
-          }}
-          sx={{
-            height: 44,
-            borderRadius: 999,
-            fontWeight: 600,
-            bgcolor: "#98b720",
-            "&.Mui-disabled": {
-              bgcolor: "#e0e0e0",
-              color: "#9e9e9e",
-            },
-          }}>
-          {t("cancel_booking.submit")}
-        </Button>
-      </DialogActions>
-    </Dialog>
-    </>
-  );
-}

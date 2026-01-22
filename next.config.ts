@@ -5,6 +5,8 @@ const withNextIntl = require('next-intl/plugin')(
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: false, // Tạm tắt Strict Mode
+  swcMinify: true,
   images: {
     remotePatterns: [
       {

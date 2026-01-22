@@ -3197,6 +3197,7 @@ const ItemHotel = ({
   const loadMoreRef = useRef(null);
   const isRequesting = useRef(false);
   const t = useTranslations();
+  const locale = useLocale();
   useEffect(() => {
     if (!activeHotel) return;
 
@@ -3376,7 +3377,7 @@ const ItemHotel = ({
                           src={
                             JSON.parse(hotel.images)[0] || "/default-hotel.jpg"
                           }
-                          alt={parseName(hotel.name)}
+                          alt={parseName(hotel.name,locale)}
                           fill
                           style={{
                             objectFit: "cover",
@@ -3400,14 +3401,14 @@ const ItemHotel = ({
                             suppressHydrationWarning
                             fontWeight={600}
                             fontSize='1.1rem'>
-                            {parseName(hotel.name)}
+                            {parseName(hotel.name,locale)}
                           </Typography>
                           <Typography
                             suppressHydrationWarning
                             fontSize='0.85rem'
                             color='#999'
                             mt={0.5}>
-                            {parseName(hotel.address)}
+                            {parseName(hotel.address,locale)}
                           </Typography>
                           <Stack
                             direction='row'
@@ -3455,7 +3456,7 @@ const ItemHotel = ({
                               suppressHydrationWarning
                               fontSize='0.8rem'
                               color='#666'>
-                              ({parseName(hotel?.address) || 100})
+                              ({parseName(hotel?.address,locale) || 100})
                             </Typography>
                           </Stack>
                         </Box>
@@ -3602,7 +3603,7 @@ import { ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
 
 const SortButton = ({ queryHotel, setQueryHotel }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { t } = useTranslation();
+  const  t  = useTranslations("sort");
   const sortOptions = [
     { label: t("most_relevant"), value: "all" },
     { label: t("distance_near_to_far"), value: "distance" },

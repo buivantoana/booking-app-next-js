@@ -63,6 +63,9 @@ body {
   padding: 0;
   /* box-sizing: border-box; */
 }
+.main-slider .slick-dots {
+  gap: 12px;   /* chỉ ảnh hưởng slider này */
+}
 .inputStyle {
   width: 3rem !important;
   height: 3rem;

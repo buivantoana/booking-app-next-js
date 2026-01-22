@@ -1,8 +1,9 @@
-import { useNavigate } from "react-router-dom";
+
 import dayjs from "dayjs";
+import { useRouter } from "next/navigation";
 
 export const useNavigateToRoom = () => {
-  const navigate = useNavigate();
+  const navigate = useRouter();
 
   return (booking) => {
     if (!booking) return;
@@ -38,6 +39,6 @@ export const useNavigateToRoom = () => {
       name: hotelName,
     });
 
-    navigate(`/room/${booking.hotel_id}?${params.toString()}`);
+    navigate.push(`/room/${booking.hotel_id}?${params.toString()}`);
   };
 };

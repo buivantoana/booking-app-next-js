@@ -55,6 +55,7 @@ import "dayjs/locale/ko";
 import "dayjs/locale/ja";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 // === POPUP CHUNG ===
 interface DateRangePickerProps {
   open: boolean;
@@ -266,10 +267,11 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     slots={{
                     
                       day: (props) => {
+                        const { disableHighlightToday, ...validProps } = props; 
                         const isSelected = checkIn?.isSame(props.day, "day");
                         return (
                           <Button
-                            {...props}
+                            {...validProps}
                             onClick={() => handleDateSelect(props.day)}
                             sx={{
                               minWidth: 36,
@@ -605,7 +607,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
 const SearchBarWithDropdown = ({ location, address }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const navigate = ()=>{};
+  const navigate = useRouter();
   const [bookingType, setBookingType] = useState<
     "hourly" | "overnight" | "daily"
   >("hourly");
@@ -627,6 +629,7 @@ const SearchBarWithDropdown = ({ location, address }) => {
   const [dataLoading, setDataLoading] = useState(false);
   const selectingRef = useRef(false);
   const  t  = useTranslations();
+  const locale = useLocale();
   const geoResolveRef = useRef(null);
   const normalize = (str = "") =>
     str
@@ -856,7 +859,7 @@ const SearchBarWithDropdown = ({ location, address }) => {
 
     const queryString = new URLSearchParams(searchParams).toString();
 
-    navigate(`/rooms?${queryString}`);
+    navigate.push(`/rooms?${queryString}`);
   };
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -1142,7 +1145,7 @@ const SearchBarWithDropdown = ({ location, address }) => {
                                   navigate(
                                     `/room/${loc.id}?${new URLSearchParams(
                                       current
-                                    ).toString()}&name=${parseName(loc.name)}`
+                                    ).toString()}&name=${parseName(loc.name,locale)}`
                                   );
                                 }}
                                 sx={{
@@ -1160,7 +1163,7 @@ const SearchBarWithDropdown = ({ location, address }) => {
                                 <Box>
 
                                   <ListItemText
-                                    primary={parseName(loc?.name)}
+                                    primary={parseName(loc?.name,locale)}
                                     primaryTypographyProps={{
                                       fontSize: "0.95rem",
                                       color: "#333",
@@ -1168,7 +1171,7 @@ const SearchBarWithDropdown = ({ location, address }) => {
                                     }}
                                   />
                                   <ListItemText
-                                    primary={parseName(loc?.address)}
+                                    primary={parseName(loc?.address,locale)}
                                     primaryTypographyProps={{
                                       fontSize: "0.95rem",
                                       color: "#333",
