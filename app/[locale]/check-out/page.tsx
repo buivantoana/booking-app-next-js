@@ -2,8 +2,22 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import CheckOutController from "@/pages/check_out/CheckOutController";
 import LoginController from "@/pages/login/LoginController";
+import { Metadata } from "next";
 
 import Image from "next/image";
+export const metadata: Metadata = {
+  title: "Thanh toán",
+  description: "Xác nhận và thanh toán đơn đặt phòng",
+  icons: {
+    icon: [
+      {
+        url: "/icons/favicon.png",
+        type: "image/png",
+        sizes: "32x32",
+      },
+    ],
+  },
+};
 
 export default function Login() {
   return (

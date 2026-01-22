@@ -33,7 +33,7 @@ import { getLocation } from "../../service/hotel";
 
 import { Phone } from "@mui/icons-material";
 import { toast } from "react-toastify";
-import { useTranslation } from "react-i18next";
+
 import { usePathname } from "@/translation/navigation";
 import { useTranslations } from "next-intl";
 

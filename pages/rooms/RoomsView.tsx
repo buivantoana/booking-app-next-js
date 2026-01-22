@@ -2276,32 +2276,36 @@ const RoomsView = ({
 
   // Khi focus: hiển thị số thô
   const handleMinFocus = () => {
-    setIsMinFocused(true);
+   
     setMinPriceRaw(priceRange[0] === 0 ? "" : priceRange[0].toString());
+    setIsMinFocused(true);
   };
 
   const handleMaxFocus = () => {
-    setIsMaxFocused(true);
+   
     setMaxPriceRaw(
       priceRange[1] >= 10000000 ? "10000000" : priceRange[1].toString()
     );
+    setIsMaxFocused(true);
   };
 
   // Khi blur: format lại đẹp và cập nhật priceRange
   const handleMinBlur = () => {
-    setIsMinFocused(false);
+   
     const num = parseInt(minPriceRaw.replace(/[^0-9]/g, "") || "0");
     const newMin = Math.max(0, Math.min(num, priceRange[1]));
     setPriceRange([newMin, priceRange[1]]);
     // Không cần set lại raw, vì focus sẽ set lại
+    setIsMinFocused(false);
   };
 
   const handleMaxBlur = () => {
-    setIsMinFocused(false);
+   
     const num = parseInt(maxPriceRaw.replace(/[^0-9]/g, "") || "0");
     const newMax = Math.min(10000000, Math.max(num, priceRange[0]));
     setPriceRange([priceRange[0], newMax]);
     // Không set raw ở đây
+    setIsMinFocused(false);
   };
 
   // onChange: chỉ cập nhật raw (giữ nguyên số khi gõ)
@@ -3026,7 +3030,7 @@ const FilterMap = ({
           </Box>
         </Grid>
         <Grid item xs={12} md={6.8}>
-          <LoadScript googleMapsApiKey='AIzaSyASJk1hzLv6Xoj0fRsYnfuO6ptOXu0fZsc'>
+         
             <GoogleMap
               mapContainerStyle={containerStyle}
               center={center}
@@ -3058,7 +3062,7 @@ const FilterMap = ({
                 return (
                   <Marker
                     key={hotel.id}
-                    position={{ lat: hotel.latitude, lng: hotel.longitude }}
+                    position={{ lat: Number(hotel.latitude), lng: Number(hotel.longitude) }}
                     onClick={() => setActiveHotel(hotel)}
                     label={{
                       text: priceText,
@@ -3171,7 +3175,7 @@ const FilterMap = ({
                 </InfoWindow>
               )}
             </GoogleMap>
-          </LoadScript>
+          
         </Grid>
       </Grid>
     </>
@@ -3725,7 +3729,7 @@ import SearchBarWithDropdown from "../../components/SearchBarWithDropdownHeader"
 import gift from "../../images/image 8.png";
 import { getLocation } from "../../service/hotel";
 import { parseName } from "../../utils/utils";
-import { useTranslation } from "react-i18next";
+
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useBookingContext } from "@/lib/context";

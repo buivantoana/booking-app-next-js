@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { LocationOn, ArrowForwardIos } from '@mui/icons-material';
 import { useRouter } from 'next/navigation'; // ← Thay thế navigate
-import { useTranslation } from 'react-i18next';
+
 import { useBookingContext } from '@/lib/context'; // context đã migrate
 import qr from '../../images/image 5.png';
 import left from '../../images/Frame 1321317998.png';

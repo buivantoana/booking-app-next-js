@@ -34,10 +34,7 @@ import { toast } from "react-toastify";
 
 import dynamic from "next/dynamic";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-const AppleLogin = dynamic(
-  () => import("react-apple-login").then((mod) => mod.default), // hoặc mod.AppleLogin nếu export tên
-  { ssr: false } // ← Quan trọng: tắt server-side render
-);
+
 import { useGoogleLogin } from "@react-oauth/google";
 import {
   getErrorMessage,

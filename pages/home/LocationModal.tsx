@@ -21,7 +21,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CheckIcon from '@mui/icons-material/Check';
-import { useTranslation } from 'react-i18next';
+import { useTranslations } from 'next-intl';
+
 
 interface LocationModalProps {
   open: boolean;
@@ -32,7 +33,7 @@ interface LocationModalProps {
 }
 
 function LocationModal({ open, onClose, onSelect, location, address }: LocationModalProps) {
-  const { t } = useTranslation();
+  const  t  = useTranslations();
   const [search, setSearch] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const [filter, setFilter] = useState<any[]>(location);

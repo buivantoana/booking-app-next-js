@@ -1,11 +1,14 @@
+'use client';
 import { Box, Button, Typography } from "@mui/material";
 import React from "react";
 import not_found from "../images/dribbble_1.gif";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+
 type Props = {};
 
 const NotFound = (props: Props) => {
-  const navigate: any = useNavigate();
+  const navigate: any = useRouter();
   return (
     <Box
       position={"fixed"}
@@ -20,13 +23,13 @@ const NotFound = (props: Props) => {
         gap: "20px",
       }}>
       <Box display={"flex"} alignItems={"center"} flexDirection={"column"}>
-        <img src={not_found} width={700} alt='' />
+        <Image src={not_found} width={700} alt='' />
         <Typography suppressHydrationWarning  variant='h6'>
           Trang bạn tìm kiếm không có sẵn hoặc không khả dụng
         </Typography>
         <Button
           onClick={() => {
-            navigate("/");
+            navigate.push("/");
           }}
           sx={{
             mt: "30px",

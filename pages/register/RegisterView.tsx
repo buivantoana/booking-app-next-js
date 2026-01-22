@@ -36,7 +36,7 @@ import {
   normalizePhoneForAPI,
   validateChar,
 } from "../../utils/utils";
-import { useTranslation } from "react-i18next"; // ← Thêm import
+
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -44,7 +44,7 @@ import "dayjs/locale/vi";
 import google from "../../images/Social media logo.png";
 import apple from "../../images/Group.png";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
-import AppleLogin from "react-apple-login";
+
 import { useBookingContext } from "@/lib/context";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";

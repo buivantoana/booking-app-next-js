@@ -1177,7 +1177,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                   {/* Địa điểm */}
                   <Box
                     sx={{
-                      flex: pathname == "/" ? "180px 0 0" : "250px 0 0",
+                      flex: pathname == "/" ? "180px 0 0" : "200px 0 0",
                       position: "relative",
                     }}>
                     <TextField

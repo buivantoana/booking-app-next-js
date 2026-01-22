@@ -1,19 +1,24 @@
-// components/GuestRoute.tsx
-import { Navigate } from "react-router-dom";
-import { useLocalStorage } from "../hooks/useStorage";
+'use client';
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface GuestRouteProps {
-  children: JSX.Element;
- 
+  children: React.ReactNode;
 }
 
 const GuestRoute = ({ children }: GuestRouteProps) => {
-    let user = localStorage.getItem("access_token")
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
+  const router = useRouter();
 
-  return children;
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+
+    if (token) {
+      router.replace("/"); // đã login → đá về home
+    }
+  }, [router]);
+
+  return <>{children}</>;
 };
 
 export default GuestRoute;

@@ -1,13 +1,20 @@
-import { Navigate } from "react-router-dom";
-import { useLocalStorage } from "../hooks/useStorage";
+'use client';
 
-const PrivateRouter = ({ test, children }: any) => {
-  const user = localStorage.getItem("access_token");
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-  if (user) {
-    return <>{children}</>;
-  }
-  return <Navigate to={"/login"} />;
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      router.replace("/login");
+    }
+  }, [router]);
+
+  return <>{children}</>;
 };
 
-export default PrivateRouter;
+export default PrivateRoute;

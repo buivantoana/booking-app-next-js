@@ -6,6 +6,7 @@ import { usePathname } from "@/translation/navigation";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getAmenities, getAttribute, searchHotel } from "../../service/hotel";
 import { facilities } from "../../utils/utils";
+import { LoadScript } from "@react-google-maps/api";
 
 type Props = {};
 
@@ -126,6 +127,7 @@ const RoomsController = (props: Props) => {
   };
   console.log("AAAAA page", page);
   return (
+    <LoadScript googleMapsApiKey='AIzaSyASJk1hzLv6Xoj0fRsYnfuO6ptOXu0fZsc'>
     <RoomsView
       dataHotel={dataHotel}
       amenities={amenities}
@@ -142,6 +144,7 @@ const RoomsController = (props: Props) => {
       searchParams={searchParams}
       loadingScroll={loadingScroll}
     />
+    </LoadScript>
   );
 };
 

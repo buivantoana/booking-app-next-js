@@ -104,7 +104,7 @@ const HotelCard = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const router = useRouter();
-  const { t } = useTranslation();
+  const  t  = useTranslations();
   return (
     <Card
       elevation={3}
@@ -262,7 +262,7 @@ const ListRoom = ({
   data: any[];
 }) => {
   const router = useRouter();
-  const { t } = useTranslation();
+  const  t  = useTranslations();
   const settings = {
     dots: false,
     infinite: true,
@@ -373,7 +373,8 @@ const ListRoom = ({
 export default ListRoom;
 
 import { Skeleton } from "@mui/material";
-import { useTranslation } from "react-i18next";
+
+import { useTranslations } from "next-intl";
 
 const HotelCardSkeleton = () => {
   return (
