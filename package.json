@@ -61,6 +61,7 @@
     "react-star-ratings": "^2.3.0",
     "react-toastify": "^10.0.6",
     "styled-components": "^6.3.8",
+
     "yet-another-react-lightbox": "^3.28.0",
     "yup": "^1.7.1"
   },

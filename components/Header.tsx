@@ -68,7 +68,7 @@ export default function Header() {
         pathname.startsWith("/room")
       ) {
         try {
-          const result = await getLocation();
+          const result = await getLocation({});
           if (result?.locations) {
             setLocationAddress(result.locations);
           }

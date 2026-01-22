@@ -1,4 +1,3 @@
-// src/i18n/navigation.ts
 'use client';
 
 import { createNavigation } from 'next-intl/navigation';
