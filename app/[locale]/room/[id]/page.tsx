@@ -38,7 +38,7 @@ export async function generateMetadata(
     icons: {
       icon: [
         {
-          url: "/icons/favicon.png",
+          url: "/icons/icon.png",
           type: "image/png",
           sizes: "32x32",
         },
