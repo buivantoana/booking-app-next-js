@@ -1,6 +1,6 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import LoginController from "@/pages/login/LoginController";
+import LoginController from "@/page/login/LoginController";
 
 import Image from "next/image";
 import type { Metadata } from "next";
@@ -21,10 +21,10 @@ export const metadata: Metadata = {
 };
 export default function Login() {
   return (
-   <GuestRoute>
+   <>
    <Header />
    <LoginController/>
    <Footer />
-   </GuestRoute>
+   </>
   );
 }

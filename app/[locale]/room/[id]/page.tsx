@@ -1,6 +1,6 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import DetailRoomController from "@/pages/detail_room/DetailRoomController";
+import DetailRoomController from "@/page/detail_room/DetailRoomController";
 
 import Image from "next/image";
 import type { Metadata } from "next";

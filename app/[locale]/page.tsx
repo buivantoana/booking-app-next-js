@@ -1,6 +1,6 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import HomeController from "@/pages/home/HomeController";
+import HomeController from "@/page/home/HomeController";
 import { Metadata } from "next";
 import Image from "next/image";
 

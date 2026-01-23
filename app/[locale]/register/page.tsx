@@ -1,7 +1,7 @@
 import Footer from "@/components/Footer";
 import GuestRoute from "@/components/GuestRoute";
 import Header from "@/components/Header";
-import RegisterController from "@/pages/register/RegisterController";
+import RegisterController from "@/page/register/RegisterController";
 import { Metadata } from "next";
 
 import Image from "next/image";
@@ -21,10 +21,10 @@ export const metadata: Metadata = {
 
 export default function register() {
   return (
-   <GuestRoute>
+   <>
    <Header />
    <RegisterController/>
    <Footer />
-   </GuestRoute>
+   </>
   );
 }

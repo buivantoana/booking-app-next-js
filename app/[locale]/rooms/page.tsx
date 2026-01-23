@@ -1,6 +1,6 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import RoomsController from "@/pages/rooms/RoomsController";
+import RoomsController from "@/page/rooms/RoomsController";
 import { LoadScript } from "@react-google-maps/api";
 
 import Image from "next/image";

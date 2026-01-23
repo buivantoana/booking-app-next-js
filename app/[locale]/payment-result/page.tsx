@@ -1,6 +1,6 @@
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import PaymentResultController from "@/pages/payment_result/PaymentResultController";
+import PaymentResultController from "@/page/payment_result/PaymentResultController";
 
 
 import Image from "next/image";
