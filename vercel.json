@@ -1,0 +1,13 @@
+{
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://dev.zeezoo.mobi:8084/sitemap.xml"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "https://dev.zeezoo.mobi:8084/robots.txt"
+    },
+    { "source": "/(.*)", "destination": "/" }
+  ]
+}
