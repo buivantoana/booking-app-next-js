@@ -75,12 +75,12 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
   const [pinConfirm, setPinConfirm] = useState("");
   const [state, setState] = useState("verify");
   const [showConfirm, setShowConfirm] = useState(false);
-  
+
   // Sử dụng next-intl
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
-  
+
   const [selectedLang, setSelectedLang] = useState(locale || "en");
   const [openLanguage, setOpenLanguage] = useState(false);
   const context = useBookingContext();
@@ -119,7 +119,7 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
           password: pin,
         });
         if (result.code === "OK") {
-          toast.success(result.message);
+          toast.success("Đổi mã pin thành công");
           setState("verify");
           setPin("");
           setPinConfirm("");
@@ -141,17 +141,15 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
     <Box
       sx={{
         backgroundColor: "#f8f9fa",
-      }}
-    >
+      }}>
       {/* Tiêu đề */}
       <Typography
         suppressHydrationWarning
-        variant="h5"
+        variant='h5'
         fontWeight={600}
-        color="#212529"
+        color='#212529'
         mb={3}
-        textAlign={isMobile ? "center" : "left"}
-      >
+        textAlign={isMobile ? "center" : "left"}>
         {t("account_settings_title")}
       </Typography>
 
@@ -162,32 +160,40 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
           borderRadius: 3,
           boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
           overflow: "hidden",
-        }}
-      >
+        }}>
         <List disablePadding>
           {/* Đổi mã PIN */}
           <ListItem disablePadding>
             <ListItemButton
               onClick={() => setOpenModal(true)}
-              sx={{ py: 2.5, px: 3 }}
-            >
+              sx={{ py: 2.5, px: 3 }}>
               <ListItemIcon sx={{ minWidth: 40 }}>
                 <LockOutlined sx={{ color: "#6c757d" }} />
               </ListItemIcon>
               <ListItemText
                 primary={
-                  <Typography suppressHydrationWarning fontWeight={600} color="#212529">
+                  <Typography
+                    suppressHydrationWarning
+                    fontWeight={600}
+                    color='#212529'>
                     {t("change_pin_title")}
                   </Typography>
                 }
                 secondary={
-                  <Typography suppressHydrationWarning variant="body2" color="#adb5bd" mt={0.5}>
+                  <Typography
+                    suppressHydrationWarning
+                    variant='body2'
+                    color='#adb5bd'
+                    mt={0.5}>
                     {t("change_pin_description")}
                   </Typography>
                 }
               />
               <Box sx={{ ml: 2 }}>
-                <Typography suppressHydrationWarning color="#6c757d" fontSize="1.5rem">
+                <Typography
+                  suppressHydrationWarning
+                  color='#6c757d'
+                  fontSize='1.5rem'>
                   ›
                 </Typography>
               </Box>
@@ -200,14 +206,16 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
           <ListItem disablePadding>
             <ListItemButton
               onClick={() => setOpenLanguage(true)}
-              sx={{ py: 3, px: 3 }}
-            >
+              sx={{ py: 3, px: 3 }}>
               <ListItemIcon sx={{ minWidth: 40 }}>
                 <LanguageIcon sx={{ color: "#6c757d" }} />
               </ListItemIcon>
               <ListItemText
                 primary={
-                  <Typography suppressHydrationWarning fontWeight={600} color="#212529">
+                  <Typography
+                    suppressHydrationWarning
+                    fontWeight={600}
+                    color='#212529'>
                     {t("language")}
                   </Typography>
                 }
@@ -215,14 +223,19 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
               <Box sx={{ ml: 2 }}>
                 <Typography
                   suppressHydrationWarning
-                  color="#6c757d"
-                  fontSize="1.5rem"
+                  color='#6c757d'
+                  fontSize='1.5rem'
                   display={"flex"}
                   alignItems={"center"}
-                  gap={2}
-                >
-                  <Typography variant="span" suppressHydrationWarning fontSize="1rem">
-                    {LANGUAGES.find((item) => item.code === selectedLang)?.label}
+                  gap={2}>
+                  <Typography
+                    variant='span'
+                    suppressHydrationWarning
+                    fontSize='1rem'>
+                    {
+                      LANGUAGES.find((item) => item.code === selectedLang)
+                        ?.label
+                    }
                   </Typography>{" "}
                   ›
                 </Typography>
@@ -298,17 +311,11 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
           setPin("");
           setPinConfirm("");
           setOpenModal(false);
-        }}
-        
-        
-       
-      >
-        <DialogContent sx={{ width: { xs: "95%", md: 480 },height:"290px"
-               }}>
-
+        }}>
+        <DialogContent sx={{ width: { xs: "95%", md: 480 }, height: "290px" }}>
           {state === "verify" && (
             <Box
-              className="hidden-add-voice"
+              className='hidden-add-voice'
               sx={{
                 position: "absolute",
                 top: "50%",
@@ -318,18 +325,20 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
                 maxHeight: "90vh",
                 bgcolor: "white",
                 borderRadius: "16px",
-                
+
                 p: 4,
                 overflow: "auto",
-              }}
-            >
+              }}>
               <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={3}
-              >
-                <Typography suppressHydrationWarning fontWeight={700} fontSize="1.25rem" color="#333">
+                direction='row'
+                justifyContent='space-between'
+                alignItems='center'
+                mb={3}>
+                <Typography
+                  suppressHydrationWarning
+                  fontWeight={700}
+                  fontSize='1.25rem'
+                  color='#333'>
                   {t("verify_pin_modal_title")}
                 </Typography>
                 <IconButton
@@ -338,12 +347,14 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
                     setPin("");
                     setPinConfirm("");
                     setOpenModal(false);
-                  }}
-                >
+                  }}>
                   <Close />
                 </IconButton>
               </Stack>
-              <Typography suppressHydrationWarning fontSize={"14px"} color="rgba(93, 102, 121, 1)">
+              <Typography
+                suppressHydrationWarning
+                fontSize={"14px"}
+                color='rgba(93, 102, 121, 1)'>
                 {t("verify_pin_modal_description")}
               </Typography>
               <Box
@@ -353,8 +364,7 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                }}
-              >
+                }}>
                 <MuiOtpInput
                   value={pin}
                   onChange={setPin}
@@ -417,8 +427,7 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
                   "&:hover": {
                     backgroundColor: pin.length === 6 ? "#7cb400" : "#e0e0e0",
                   },
-                }}
-              >
+                }}>
                 {loading ? (
                   <>
                     <CircularProgress size={20} sx={{ color: "#fff", mr: 1 }} />
@@ -430,10 +439,10 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
               </Button>
             </Box>
           )}
-          
+
           {state === "create" && (
             <Box
-              className="hidden-add-voice"
+              className='hidden-add-voice'
               sx={{
                 position: "absolute",
                 top: "50%",
@@ -443,18 +452,20 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
                 maxHeight: "90vh",
                 bgcolor: "white",
                 borderRadius: "16px",
-                
+
                 p: 4,
                 overflow: "auto",
-              }}
-            >
+              }}>
               <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={3}
-              >
-                <Typography suppressHydrationWarning fontWeight={700} fontSize="1.25rem" color="#333">
+                direction='row'
+                justifyContent='space-between'
+                alignItems='center'
+                mb={3}>
+                <Typography
+                  suppressHydrationWarning
+                  fontWeight={700}
+                  fontSize='1.25rem'
+                  color='#333'>
                   {t("create_pin_modal_title")}
                 </Typography>
                 <IconButton
@@ -463,12 +474,14 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
                     setPin("");
                     setPinConfirm("");
                     setOpenModal(false);
-                  }}
-                >
+                  }}>
                   <Close />
                 </IconButton>
               </Stack>
-              <Typography suppressHydrationWarning fontSize={"14px"} color="rgba(93, 102, 121, 1)">
+              <Typography
+                suppressHydrationWarning
+                fontSize={"14px"}
+                color='rgba(93, 102, 121, 1)'>
                 {t("confirm_pin_modal_title")}
               </Typography>
               <Box
@@ -478,8 +491,7 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                }}
-              >
+                }}>
                 <MuiOtpInput
                   value={pin}
                   onChange={setPin}
@@ -542,16 +554,15 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
                   "&:hover": {
                     backgroundColor: pin.length === 6 ? "#7cb400" : "#e0e0e0",
                   },
-                }}
-              >
+                }}>
                 {t("continue_button")}
               </Button>
             </Box>
           )}
-          
+
           {state === "confirm" && (
             <Box
-              className="hidden-add-voice"
+              className='hidden-add-voice'
               sx={{
                 position: "absolute",
                 top: "50%",
@@ -561,18 +572,20 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
                 maxHeight: "90vh",
                 bgcolor: "white",
                 borderRadius: "16px",
-                
+
                 p: 4,
                 overflow: "auto",
-              }}
-            >
+              }}>
               <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={3}
-              >
-                <Typography suppressHydrationWarning fontWeight={700} fontSize="1.25rem" color="#333">
+                direction='row'
+                justifyContent='space-between'
+                alignItems='center'
+                mb={3}>
+                <Typography
+                  suppressHydrationWarning
+                  fontWeight={700}
+                  fontSize='1.25rem'
+                  color='#333'>
                   {t("confirm_pin_modal_title")}
                 </Typography>
                 <IconButton
@@ -581,12 +594,14 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
                     setPin("");
                     setPinConfirm("");
                     setOpenModal(false);
-                  }}
-                >
+                  }}>
                   <Close />
                 </IconButton>
               </Stack>
-              <Typography suppressHydrationWarning fontSize={"14px"} color="rgba(93, 102, 121, 1)">
+              <Typography
+                suppressHydrationWarning
+                fontSize={"14px"}
+                color='rgba(93, 102, 121, 1)'>
                 {t("verify_pin_modal_description")}
               </Typography>
               <Box
@@ -596,8 +611,7 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                }}
-              >
+                }}>
                 <MuiOtpInput
                   value={pinConfirm}
                   onChange={setPinConfirm}
@@ -652,8 +666,7 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
                     fontSize: "14px",
                     mb: 2,
                     fontWeight: 500,
-                  }}
-                >
+                  }}>
                   {t("pin_mismatch_error")}
                 </Typography>
               )}
@@ -674,26 +687,21 @@ const AccountSettingsPage = ({ setActiveMenu }: AccountSettingsPageProps) => {
                   "&:hover": {
                     backgroundColor: pin.length === 6 ? "#7cb400" : "#e0e0e0",
                   },
-                }}
-              >
+                }}>
                 {loading ? (
                   <>
                     <CircularProgress size={20} sx={{ color: "#fff", mr: 1 }} />
                     {t("changing_button")}
                   </>
                 ) : (
-                  <>
-                 { t("change_button")}
-                  
-                  </>
+                  <>{t("change_button")}</>
                 )}
               </Button>
             </Box>
           )}
         </DialogContent>
-        
       </Dialog>
-      
+
       <LanguageModal
         open={openLanguage}
         onClose={() => {
@@ -714,7 +722,7 @@ function LanguageModal({ open, onClose }: LanguageModalProps) {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
-  const pathname = usePathname()
+  const pathname = usePathname();
   const [selectedLang, setSelectedLang] = useState(locale || "en");
 
   // Cập nhật ngôn ngữ khi locale thay đổi
@@ -727,23 +735,25 @@ function LanguageModal({ open, onClose }: LanguageModalProps) {
       onClose();
       return;
     }
-    
+
     // Xây dựng đường dẫn mới với locale mới
     const currentPath = pathname || "/";
-    
+
     // Tách bỏ locale hiện tại khỏi pathname nếu có
     let newPath = currentPath;
     const localeRegex = /^\/[a-z]{2}(?=\/|$)/;
     const match = currentPath.match(localeRegex);
-    
+
     if (match) {
       // Nếu có locale trong path, thay thế nó
       newPath = currentPath.replace(localeRegex, `/${selectedLang}`);
     } else {
       // Nếu không có locale trong path, thêm vào
-      newPath = `/${selectedLang}${currentPath.startsWith("/") ? "" : "/"}${currentPath}`;
+      newPath = `/${selectedLang}${
+        currentPath.startsWith("/") ? "" : "/"
+      }${currentPath}`;
     }
-    
+
     // Chuyển hướng đến URL với ngôn ngữ mới
     router.push(newPath);
     onClose();
@@ -754,17 +764,14 @@ function LanguageModal({ open, onClose }: LanguageModalProps) {
       open={open}
       onClose={onClose}
       fullWidth
-      maxWidth="xs"
+      maxWidth='xs'
       PaperProps={{
         sx: {
           borderRadius: 4,
           minHeight: 500,
         },
-      }}
-    >
-      <DialogTitle sx={{ fontWeight: 600 }}>
-        {t("language")}
-      </DialogTitle>
+      }}>
+      <DialogTitle sx={{ fontWeight: 600 }}>{t("language")}</DialogTitle>
 
       <DialogContent sx={{ px: 1 }}>
         <List>
@@ -776,9 +783,9 @@ function LanguageModal({ open, onClose }: LanguageModalProps) {
                 borderRadius: 2,
                 mx: 1,
                 mb: 0.5,
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 40, display: "flex", alignItems: "center" }}>
+              }}>
+              <ListItemIcon
+                sx={{ minWidth: 40, display: "flex", alignItems: "center" }}>
                 <Image
                   src={lang.flag}
                   alt={lang.label}
@@ -801,7 +808,7 @@ function LanguageModal({ open, onClose }: LanguageModalProps) {
       <DialogActions sx={{ p: 2 }}>
         <Button
           fullWidth
-          variant="contained"
+          variant='contained'
           onClick={handleUpdate}
           sx={{
             borderRadius: 999,
@@ -812,8 +819,7 @@ function LanguageModal({ open, onClose }: LanguageModalProps) {
             "&:hover": {
               backgroundColor: "#8DBA2E",
             },
-          }}
-        >
+          }}>
           {t("search_bar_update_button", "Cập nhật")}
         </Button>
       </DialogActions>

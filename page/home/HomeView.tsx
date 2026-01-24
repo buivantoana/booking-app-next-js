@@ -1,5 +1,5 @@
 // src/components/HomeView.tsx
-'use client';
+"use client";
 
 import React, { useEffect, useState } from "react";
 import {
@@ -27,7 +27,7 @@ import {
   Event,
   PeopleOutline,
 } from "@mui/icons-material";
-import Image from 'next/image'; // NextImage
+import Image from "next/image"; // NextImage
 import type_booking from "@/images/Full Frame.png";
 import ListRoom from "./ListRoom";
 import PopularDestinations from "./PopularDestinations";
@@ -53,7 +53,7 @@ const HomeView = ({
   const [address, setAddress] = useState(null);
   const [bookingType, setBookingType] = useState("hourly");
   const { push } = useRouter(); // Thay navigate bằng useRouter từ next/navigation
-  const  t  = useTranslations();
+  const t = useTranslations();
   useEffect(() => {
     if (localStorage.getItem("location")) {
       setAddress(
@@ -96,16 +96,17 @@ const HomeView = ({
         />
 
         <Container maxWidth='lg' sx={{ position: "relative", zIndex: 1 }}>
-          <Typography suppressHydrationWarning 
-            variant={isMobile ? "h5" : "h4"}
+          <Typography
+            suppressHydrationWarning
+            variant={"h1"}
             fontWeight='bold'
             gutterBottom
             align='center'
-           
-            sx={{ mb: 1 }}>
+            sx={{ mb: 1, fontSize: { xs: "28px", md: "34px" } }}>
             {t("leading_booking_platform")}
           </Typography>
-          <Typography suppressHydrationWarning 
+          <Typography
+            suppressHydrationWarning
             variant={isMobile ? "body1" : "h6"}
             align='center'
             sx={{ mb: 4, opacity: 0.9 }}>
@@ -117,7 +118,8 @@ const HomeView = ({
 
       {/* Booking Options Section */}
       <Container maxWidth='lg' sx={{ py: { xs: 6, md: 15 } }}>
-        <Typography suppressHydrationWarning 
+        <Typography
+          suppressHydrationWarning
           variant={isMobile ? "h5" : "h4"}
           fontWeight='bold'
           display={isMobile ? "none" : "block"}
@@ -157,30 +159,33 @@ const HomeView = ({
                 alignItems: "center",
                 gap: 1,
                 justifyContent: "center",
-                transition: "all 0.35s ease",          // chuyển động mượt
-                transform: "scale(1)",                 // trạng thái ban đầu
-             
-                borderRadius: "12px",                  // bo góc nhẹ (tùy chọn, đẹp hơn)
+                transition: "all 0.35s ease", // chuyển động mượt
+                transform: "scale(1)", // trạng thái ban đầu
+
+                borderRadius: "12px", // bo góc nhẹ (tùy chọn, đẹp hơn)
                 // tránh nội dung tràn khi scale
 
                 "&:hover": {
-                  transform: "scale(1.1)",             // ← scale 1.1 khi hover
-                 
-                  zIndex: 10,                          // nổi lên trên các phần tử khác nếu cần
+                  transform: "scale(1.1)", // ← scale 1.1 khi hover
+
+                  zIndex: 10, // nổi lên trên các phần tử khác nếu cần
                 },
 
-                "&:active": {                          // khi click (nhấn xuống)
-                  transform: "scale(1.05)",            // thu nhỏ nhẹ để cảm giác nhấn
+                "&:active": {
+                  // khi click (nhấn xuống)
+                  transform: "scale(1.05)", // thu nhỏ nhẹ để cảm giác nhấn
                 },
               }}
               onClick={() => {
-                push(
-                  `/rooms?location=${address?.id || "hanoi"}&type=hourly`
-                );
+                push(`/rooms?location=${address?.id || "hanoi"}&type=hourly`);
               }}>
               <Image src={slider1} alt='' />
-              <Typography suppressHydrationWarning  variant='h6'>{t("by_hour")}</Typography>
-              <Typography suppressHydrationWarning  variant='body1'>{t("keep_loving_nights")}</Typography>
+              <Typography suppressHydrationWarning variant='h6'>
+                {t("by_hour")}
+              </Typography>
+              <Typography suppressHydrationWarning variant='body1'>
+                {t("keep_loving_nights")}
+              </Typography>
             </Box>
             <Box
               flex={1}
@@ -190,20 +195,21 @@ const HomeView = ({
                 alignItems: "center",
                 gap: 1,
                 justifyContent: "center",
-                transition: "all 0.35s ease",          // chuyển động mượt
-                transform: "scale(1)",                 // trạng thái ban đầu
+                transition: "all 0.35s ease", // chuyển động mượt
+                transform: "scale(1)", // trạng thái ban đầu
                 boxShadow: "0 8px 24px rgba(0,0,0,0.12)", // bóng nhẹ mặc định
-                borderRadius: "12px",                  // bo góc nhẹ (tùy chọn, đẹp hơn)
+                borderRadius: "12px", // bo góc nhẹ (tùy chọn, đẹp hơn)
                 // tránh nội dung tràn khi scale
 
                 "&:hover": {
-                  transform: "scale(1.1)",             // ← scale 1.1 khi hover
+                  transform: "scale(1.1)", // ← scale 1.1 khi hover
                   boxShadow: "0 20px 40px rgba(0,0,0,0.25)", // bóng sâu hơn
-                  zIndex: 10,                          // nổi lên trên các phần tử khác nếu cần
+                  zIndex: 10, // nổi lên trên các phần tử khác nếu cần
                 },
 
-                "&:active": {                          // khi click (nhấn xuống)
-                  transform: "scale(1.05)",            // thu nhỏ nhẹ để cảm giác nhấn
+                "&:active": {
+                  // khi click (nhấn xuống)
+                  transform: "scale(1.05)", // thu nhỏ nhẹ để cảm giác nhấn
                 },
               }}
               onClick={() => {
@@ -212,10 +218,10 @@ const HomeView = ({
                 );
               }}>
               <Image src={slider2} alt='' />
-              <Typography suppressHydrationWarning  ml={1} variant='h6'>
+              <Typography suppressHydrationWarning ml={1} variant='h6'>
                 {t("overnight")}
               </Typography>
-              <Typography suppressHydrationWarning  ml={1} variant='body1'>
+              <Typography suppressHydrationWarning ml={1} variant='body1'>
                 {t("short_moments_long_memories")}
               </Typography>
             </Box>
@@ -227,30 +233,31 @@ const HomeView = ({
                 alignItems: "center",
                 gap: 1,
                 justifyContent: "center",
-                transition: "all 0.35s ease",          // chuyển động mượt
-                transform: "scale(1)",                 // trạng thái ban đầu
+                transition: "all 0.35s ease", // chuyển động mượt
+                transform: "scale(1)", // trạng thái ban đầu
                 boxShadow: "0 8px 24px rgba(0,0,0,0.12)", // bóng nhẹ mặc định
-                borderRadius: "12px",                  // bo góc nhẹ (tùy chọn, đẹp hơn)
+                borderRadius: "12px", // bo góc nhẹ (tùy chọn, đẹp hơn)
                 // tránh nội dung tràn khi scale
 
                 "&:hover": {
-                  transform: "scale(1.1)",             // ← scale 1.1 khi hover
+                  transform: "scale(1.1)", // ← scale 1.1 khi hover
                   boxShadow: "0 20px 40px rgba(0,0,0,0.25)", // bóng sâu hơn
-                  zIndex: 10,                          // nổi lên trên các phần tử khác nếu cần
+                  zIndex: 10, // nổi lên trên các phần tử khác nếu cần
                 },
 
-                "&:active": {                          // khi click (nhấn xuống)
-                  transform: "scale(1.05)",            // thu nhỏ nhẹ để cảm giác nhấn
+                "&:active": {
+                  // khi click (nhấn xuống)
+                  transform: "scale(1.05)", // thu nhỏ nhẹ để cảm giác nhấn
                 },
               }}
               onClick={() => {
-                push(
-                  `/rooms?location=${address?.id || "hanoi"}&type=daily`
-                );
+                push(`/rooms?location=${address?.id || "hanoi"}&type=daily`);
               }}>
               <Image src={slider3} alt='' />
-              <Typography suppressHydrationWarning  variant='h6'>{t("by_day")}</Typography>
-              <Typography suppressHydrationWarning  variant='body1'>
+              <Typography suppressHydrationWarning variant='h6'>
+                {t("by_day")}
+              </Typography>
+              <Typography suppressHydrationWarning variant='body1'>
                 {t("enjoy_your_days_your_way")}
               </Typography>
             </Box>

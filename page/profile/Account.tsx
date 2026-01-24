@@ -29,10 +29,10 @@ const Account = ({ context }: AccountProps) => {
   const [loading, setLoading] = useState(false);
   const [touchedDate, setTouchedDate] = useState(false);
   const [touchedName, setTouchedName] = useState(false);
-  
+
   // Sử dụng next-intl
   const t = useTranslations();
-  
+
   // Lấy dữ liệu ban đầu từ context
   const initialData = {
     name: context?.state?.user?.name || "",
@@ -81,7 +81,7 @@ const Account = ({ context }: AccountProps) => {
             user: { ...context.state.user, ...formData },
           },
         });
-        toast.success(result.message);
+        toast.success("Cập nhập thành công");
       } else {
         toast.error(getErrorMessage(result.code) || result.message);
       }
@@ -119,12 +119,11 @@ const Account = ({ context }: AccountProps) => {
     <Box sx={{ backgroundColor: "#f8f9fa" }}>
       <Typography
         suppressHydrationWarning
-        variant="h5"
+        variant='h5'
         fontWeight={600}
-        color="#212529"
+        color='#212529'
         mb={3}
-        textAlign={isMobile ? "center" : "left"}
-      >
+        textAlign={isMobile ? "center" : "left"}>
         {t("my_profile_title")}
       </Typography>
 
@@ -134,12 +133,15 @@ const Account = ({ context }: AccountProps) => {
           borderRadius: 3,
           boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
           p: { xs: 3, sm: 4 },
-        }}
-      >
+        }}>
         <Grid container spacing={3}>
           {/* Số điện thoại - KHÔNG CHO SỬA */}
           <Grid item xs={12} sm={6}>
-            <Typography suppressHydrationWarning variant="body2" color="#6c757d" mb={1}>
+            <Typography
+              suppressHydrationWarning
+              variant='body2'
+              color='#6c757d'
+              mb={1}>
               {t("phone_label")}
             </Typography>
             <TextField
@@ -148,10 +150,11 @@ const Account = ({ context }: AccountProps) => {
               disabled
               InputProps={{
                 startAdornment: (
-                  <InputAdornment position="start">
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <InputAdornment position='start'>
+                    <Box
+                      sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                       {/* Thay thế react-country-flag bằng Image component */}
-                     <Flag
+                      <Flag
                         countryCode='VN'
                         svg
                         style={{ width: 24, height: 24 }}
@@ -180,13 +183,17 @@ const Account = ({ context }: AccountProps) => {
 
           {/* Ngày sinh - CHO SỬA */}
           <Grid item xs={12} sm={6}>
-            <Typography suppressHydrationWarning variant="body2" color="#6c757d" mb={1}>
+            <Typography
+              suppressHydrationWarning
+              variant='body2'
+              color='#6c757d'
+              mb={1}>
               {t("birthday_label")}
             </Typography>
             <TextField
               fullWidth
-              name="birthday"
-              type="date"
+              name='birthday'
+              type='date'
               value={formData.birthday}
               onChange={handleChange}
               onBlur={() => setTouchedDate(true)}
@@ -214,11 +221,15 @@ const Account = ({ context }: AccountProps) => {
 
           {/* Tên - CHO SỬA */}
           <Grid item xs={12} sm={6}>
-            <Typography suppressHydrationWarning variant="body2" color="#6c757d" mb={1}>
+            <Typography
+              suppressHydrationWarning
+              variant='body2'
+              color='#6c757d'
+              mb={1}>
               {t("name_label")}
             </Typography>
             <TextField
-              name="name"
+              name='name'
               fullWidth
               placeholder={t("name_placeholder")}
               value={formData.name}
@@ -251,11 +262,10 @@ const Account = ({ context }: AccountProps) => {
               sx={{
                 display: "flex",
                 justifyContent: isMobile ? "center" : "start",
-              }}
-            >
+              }}>
               <Button
-                variant="contained"
-                size="large"
+                variant='contained'
+                size='large'
                 disabled={loading}
                 onClick={handleSubmit}
                 sx={{
@@ -270,8 +280,7 @@ const Account = ({ context }: AccountProps) => {
                   "&:hover": {
                     backgroundColor: "rgba(152, 183, 32, 1)",
                   },
-                }}
-              >
+                }}>
                 {loading ? (
                   <>
                     <CircularProgress size={20} sx={{ color: "#fff", mr: 1 }} />

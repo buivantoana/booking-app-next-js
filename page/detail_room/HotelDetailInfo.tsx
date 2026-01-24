@@ -508,6 +508,7 @@ const HotelDetailInfo = ({
         {/* === 5. CHÍNH SÁCH KHÁCH SẠN === */}
         <Stack ref={section6Ref} spacing={2}>
           <Typography
+            variant='h1'
             suppressHydrationWarning
             fontWeight={600}
             fontSize='1.1rem'

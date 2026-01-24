@@ -4,7 +4,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 
 import {
@@ -58,13 +58,9 @@ import no_room from "@/images/No Navigation.svg";
 import buildingImg from "@/images/building.png";
 import removeImg from "@/images/delete.png";
 
-import {
-  deleteBooking,
-  issueBooking,
-  reviewBooking,
-} from "@/service/booking";
+import { deleteBooking, issueBooking, reviewBooking } from "@/service/booking";
 
-import { getErrorMessage } from "@/utils/utils";
+import { getErrorMessage, parseName } from "@/utils/utils";
 import { getStatusPayment, retryPayment } from "@/service/payment";
 
 // ────────────────────────────────────────────────
@@ -142,7 +138,7 @@ const BookingCard = ({
   const [issueModalOpen, setIssueModalOpen] = useState(false);
   const [loadingRetry, setLoadingRetry] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState("");
-
+  const locale = useLocale();
   const getBookingStatus = (booking: any) => {
     const paymentStatus = getPaymentStatus(booking.payments);
     const bookingStatus = booking.status;
@@ -187,6 +183,7 @@ const BookingCard = ({
 
   const statusConfig = getBookingStatus(booking);
   const hotelName = parseJsonField(booking.hotel_name);
+  const roomName = parseName(booking.rooms[0]?.room_name, locale);
   const roomCount = booking.rooms.length;
   const timeDisplay = `${formatDateTime(booking.check_in)} - ${formatDateTime(
     booking.check_out
@@ -273,7 +270,9 @@ const BookingCard = ({
       if (retry >= 30) {
         clearInterval(interval);
         setLoadingRetry(false);
-        toast.error("Thanh toán quá thời gian! Vui lòng thử lại.", { position: "top-center" });
+        toast.error("Thanh toán quá thời gian! Vui lòng thử lại.", {
+          position: "top-center",
+        });
       }
     }, 2000);
   };
@@ -308,18 +307,20 @@ const BookingCard = ({
           boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
           mb: 2,
           border: "1px solid #eee",
-        }}
-      >
+        }}>
         {/* Header */}
         <Box sx={{ px: 2.5, pt: 3 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography fontSize="13px" color="#666">
+          <Stack
+            direction='row'
+            justifyContent='space-between'
+            alignItems='center'>
+            <Typography fontSize='13px' color='black'>
               {t("booking_code_label")} {booking.booking_code}
             </Typography>
-            <Box display="flex" alignItems="center" gap={2}>
+            <Box display='flex' alignItems='center' gap={2}>
               <Chip
                 label={statusConfig.label}
-                size="small"
+                size='small'
                 sx={{
                   bgcolor: statusConfig.bg,
                   color: statusConfig.color,
@@ -329,7 +330,9 @@ const BookingCard = ({
                   borderRadius: "13px",
                 }}
               />
-              <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)} size="small">
+              <IconButton
+                onClick={(e) => setMenuAnchor(e.currentTarget)}
+                size='small'>
                 <MoreVertIcon sx={{ color: "rgba(93, 102, 121, 1)" }} />
               </IconButton>
             </Box>
@@ -341,48 +344,63 @@ const BookingCard = ({
           <Stack
             direction={isMobile ? "column" : "row"}
             spacing={isMobile ? 2 : 3}
-            alignItems={isMobile ? "stretch" : "center"}
-          >
+            alignItems={isMobile ? "stretch" : "center"}>
             {/* Ảnh */}
             <Avatar
-              variant="rounded"
+              variant='rounded'
               sx={{
                 width: isMobile ? "100%" : 140,
                 height: isMobile ? 120 : 105,
                 borderRadius: "12px",
                 flexShrink: 0,
-              }}
-            >
-              <Image src={getThumbnail(booking)} alt="hotel" fill style={{ objectFit: "cover" }} />
+              }}>
+              <Image
+                src={getThumbnail(booking)}
+                alt='hotel'
+                fill
+                style={{ objectFit: "cover" }}
+              />
             </Avatar>
 
             {/* Thông tin */}
             <Box flex={1}>
-              <Typography fontSize="16px" fontWeight={700} lineHeight={1.3} mb={0.5}>
+              <Typography
+                fontSize='16px'
+                fontWeight={700}
+                lineHeight={1.3}
+                mb={0.5}>
                 {hotelName}
               </Typography>
-              <Typography fontSize="15px" fontWeight={500} color="#333" mb={1}>
-                {roomCount} {t("room")} {booking.rent_type === "hourly" ? "(theo giờ)" : ""}
+              <Typography fontSize='15px' fontWeight={500} color='#333' mb={1}>
+                {roomName}
               </Typography>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <AccessTimeIcon sx={{ fontSize: 16, color: "#999" }} />
-                <Typography fontSize="13px" color="#666">
+              <Typography fontSize='15px' fontWeight={500} color='#333' mb={1}>
+                {roomCount} {t("room")}{" "}
+                {booking.rent_type === "hourly" ? "(theo giờ)" : ""}
+              </Typography>
+              <Stack direction='row' alignItems='center' spacing={1}>
+                <AccessTimeIcon sx={{ fontSize: 16, color: "#98b720" }} />
+                <Typography fontSize='13px' color='#98b720'>
                   {timeDisplay}
                 </Typography>
               </Stack>
               {booking.note && (
-                <Typography fontSize="12px" color="#888" mt={1}>
+                <Typography fontSize='12px' color='#888' mt={1}>
                   {t("note_label")} {booking.note}
                 </Typography>
               )}
             </Box>
 
             {/* Giá + hành động */}
-            <Box textAlign="right">
-              <Typography fontSize="18px" fontWeight={700} color="#FF6D00">
+            <Box textAlign='right'>
+              <Typography fontSize='18px' fontWeight={700} color='#FF6D00'>
                 {formatVND(booking.total_price)}
               </Typography>
-              <Stack direction="row" alignItems="center" justifyContent="flex-end" mb={2}>
+              <Stack
+                direction='row'
+                alignItems='center'
+                justifyContent='flex-end'
+                mb={2}>
                 <Box
                   sx={{
                     color: "rgba(93, 102, 121, 1)",
@@ -392,56 +410,61 @@ const BookingCard = ({
                     display: "flex",
                     alignItems: "center",
                     gap: 1,
-                  }}
-                >
-                  <Image src={buildingImg} alt="Building" width={16} height={16} />
-                  {booking.payments[0]?.method === "momo" ? t("momo_payment_label") : t("vnpay_payment_label")}
+                  }}>
+                  <Image
+                    src={buildingImg}
+                    alt='Building'
+                    width={16}
+                    height={16}
+                  />
+                  {booking.payments[0]?.method === "momo"
+                    ? t("momo_payment_label")
+                    : t("vnpay_payment_label")}
                 </Box>
               </Stack>
               <Typography
                 onClick={() => setDetailBooking(booking)}
-                fontSize="14px"
+                fontSize='14px'
                 sx={{ textDecoration: "underline", cursor: "pointer" }}
-                color="rgba(72, 80, 94, 1)"
-              >
+                color='rgba(72, 80, 94, 1)'>
                 {t("details_link")}
               </Typography>
             </Box>
           </Stack>
 
           {/* Divider */}
-          {(isCompleted || isWaitingPayment || isCancelled) && <Divider sx={{ my: 2.5 }} />}
+          {(isCompleted || isWaitingPayment || isCancelled) && (
+            <Divider sx={{ my: 2.5 }} />
+          )}
 
           {/* Nút hành động */}
-          <Stack direction="row" justifyContent="flex-end" spacing={1}>
+          <Stack direction='row' justifyContent='flex-end' spacing={1}>
             {isCompleted && (
               <>
-                {!booking?.review && (
-                  <Button
-                    onClick={() => setReviewModalOpen(true)}
-                    variant="outlined"
-                    sx={{
-                      borderRadius: "24px",
-                      textTransform: "none",
-                      fontWeight: 600,
-                      color: "#666",
-                      borderColor: "#ddd",
-                      minWidth: 120,
-                    }}
-                  >
-                    {t("review_button")}
-                  </Button>
-                )}
+                {/* {!booking?.review && ( */}
                 <Button
-                  variant="contained"
+                  onClick={() => setReviewModalOpen(true)}
+                  variant='outlined'
+                  sx={{
+                    borderRadius: "24px",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    color: "#666",
+                    borderColor: "#ddd",
+                    minWidth: 120,
+                  }}>
+                  {t("review_button")}
+                </Button>
+                {/* )} */}
+                <Button
+                  variant='contained'
                   sx={{
                     borderRadius: "24px",
                     textTransform: "none",
                     minWidth: 120,
                     bgcolor: "#98b720",
                     "&:hover": { bgcolor: "#8ab020" },
-                  }}
-                >
+                  }}>
                   {t("rebook_button")}
                 </Button>
               </>
@@ -449,7 +472,7 @@ const BookingCard = ({
 
             {(isWaitingPayment || isCancelled) && (
               <Button
-                variant="contained"
+                variant='contained'
                 disabled={loadingRetry}
                 onClick={
                   isWaitingPayment
@@ -466,15 +489,16 @@ const BookingCard = ({
                   minWidth: 120,
                   bgcolor: "#98b720",
                   "&:hover": { bgcolor: "#8ab020" },
-                }}
-              >
+                }}>
                 {loadingRetry ? (
                   <>
                     <CircularProgress size={20} sx={{ color: "#fff", mr: 1 }} />
                     {isWaitingPayment ? t("pay_button") : t("rebook_button")}...
                   </>
+                ) : isWaitingPayment ? (
+                  t("pay_button")
                 ) : (
-                  isWaitingPayment ? t("pay_button") : t("rebook_button")
+                  t("rebook_button")
                 )}
               </Button>
             )}
@@ -496,19 +520,20 @@ const BookingCard = ({
             mt: 1,
             padding: 0,
           },
-        }}
-      >
+        }}>
         <MenuItem
           onClick={() => {
             setMenuAnchor(null);
             setDeleteDialogOpen(true);
-          }}
-        >
+          }}>
           <ListItemIcon>
-            <ReportGmailerrorredIcon fontSize="small" sx={{ color: "rgba(93, 102, 121, 1)" }} />
+            <DeleteIcon
+              fontSize='small'
+              sx={{ color: "rgba(93, 102, 121, 1)" }}
+            />
           </ListItemIcon>
           <ListItemText>
-            <Typography fontSize="14px" color="rgba(93, 102, 121, 1)">
+            <Typography fontSize='14px' color='rgba(93, 102, 121, 1)'>
               {t("delete_history_menu")}
             </Typography>
           </ListItemText>
@@ -517,13 +542,15 @@ const BookingCard = ({
           onClick={() => {
             setMenuAnchor(null);
             setIssueModalOpen(true);
-          }}
-        >
+          }}>
           <ListItemIcon>
-            <DeleteIcon fontSize="small" sx={{ color: "rgba(93, 102, 121, 1)" }} />
+            <ReportGmailerrorredIcon
+              fontSize='small'
+              sx={{ color: "rgba(93, 102, 121, 1)" }}
+            />
           </ListItemIcon>
           <ListItemText>
-            <Typography fontSize="14px" color="rgba(93, 102, 121, 1)">
+            <Typography fontSize='14px' color='rgba(93, 102, 121, 1)'>
               {t("report_menu")}
             </Typography>
           </ListItemText>
@@ -534,10 +561,9 @@ const BookingCard = ({
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
-        maxWidth="xs"
+        maxWidth='xs'
         fullWidth
-        PaperProps={{ sx: { borderRadius: "16px" } }}
-      >
+        PaperProps={{ sx: { borderRadius: "16px" } }}>
         <DialogTitle sx={{ textAlign: "center", pt: 4, pb: 1 }}>
           <Box sx={{ position: "relative" }}>
             <Box
@@ -551,53 +577,55 @@ const BookingCard = ({
                 justifyContent: "center",
                 mx: "auto",
                 mb: 2,
-              }}
-            >
-              <Image src={removeImg} alt="Remove" width={40} height={40} />
+              }}>
+              <Image src={removeImg} alt='Remove' width={40} height={40} />
             </Box>
             <IconButton
               onClick={() => setDeleteDialogOpen(false)}
-              sx={{ position: "absolute", top: -40, left: -30 }}
-            >
+              sx={{ position: "absolute", top: -40, left: -30 }}>
               <CloseIcon />
             </IconButton>
           </Box>
         </DialogTitle>
 
         <DialogContent sx={{ textAlign: "center", px: 4, pb: 3 }}>
-          <Typography fontWeight={600} fontSize="18px" mb={1}>
+          <Typography fontWeight={600} fontSize='18px' mb={1}>
             {t("delete_history_menu")}
           </Typography>
-          <Typography fontSize="14px" color="#666">
+          <Typography fontSize='14px' color='#666'>
             {t("delete_dialog_description")}
           </Typography>
         </DialogContent>
 
-        <DialogActions sx={{ justifyContent: "center", pb: 4, gap: 2, flexDirection: "column" }}>
+        <DialogActions
+          sx={{
+            justifyContent: "center",
+            pb: 4,
+            gap: 2,
+            flexDirection: "column",
+          }}>
           <Button
             onClick={() => handleDeleteBooking(booking.booking_id)}
-            variant="contained"
+            variant='contained'
             sx={{
               borderRadius: "24px",
               textTransform: "none",
               bgcolor: "#98b720",
               "&:hover": { bgcolor: "#8ab020" },
               width: "100%",
-            }}
-          >
+            }}>
             {t("agree")}
           </Button>
           <Button
             onClick={() => setDeleteDialogOpen(false)}
-            variant="outlined"
+            variant='outlined'
             sx={{
               borderRadius: "24px",
               textTransform: "none",
               borderColor: "#ddd",
               color: "#666",
               width: "100%",
-            }}
-          >
+            }}>
             {t("reason_cancel_button")}
           </Button>
         </DialogActions>
@@ -610,7 +638,17 @@ const BookingCard = ({
 // Review Modal
 // ────────────────────────────────────────────────
 
-const ReviewModal = ({ open, onClose, hotelName, roomType, bookingTime, id, hastag, getHistoryBooking, setIssueModalOpen }) => {
+const ReviewModal = ({
+  open,
+  onClose,
+  hotelName,
+  roomType,
+  bookingTime,
+  id,
+  hastag,
+  getHistoryBooking,
+  setIssueModalOpen,
+}) => {
   const t = useTranslations();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -620,7 +658,7 @@ const ReviewModal = ({ open, onClose, hotelName, roomType, bookingTime, id, hast
   const [selectedTags, setSelectedTags] = useState([]);
   const [uploadedImages, setUploadedImages] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const locale = useLocale();
   const tags = hastag.map((item) => ({
     value: item.name,
     label: item.name,
@@ -628,7 +666,9 @@ const ReviewModal = ({ open, onClose, hotelName, roomType, bookingTime, id, hast
 
   const handleTagClick = (tag) => {
     setSelectedTags((prev) =>
-      prev.includes(tag.value) ? prev.filter((t) => t !== tag.value) : [...prev, tag.value]
+      prev.includes(tag.value)
+        ? prev.filter((t) => t !== tag.value)
+        : [...prev, tag.value]
     );
   };
 
@@ -673,25 +713,27 @@ const ReviewModal = ({ open, onClose, hotelName, roomType, bookingTime, id, hast
     setLoading(false);
   };
 
-  const isSubmitDisabled = !rating || rating === 0 || reviewText.trim().length === 0 || loading;
+  const isSubmitDisabled =
+    !rating || rating === 0 || reviewText.trim().length === 0 || loading;
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="sm"
+      maxWidth='sm'
       fullWidth
       fullScreen={isMobile}
-      PaperProps={{ sx: { borderRadius: isMobile ? 0 : "24px", overflow: "hidden" } }}
-    >
+      PaperProps={{
+        sx: { borderRadius: isMobile ? 0 : "24px", overflow: "hidden" },
+      }}>
       <DialogTitle sx={{ pb: 1, position: "relative" }}>
-        <Typography variant="h6" fontWeight={700}>
-          {t("review_modal_title")}
-        </Typography>
-        <Typography variant="body2" color="#666" sx={{ mt: 1 }}>
+        <Typography fontWeight={700}>{t("review_modal_title")}</Typography>
+        <Typography variant='body2' color='#666' sx={{ mt: 1 }}>
           {t("review_modal_subtitle")}
         </Typography>
-        <IconButton onClick={onClose} sx={{ position: "absolute", right: 8, top: 8, color: "#999" }}>
+        <IconButton
+          onClick={onClose}
+          sx={{ position: "absolute", right: 8, top: 8, color: "#999" }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -700,9 +742,9 @@ const ReviewModal = ({ open, onClose, hotelName, roomType, bookingTime, id, hast
         <Typography fontWeight={600} mb={2}>
           {t("write_review_label")}
         </Typography>
-        <Box textAlign="center" mb={3}>
+        <Box textAlign='center' mb={3}>
           <Rating
-            name="hotel-rating"
+            name='hotel-rating'
             value={rating}
             onChange={(e, v) => setRating(v)}
             sx={{
@@ -714,17 +756,21 @@ const ReviewModal = ({ open, onClose, hotelName, roomType, bookingTime, id, hast
           />
         </Box>
 
-        <Stack direction="row" gap={1} flexWrap="wrap" mb={3}>
-          {tags.map((item) => (
+        <Stack direction='row' gap={1} flexWrap='wrap' mb={3}>
+          {tags.map((item, index) => (
             <Chip
-              key={item.value}
-              label={item.label}
+              key={index}
+              label={item.label[locale]}
               onClick={() => handleTagClick(item)}
               color={selectedTags.includes(item.value) ? "success" : "default"}
-              variant={selectedTags.includes(item.value) ? "filled" : "outlined"}
+              variant={
+                selectedTags.includes(item.value) ? "filled" : "outlined"
+              }
               sx={{
                 borderRadius: "20px",
-                bgcolor: selectedTags.includes(item.value) ? "#98b720 !important" : "transparent",
+                bgcolor: selectedTags.includes(item.value)
+                  ? "#98b720 !important"
+                  : "transparent",
                 color: selectedTags.includes(item.value) ? "white" : "#666",
                 borderColor: "#ddd",
                 fontWeight: 500,
@@ -740,14 +786,17 @@ const ReviewModal = ({ open, onClose, hotelName, roomType, bookingTime, id, hast
           value={reviewText}
           onChange={(e) => setReviewText(e.target.value)}
           fullWidth
-          variant="outlined"
+          variant='outlined'
           inputProps={{ maxLength: 1000 }}
           helperText={`${reviewText.length}/1000`}
           sx={{
             mb: 3,
             "& .MuiOutlinedInput-root": {
               borderRadius: "12px",
-              "&.Mui-focused fieldset": { borderColor: "#98b720", borderWidth: 1.5 },
+              "&.Mui-focused fieldset": {
+                borderColor: "#98b720",
+                borderWidth: 1.5,
+              },
             },
           }}
         />
@@ -756,13 +805,13 @@ const ReviewModal = ({ open, onClose, hotelName, roomType, bookingTime, id, hast
           <Typography fontWeight={600} mb={2}>
             {t("upload_media_label")}
           </Typography>
-          <Stack direction="row" gap={2} flexWrap="wrap">
-            <label htmlFor="upload-images">
+          <Stack direction='row' gap={2} flexWrap='wrap'>
+            <label htmlFor='upload-images'>
               <input
-                accept="image/*,video/*"
-                id="upload-images"
+                accept='image/*,video/*'
+                id='upload-images'
                 multiple
-                type="file"
+                type='file'
                 style={{ display: "none" }}
                 onChange={handleImageUpload}
               />
@@ -778,20 +827,28 @@ const ReviewModal = ({ open, onClose, hotelName, roomType, bookingTime, id, hast
                   cursor: "pointer",
                   bgcolor: "#fafafa",
                   "&:hover": { borderColor: "#98b720", bgcolor: "#f0f8f0" },
-                }}
-              >
+                }}>
                 <PhotoCamera sx={{ color: "#999", fontSize: 32 }} />
               </Box>
             </label>
 
             {uploadedImages.map((src, i) => (
               <Box key={i} sx={{ position: "relative" }}>
-                <Avatar variant="rounded" src={src} sx={{ width: 80, height: 80, borderRadius: "12px" }} />
+                <Avatar
+                  variant='rounded'
+                  src={src}
+                  sx={{ width: 80, height: 80, borderRadius: "12px" }}
+                />
                 <IconButton
-                  size="small"
+                  size='small'
                   onClick={() => handleRemoveImage(i)}
-                  sx={{ position: "absolute", top: 3, right: 3, bgcolor: "white", boxShadow: "0 2px 8px rgba(0,0,0,0.2)" }}
-                >
+                  sx={{
+                    position: "absolute",
+                    top: 3,
+                    right: 3,
+                    bgcolor: "white",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                  }}>
                   <ClearIcon sx={{ color: "#e91e63", fontSize: "12px" }} />
                 </IconButton>
               </Box>
@@ -803,8 +860,8 @@ const ReviewModal = ({ open, onClose, hotelName, roomType, bookingTime, id, hast
       <Box sx={{ p: 3, pt: 2 }}>
         <Button
           fullWidth
-          variant="contained"
-          size="large"
+          variant='contained'
+          size='large'
           onClick={handleSubmit}
           disabled={isSubmitDisabled}
           sx={{
@@ -816,8 +873,7 @@ const ReviewModal = ({ open, onClose, hotelName, roomType, bookingTime, id, hast
             bgcolor: "#98b720",
             "&:hover": { bgcolor: "#f0f8f0" },
             "&.Mui-disabled": { bgcolor: "#ccc", color: "#999" },
-          }}
-        >
+          }}>
           {loading ? (
             <>
               <CircularProgress size={20} sx={{ color: "#fff", mr: 1 }} />
@@ -839,24 +895,46 @@ const ReviewModal = ({ open, onClose, hotelName, roomType, bookingTime, id, hast
 const BookingCardSkeleton = () => {
   return (
     <Card sx={{ display: "flex", p: 2, gap: 2, borderRadius: 2 }}>
-      <Skeleton variant="rectangular" width={120} height={80} sx={{ borderRadius: 1 }} />
+      <Skeleton
+        variant='rectangular'
+        width={120}
+        height={80}
+        sx={{ borderRadius: 1 }}
+      />
 
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+        }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-          <Skeleton variant="text" width={100} height={24} />
-          <Skeleton variant="rounded" width={80} height={24} />
+          <Skeleton variant='text' width={100} height={24} />
+          <Skeleton variant='rounded' width={80} height={24} />
         </Box>
 
-        <Skeleton variant="text" width="50%" height={28} />
-        <Skeleton variant="text" width="30%" height={20} sx={{ mb: 1 }} />
+        <Skeleton variant='text' width='50%' height={28} />
+        <Skeleton variant='text' width='30%' height={20} sx={{ mb: 1 }} />
 
-        <Skeleton variant="text" width="70%" height={20} sx={{ mb: 1 }} />
+        <Skeleton variant='text' width='70%' height={20} sx={{ mb: 1 }} />
 
-        <Skeleton variant="text" width="60%" height={20} />
+        <Skeleton variant='text' width='60%' height={20} />
 
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 2 }}>
-          <Skeleton variant="text" width={80} height={28} />
-          <Skeleton variant="rectangular" width={100} height={36} sx={{ borderRadius: 2 }} />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mt: 2,
+          }}>
+          <Skeleton variant='text' width={80} height={28} />
+          <Skeleton
+            variant='rectangular'
+            width={100}
+            height={36}
+            sx={{ borderRadius: 2 }}
+          />
         </Box>
       </Box>
     </Card>
@@ -887,7 +965,7 @@ function IssueBooking({ open, onClose, id, title }) {
       const res = await issueBooking(id, formData);
       if (res?.message) {
         onClose();
-        toast.success(res?.message);
+        toast.success("Báo cáo thành công");
         setIssueText("");
       } else {
         toast.error(getErrorMessage(res.code) || res.message);
@@ -905,16 +983,19 @@ function IssueBooking({ open, onClose, id, title }) {
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="sm"
+      maxWidth='sm'
       fullWidth
       fullScreen={isMobile}
-      PaperProps={{ sx: { borderRadius: isMobile ? 0 : "24px", overflow: "hidden" } }}
-    >
+      PaperProps={{
+        sx: { borderRadius: isMobile ? 0 : "24px", overflow: "hidden" },
+      }}>
       <DialogTitle sx={{ pb: 1, position: "relative" }}>
-        <Typography variant="h6" fontWeight={700}>
+        <Typography variant='h6' fontWeight={700}>
           Báo cáo lỗi
         </Typography>
-        <IconButton onClick={onClose} sx={{ position: "absolute", right: 8, top: 8, color: "#999" }}>
+        <IconButton
+          onClick={onClose}
+          sx={{ position: "absolute", right: 8, top: 8, color: "#999" }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -924,17 +1005,20 @@ function IssueBooking({ open, onClose, id, title }) {
           Tiêu đề
         </Typography>
         <TextField
-          placeholder="Viết suy nghĩ cảm nhận của bạn"
+          placeholder='Viết suy nghĩ cảm nhận của bạn'
           value={issueTitle}
           onChange={(e) => setIssueTitle(e.target.value)}
           fullWidth
-          variant="outlined"
+          variant='outlined'
           inputProps={{ maxLength: 1000 }}
           sx={{
             mb: 3,
             "& .MuiOutlinedInput-root": {
               borderRadius: "12px",
-              "&.Mui-focused fieldset": { borderColor: "#98b720", borderWidth: 1.5 },
+              "&.Mui-focused fieldset": {
+                borderColor: "#98b720",
+                borderWidth: 1.5,
+              },
             },
           }}
         />
@@ -944,18 +1028,21 @@ function IssueBooking({ open, onClose, id, title }) {
         <TextField
           multiline
           rows={4}
-          placeholder="Viết suy nghĩ cảm nhận của bạn"
+          placeholder='Viết suy nghĩ cảm nhận của bạn'
           value={issueText}
           onChange={(e) => setIssueText(e.target.value)}
           fullWidth
-          variant="outlined"
+          variant='outlined'
           inputProps={{ maxLength: 1000 }}
           helperText={`${issueText.length}/1000`}
           sx={{
             mb: 3,
             "& .MuiOutlinedInput-root": {
               borderRadius: "12px",
-              "&.Mui-focused fieldset": { borderColor: "#98b720", borderWidth: 1.5 },
+              "&.Mui-focused fieldset": {
+                borderColor: "#98b720",
+                borderWidth: 1.5,
+              },
             },
           }}
         />
@@ -964,8 +1051,8 @@ function IssueBooking({ open, onClose, id, title }) {
       <Box sx={{ px: 3 }}>
         <Button
           fullWidth
-          variant="contained"
-          size="large"
+          variant='contained'
+          size='large'
           onClick={handleSubmit}
           disabled={isSubmitDisabled}
           sx={{
@@ -977,8 +1064,7 @@ function IssueBooking({ open, onClose, id, title }) {
             bgcolor: "#98b720",
             "&:hover": { bgcolor: "#8ab020" },
             "&.Mui-disabled": { bgcolor: "#ccc", color: "#999" },
-          }}
-        >
+          }}>
           {loading ? (
             <>
               <CircularProgress size={20} sx={{ color: "#fff", mr: 1 }} />
@@ -1057,21 +1143,41 @@ export default function MyBookingsPage({
   const filtered = historyBooking.filter((booking) => {
     if (sortValue === "all") return true;
     const status = getBookingStatus(booking).label;
-    if (sortValue === "waiting_checkin" && status === t("waiting_checkin_status")) return true;
-    if (sortValue === "waiting_payment" && status === t("waiting_payment_status")) return true;
+    if (
+      sortValue === "waiting_checkin" &&
+      status === t("waiting_checkin_status")
+    )
+      return true;
+    if (
+      sortValue === "waiting_payment" &&
+      status === t("waiting_payment_status")
+    )
+      return true;
     if (sortValue === "completed" && status === "Hoàn thành") return true;
+    if (sortValue === "no_show" && status === "Không nhận phòng") return true;
     if (sortValue === "cancelled" && status === "Đã hủy") return true;
     return false;
   });
 
   return (
     <Box>
-      <Box display="flex" alignItems="center" mb={3} justifyContent="space-between">
-        <Typography variant={isMobile ? "h6" : "h5"} fontWeight={600} color="#212529">
+      <Box
+        display='flex'
+        alignItems='center'
+        mb={3}
+        justifyContent='space-between'>
+        <Typography
+          variant={isMobile ? "h6" : "h5"}
+          fontWeight={600}
+          color='#212529'>
           {t("my_bookings_title")}
         </Typography>
         {/* SortButton - giả định bạn có component này, nếu không thì thêm code */}
-        <SortButton selected={sortValue} isMobile={isMobile} onSelect={setSortValue} />
+        <SortButton
+          selected={sortValue}
+          isMobile={isMobile}
+          onSelect={setSortValue}
+        />
       </Box>
 
       <Box>
@@ -1080,9 +1186,20 @@ export default function MyBookingsPage({
         ) : (
           <>
             {filtered.length === 0 ? (
-              <Box display="flex" flexDirection="column" gap={3} mt={8} alignItems="center" justifyContent="center">
-                <Image src={no_room} alt="No bookings" width={200} height={200} />
-                <Typography textAlign="center" color="#999" fontSize="1.1rem">
+              <Box
+                display='flex'
+                flexDirection='column'
+                gap={3}
+                mt={8}
+                alignItems='center'
+                justifyContent='center'>
+                <Image
+                  src={no_room}
+                  alt='No bookings'
+                  width={200}
+                  height={200}
+                />
+                <Typography textAlign='center' color='#999' fontSize='1.1rem'>
                   {t("no_bookings_message")}
                 </Typography>
               </Box>
@@ -1107,7 +1224,7 @@ export default function MyBookingsPage({
                     onChange={onPageChange}
                     siblingCount={1}
                     boundaryCount={1}
-                    color="primary"
+                    color='primary'
                     size={isMobile ? "medium" : "large"}
                     sx={{
                       "& .MuiPaginationItem-root.Mui-selected": {
@@ -1133,7 +1250,7 @@ export default function MyBookingsPage({
       </Box>
     </Box>
   );
-};
+}
 const SortButton = ({
   selected,
   onSelect,
@@ -1144,13 +1261,14 @@ const SortButton = ({
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const  t  = useTranslations();
+  const t = useTranslations();
   const sortOptions = [
     { label: t("all_states"), value: "all" },
     { label: t("waiting_checkin_status"), value: "waiting_checkin" },
     { label: t("waiting_payment_status"), value: "waiting_payment" },
     { label: t("completed_status"), value: "completed" },
     { label: t("cancelled_status"), value: "cancelled" },
+    { label: t("no_show"), value: "no_show" },
   ];
 
   const selectedLabel =
@@ -1217,7 +1335,8 @@ const SortButton = ({
               bgcolor: selected === opt.value ? "#f9f9f9" : "white",
             }}>
             <ListItemText>
-              <Typography suppressHydrationWarning 
+              <Typography
+                suppressHydrationWarning
                 fontSize='0.9rem'
                 color={selected === opt.value ? "#98b720" : "#666"}
                 fontWeight={selected === opt.value ? 600 : 400}>

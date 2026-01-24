@@ -12,26 +12,27 @@ type Props = {
   };
 };
 
-export async function generateMetadata(
-  { params }: Props
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = params;
 
   // (optional) fetch data phòng
   // const room = await getRoomById(id);
 
   return {
-    title: `Chi tiết phòng #${id}`,
-    description: `Thông tin chi tiết phòng ${id}, hình ảnh, giá và tiện ích`,
+    title: `Chi tiết phòng `,
+    description: `Thông tin chi tiết phòng, hình ảnh, giá và tiện ích`,
     openGraph: {
-      title: `Chi tiết phòng #${id} | Booking App`,
-      description: `Thông tin chi tiết phòng ${id}`,
+      title: `Chi tiết phòng  | Booking App`,
+      description: `Thông tin chi tiết phòng`,
+      url: "https://booking-app-next-js-alpha.vercel.app/room",
+      siteName: "Booking App",
+      type: "website", // 👈 QUAN TRỌNG
       images: [
         {
           url: "/images/og-room-detail.jpg",
           width: 1200,
           height: 630,
-          alt: `Phòng ${id}`,
+          alt: `Phòng`,
         },
       ],
     },
@@ -44,8 +45,11 @@ export async function generateMetadata(
         },
       ],
     },
+    metadataBase: new URL("https://booking-app-next-js-alpha.vercel.app/room"),
+    alternates: {
+      canonical: "/",
+    },
   };
-  
 }
 
 export default function Home() {

@@ -49,7 +49,7 @@ import walletImg from "@/images/wallet-3.png";
 import buildingImg from "@/images/building.png";
 
 import { createBooking } from "@/service/booking"; // điều chỉnh đường dẫn nếu cần
-import { getErrorMessage } from "@/utils/utils";   // điều chỉnh nếu cần
+import { getErrorMessage } from "@/utils/utils"; // điều chỉnh nếu cần
 import Image from "next/image";
 
 // ────────────────────────────────────────────────
@@ -107,7 +107,9 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
 
   // ── State ───────────────────────────────────────
 
-  const [paymentMethod, setPaymentMethod] = useState<"momo" | "vnpay" | "card" | "hotel">("momo");
+  const [paymentMethod, setPaymentMethod] = useState<
+    "momo" | "vnpay" | "card" | "hotel"
+  >("momo");
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -119,9 +121,8 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
 
     const value = (user.phone || booking.phone || "").replace(/^\+84/, "");
     setPhone(value);
-    setName(user?.name || "")
+    setName(user?.name || "");
   }, []);
-
 
   const [touchedPhone, setTouchedPhone] = useState(false);
   const [touchedName, setTouchedName] = useState(false);
@@ -134,7 +135,8 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
 
   const phoneNormalized = normalizePhone(phone);
   const isPhoneEmpty = phone.trim() === "";
-  const phoneError = touchedPhone && (isPhoneEmpty || !isValidVietnamPhone(phone));
+  const phoneError =
+    touchedPhone && (isPhoneEmpty || !isValidVietnamPhone(phone));
   const nameError = touchedName && name.trim() === "";
 
   const {
@@ -178,7 +180,8 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
     const cfg = rent_types[type];
     if (!cfg) return t("search_bar_not_selected");
 
-    const time = checkInTime && checkInTime !== "null" ? checkInTime : cfg.from || "00:00";
+    const time =
+      checkInTime && checkInTime !== "null" ? checkInTime : cfg.from || "00:00";
     return `${time}, ${dayjs(checkIn).format("D/M")}`;
   };
 
@@ -187,7 +190,10 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
     if (!cfg) return t("search_bar_not_selected");
 
     if (type === "hourly" && checkIn) {
-      const time = checkInTime && checkInTime !== "null" ? checkInTime : cfg.from || "00:00";
+      const time =
+        checkInTime && checkInTime !== "null"
+          ? checkInTime
+          : cfg.from || "00:00";
       const [h, m] = time.split(":").map(Number);
       const start = dayjs(checkIn).hour(h).minute(m).second(0);
       const end = start.add(Number(duration), "hour");
@@ -225,22 +231,36 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
       const formatDateTime = (date?: string, time = "00:00") => {
         if (!date) return null;
         const [hh, mm] = time.split(":").map(Number);
-        return dayjs(date).hour(hh).minute(mm).second(0).format("YYYY-MM-DD HH:mm:ss");
+        return dayjs(date)
+          .hour(hh)
+          .minute(mm)
+          .second(0)
+          .format("YYYY-MM-DD HH:mm:ss");
       };
 
       const cfg = rent_types[type] || {};
-      const checkInTimeUsed = checkInTime && checkInTime !== "null" ? checkInTime : cfg.from || "00:00";
+      const checkInTimeUsed =
+        checkInTime && checkInTime !== "null"
+          ? checkInTime
+          : cfg.from || "00:00";
 
       const checkInFull = formatDateTime(checkIn, checkInTimeUsed);
 
       let checkOutFull: string | null = null;
 
       if (type === "hourly") {
-        checkOutFull = dayjs(checkInFull).add(Number(duration), "hour").format("YYYY-MM-DD HH:mm:ss");
+        checkOutFull = dayjs(checkInFull)
+          .add(Number(duration), "hour")
+          .format("YYYY-MM-DD HH:mm:ss");
       } else {
-        const endDate = checkOut || dayjs(checkIn).add(1, "day").format("YYYY-MM-DD");
+        const endDate =
+          checkOut || dayjs(checkIn).add(1, "day").format("YYYY-MM-DD");
         const [h, m] = (cfg.to || "12:00").split(":").map(Number);
-        checkOutFull = dayjs(endDate).hour(h).minute(m).second(0).format("YYYY-MM-DD HH:mm:ss");
+        checkOutFull = dayjs(endDate)
+          .hour(h)
+          .minute(m)
+          .second(0)
+          .format("YYYY-MM-DD HH:mm:ss");
       }
 
       const payload = {
@@ -262,10 +282,19 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
 
       if (res?.booking_id) {
         const prev = JSON.parse(localStorage.getItem("booking") || "{}");
-        localStorage.setItem("booking", JSON.stringify({ ...prev, ...res }));
+        localStorage.setItem(
+          "booking",
+          JSON.stringify({
+            ...prev,
+            ...res,
+            payment: { ...res.payment, method: paymentMethod },
+          })
+        );
         setTimeout(() => router.push("/payment-result"), 300);
       } else {
-        toast.error(getErrorMessage(res?.code) || res?.message || t("booking_failed"));
+        toast.error(
+          getErrorMessage(res?.code) || res?.message || t("booking_failed")
+        );
       }
     } catch (err: any) {
       toast.error(err.message || t("booking_failed"));
@@ -278,27 +307,22 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
 
   return (
     <Box sx={{ bgcolor: "#f9f9f9", py: { xs: 2, md: 3 } }}>
-      <Container maxWidth="lg">
+      <Container maxWidth='lg'>
         <Stack spacing={3}>
           {/* Header / Back */}
           <Stack
-            direction="row"
-            alignItems="center"
+            direction='row'
+            alignItems='center'
             spacing={1}
             sx={{ cursor: "pointer" }}
-            onClick={() => router.back()}
-          >
-            <IconButton size="small">
-              <ArrowBackIcon fontSize="small" />
+            onClick={() => router.back()}>
+            <IconButton size='small'>
+              <ArrowBackIcon fontSize='small' />
             </IconButton>
-            <Typography fontWeight={600} fontSize="1.1rem" color="#333">
-              {t("checkout_back_hint")}
+            <Typography variant='h5' fontWeight='bold' textAlign='center'>
+              {t("confirmation_and_payment")}
             </Typography>
           </Stack>
-
-          <Typography variant="h5" fontWeight="bold" textAlign="center">
-            {t("confirmation_and_payment")}
-          </Typography>
 
           <Grid container spacing={isMobile ? 0 : 2}>
             {/* LEFT COLUMN */}
@@ -311,8 +335,7 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
                   border: "1px solid #e0e0e0",
                   bgcolor: "white",
                   p: 2.5,
-                }}
-              >
+                }}>
                 <Stack spacing={2.5}>
                   {/* Loại thuê + Thời gian */}
                   <Box
@@ -321,11 +344,17 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
                       border: "1px solid #98b720",
                       borderRadius: 3,
                       p: 2,
-                    }}
-                  >
-                    <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
+                    }}>
+                    <Stack
+                      direction='row'
+                      alignItems='center'
+                      spacing={1}
+                      mb={1.5}>
                       {getBookingTypeIcon()}
-                      <Typography fontSize="0.9rem" fontWeight={600} color="#98b720">
+                      <Typography
+                        fontSize='0.9rem'
+                        fontWeight={600}
+                        color='#98b720'>
                         {getBookingTypeLabel()}
                       </Typography>
                     </Stack>
@@ -334,26 +363,40 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
 
                     <Grid container mt={1.5} spacing={1}>
                       <Grid item xs={4}>
-                        <Typography variant="caption" color="#666">
+                        <Typography variant='caption' color='#666'>
                           {t("check_in_label")}
                         </Typography>
-                        <Typography fontWeight={600} fontSize="0.85rem">
+                        <Typography fontWeight={600} fontSize='0.85rem'>
                           {getCheckInDisplay()}
                         </Typography>
                       </Grid>
-                      <Grid item xs={4} sx={{ borderLeft: "1px solid #ccc", textAlign: "center" }}>
-                        <Typography variant="caption" color="#666">
+                      <Grid
+                        item
+                        xs={4}
+                        sx={{
+                          borderLeft: "1px solid #ccc",
+                          textAlign: "center",
+                        }}>
+                        <Typography variant='caption' color='#666'>
                           {t("check_out_label")}
                         </Typography>
-                        <Typography fontWeight={600} fontSize="0.85rem">
+                        <Typography fontWeight={600} fontSize='0.85rem'>
                           {getCheckOutDisplay()}
                         </Typography>
                       </Grid>
-                      <Grid item xs={4} sx={{ borderLeft: "1px solid #ccc", textAlign: "center" }}>
-                        <Typography variant="caption" color="#666">
-                          {type === "daily" ? t("duration_nights") : t("duration_hours")}
+                      <Grid
+                        item
+                        xs={4}
+                        sx={{
+                          borderLeft: "1px solid #ccc",
+                          textAlign: "center",
+                        }}>
+                        <Typography variant='caption' color='#666'>
+                          {type === "daily"
+                            ? t("duration_nights")
+                            : t("duration_hours")}
                         </Typography>
-                        <Typography fontWeight={600} fontSize="0.85rem">
+                        <Typography fontWeight={600} fontSize='0.85rem'>
                           {getDurationDisplay()}
                         </Typography>
                       </Grid>
@@ -362,11 +405,13 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
 
                   {/* Your selection */}
                   <Stack spacing={1.5}>
-                    <Typography fontWeight={600}>{t("your_selection")}</Typography>
-                    <Stack direction="row" spacing={2}>
+                    <Typography fontWeight={600}>
+                      {t("your_selection")}
+                    </Typography>
+                    <Stack direction='row' spacing={2}>
                       <Image
                         src={image || imgMain}
-                        alt="room"
+                        alt='room'
                         width={80}
                         height={80}
                         style={{ borderRadius: 3, objectFit: "cover" }}
@@ -375,10 +420,10 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
                         <Typography fontWeight={600} fontSize={16}>
                           {t("hotels")}: {hotelName}
                         </Typography>
-                        <Typography fontSize={14} color="text.secondary">
+                        <Typography fontSize={14} color='text.secondary'>
                           {t("room")}: {room_name}
                         </Typography>
-                        <Typography fontSize="0.8rem" color="grey.600">
+                        <Typography fontSize='0.8rem' color='grey.600'>
                           {t("address")}: {address}
                         </Typography>
                       </Stack>
@@ -396,36 +441,45 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
                   border: "1px solid #e0e0e0",
                   bgcolor: "white",
                   p: 2.5,
-                }}
-              >
+                }}>
                 <Stack spacing={2}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography fontWeight={600}>{t("booker_info_title")}</Typography>
+                  <Stack
+                    direction='row'
+                    justifyContent='space-between'
+                    alignItems='center'>
+                    <Typography fontWeight={600}>
+                      {t("booker_info_title")}
+                    </Typography>
                     <IconButton
-                      size="small"
+                      size='small'
                       onClick={() => setIsEditing(!isEditing)}
                       sx={{
                         color: "#98b720",
                         opacity: phoneError || nameError ? 0.5 : 1,
-                        pointerEvents: phoneError || nameError ? "none" : "auto",
-                      }}
-                    >
+                        pointerEvents:
+                          phoneError || nameError ? "none" : "auto",
+                      }}>
                       {isEditing ? <CheckIcon /> : <EditIcon />}
                     </IconButton>
                   </Stack>
 
                   {/* Phone */}
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography color="text.secondary" sx={{ minWidth: 80 }}>
+                  <Stack
+                    direction='row'
+                    justifyContent='space-between'
+                    alignItems='center'>
+                    <Typography color='text.secondary' sx={{ minWidth: 80 }}>
                       {t("phone_label")}
                     </Typography>
                     <Box sx={{ position: "relative", width: 220 }}>
                       <TextField
                         fullWidth
-                        size="small"
+                        size='small'
                         value={phone}
                         onChange={(e) => {
-                          const val = e.target.value.replace(/\D/g, "").slice(0, 20);
+                          const val = e.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 20);
                           setPhone(val);
                         }}
                         onBlur={() => setTouchedPhone(true)}
@@ -435,25 +489,35 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
                             ? isPhoneEmpty
                               ? t("phone_required")
                               : !isValidVietnamPhone(phone)
-                                ? t("phone_invalid")
-                                : ""
+                              ? t("phone_invalid")
+                              : ""
                             : ""
                         }
                         placeholder={t("phone_placeholder")}
                         disabled={!isEditing}
                         InputProps={{
                           startAdornment: (
-                            <InputAdornment position="start">
-                              <Flag countryCode="VN" svg style={{ width: 24, height: 24 }} />
+                            <InputAdornment position='start'>
+                              <Flag
+                                countryCode='VN'
+                                svg
+                                style={{ width: 24, height: 24 }}
+                              />
                             </InputAdornment>
                           ),
                         }}
                         sx={{
                           "& .MuiOutlinedInput-root": {
                             borderRadius: 3,
-                            ...(isEditing && { borderColor: "#98b720", bgcolor: "#f0f8f0" }),
+                            ...(isEditing && {
+                              borderColor: "#98b720",
+                              bgcolor: "#f0f8f0",
+                            }),
                           },
-                          "& .Mui-disabled": { bgcolor: "transparent", WebkitTextFillColor: "#333" },
+                          "& .Mui-disabled": {
+                            bgcolor: "transparent",
+                            WebkitTextFillColor: "#333",
+                          },
                         }}
                       />
                       {isEditing && (
@@ -472,27 +536,40 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
                   </Stack>
 
                   {/* Name */}
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography color="text.secondary" sx={{ minWidth: 80 }}>
+                  <Stack
+                    direction='row'
+                    justifyContent='space-between'
+                    alignItems='center'>
+                    <Typography color='text.secondary' sx={{ minWidth: 80 }}>
                       {t("name_label")}
                     </Typography>
                     <Box sx={{ position: "relative", width: 220 }}>
                       <TextField
                         fullWidth
-                        size="small"
+                        size='small'
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         onBlur={() => setTouchedName(true)}
                         error={nameError}
-                        helperText={touchedName && name.trim() === "" ? t("name_required") : ""}
+                        helperText={
+                          touchedName && name.trim() === ""
+                            ? t("name_required")
+                            : ""
+                        }
                         placeholder={t("name_placeholder")}
                         disabled={!isEditing}
                         sx={{
                           "& .MuiOutlinedInput-root": {
                             borderRadius: 3,
-                            ...(isEditing && { borderColor: "#98b720", bgcolor: "#f0f8f0" }),
+                            ...(isEditing && {
+                              borderColor: "#98b720",
+                              bgcolor: "#f0f8f0",
+                            }),
                           },
-                          "& .Mui-disabled": { bgcolor: "transparent", WebkitTextFillColor: "#333" },
+                          "& .Mui-disabled": {
+                            bgcolor: "transparent",
+                            WebkitTextFillColor: "#333",
+                          },
                         }}
                       />
                       {isEditing && (
@@ -524,20 +601,28 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
                     border: "1px solid #e0e0e0",
                     bgcolor: "white",
                     p: 2.5,
-                  }}
-                >
+                  }}>
                   <Stack spacing={2}>
-                    <Typography fontWeight={600}>{t("payment_details_title")}</Typography>
-                    <Stack direction="row" justifyContent="space-between">
-                      <Typography color="text.secondary">{t("room_price")}</Typography>
-                      <Typography color="text.secondary">{totalPrice}</Typography>
+                    <Typography fontWeight={600}>
+                      {t("payment_details_title")}
+                    </Typography>
+                    <Stack direction='row' justifyContent='space-between'>
+                      <Typography color='text.secondary'>
+                        {t("room_price")}
+                      </Typography>
+                      <Typography color='text.secondary'>
+                        {totalPrice}
+                      </Typography>
                     </Stack>
                     <Divider />
-                    <Stack direction="row" justifyContent="space-between">
-                      <Typography fontWeight={700} color="#2b2f38">
+                    <Stack direction='row' justifyContent='space-between'>
+                      <Typography fontWeight={700} color='#2b2f38'>
                         {t("total_payment")}
                       </Typography>
-                      <Typography fontWeight={700} fontSize="1.1rem" color="#2b2f38">
+                      <Typography
+                        fontWeight={700}
+                        fontSize='1.1rem'
+                        color='#2b2f38'>
                         {totalPrice}
                       </Typography>
                     </Stack>
@@ -552,15 +637,30 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
                     border: "1px solid #e0e0e0",
                     bgcolor: "white",
                     p: 2.5,
-                  }}
-                >
+                  }}>
                   <Stack spacing={2}>
-                    <Typography fontWeight={600}>{t("payment_method_title")}</Typography>
-                    <RadioGroup value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as any)}>
+                    <Typography fontWeight={600}>
+                      {t("payment_method_title")}
+                    </Typography>
+                    <RadioGroup
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value as any)}>
                       {[
-                        { value: "momo", label: t("payment_momo"), img: momoImg },
-                        { value: "vnpay", label: t("payment_vnpay"), img: vnpayImg },
-                        { value: "card", label: t("payment_card"), img: walletImg },
+                        {
+                          value: "momo",
+                          label: t("payment_momo"),
+                          img: momoImg,
+                        },
+                        {
+                          value: "vnpay",
+                          label: t("payment_vnpay"),
+                          img: vnpayImg,
+                        },
+                        {
+                          value: "card",
+                          label: t("payment_card"),
+                          img: walletImg,
+                        },
                         {
                           value: "hotel",
                           label: t("payment_hotel"),
@@ -570,23 +670,31 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
                       ].map((item) => (
                         <Stack
                           key={item.value}
-                          direction="row"
-                          justifyContent="space-between"
+                          direction='row'
+                          justifyContent='space-between'
                           alignItems={item.note ? "flex-start" : "center"}
-                          sx={{ py: 1, px: 1 }}
-                        >
-                          <Stack direction="row" spacing={2} alignItems={item.note ? "flex-start" : "center"}>
-                            <Image src={item.img} alt="" sx={{ width: 32, height: 32 }} />
+                          sx={{ py: 1, px: 1 }}>
+                          <Stack
+                            direction='row'
+                            spacing={2}
+                            alignItems={item.note ? "flex-start" : "center"}>
+                            <Image
+                              src={item.img}
+                              alt=''
+                              sx={{ width: 32, height: 32 }}
+                            />
                             <Stack>
-                              <Typography fontWeight={600}>{item.label}</Typography>
+                              <Typography fontWeight={600}>
+                                {item.label}
+                              </Typography>
                               {item.note && (
-                                <Typography fontSize="0.8rem" color="#999">
+                                <Typography fontSize='0.8rem' color='#999'>
                                   {item.note}
                                 </Typography>
                               )}
                             </Stack>
                           </Stack>
-                          <Radio value={item.value} size="small" />
+                          <Radio value={item.value} size='small' />
                         </Stack>
                       ))}
                     </RadioGroup>
@@ -599,19 +707,21 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
                   justifyContent={{ xs: "flex-start", sm: "space-between" }}
                   alignItems={{ xs: "flex-start", sm: "center" }}
                   pt={3}
-                  spacing={{ xs: 2, sm: 0 }}
-                >
+                  spacing={{ xs: 2, sm: 0 }}>
                   <Typography
                     fontSize={16}
                     fontWeight={600}
-                    sx={{ textDecoration: "underline", cursor: "pointer", color: "#2b2f38" }}
-                    onClick={() => setOpenCancelModal(true)}
-                  >
+                    sx={{
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      color: "#2b2f38",
+                    }}
+                    onClick={() => setOpenCancelModal(true)}>
                     {t("cancel_policy_title")}
                   </Typography>
 
                   <Button
-                    variant="contained"
+                    variant='contained'
                     disabled={loading || phoneError || nameError}
                     onClick={handleCreateBooking}
                     sx={{
@@ -623,11 +733,13 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
                       textTransform: "none",
                       width: { xs: "100%", sm: 282 },
                       "&:hover": { bgcolor: "#7a9a1a" },
-                    }}
-                  >
+                    }}>
                     {loading ? (
                       <>
-                        <CircularProgress size={20} sx={{ color: "white", mr: 1 }} />
+                        <CircularProgress
+                          size={20}
+                          sx={{ color: "white", mr: 1 }}
+                        />
                         {t("paying_button")}
                       </>
                     ) : (
@@ -657,10 +769,13 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
             p: 3,
             maxHeight: "85vh",
             overflowY: "auto",
-          }}
-        >
-          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography fontWeight={600} fontSize="1.1rem">
+          }}>
+          <Stack
+            direction='row'
+            justifyContent='space-between'
+            alignItems='center'
+            mb={2}>
+            <Typography fontWeight={600} fontSize='1.1rem'>
               {t("offer_modal_title")}
             </Typography>
             <IconButton onClick={() => setOpenOfferModal(false)}>
@@ -668,7 +783,7 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
             </IconButton>
           </Stack>
 
-          <Typography color="text.secondary" mb={3}>
+          <Typography color='text.secondary' mb={3}>
             {t("available_offers")}
           </Typography>
 
@@ -724,7 +839,7 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
 
           <Button
             fullWidth
-            variant="contained"
+            variant='contained'
             sx={{
               mt: 2,
               borderRadius: 50,
@@ -735,8 +850,7 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
               textTransform: "none",
               "&:hover": { bgcolor: "#e0e0e0" },
             }}
-            onClick={() => setOpenOfferModal(false)}
-          >
+            onClick={() => setOpenOfferModal(false)}>
             {t("apply_offer")}
           </Button>
         </Box>
@@ -755,10 +869,13 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
             borderRadius: 4,
             boxShadow: 24,
             p: 4,
-          }}
-        >
-          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
-            <Typography fontWeight={600} fontSize="1.1rem">
+          }}>
+          <Stack
+            direction='row'
+            justifyContent='space-between'
+            alignItems='center'
+            mb={3}>
+            <Typography fontWeight={600} fontSize='1.1rem'>
               {t("cancel_policy_title")}
             </Typography>
             <IconButton onClick={() => setOpenCancelModal(false)}>
@@ -769,21 +886,29 @@ export default function CheckOutView({ dataCheckout }: CheckOutViewProps) {
           <Stack spacing={2} sx={{ color: "#555", lineHeight: 1.6 }}>
             <Typography>
               {t("cancel_policy_free", {
-                date: checkIn ? dayjs(checkIn).format("D/M/YYYY") : t("check_in"),
+                date: checkIn
+                  ? dayjs(checkIn).format("D/M/YYYY")
+                  : t("check_in"),
               })}
             </Typography>
             <Typography>{t("cancel_policy_suggest")}</Typography>
 
-            <Stack direction="row" justifyContent="space-between" mt={3}>
+            <Stack direction='row' justifyContent='space-between' mt={3}>
               <Typography fontSize={14}>
                 {t("view_more")}{" "}
-                <Box component="span" color="#98b720" sx={{ textDecoration: "underline", cursor: "pointer" }}>
+                <Box
+                  component='span'
+                  color='#98b720'
+                  sx={{ textDecoration: "underline", cursor: "pointer" }}>
                   {t("terms_link")}
                 </Box>
               </Typography>
               <Typography fontSize={14}>
                 {t("support_prefix")}{" "}
-                <Box component="span" color="#98b720" sx={{ textDecoration: "underline", cursor: "pointer" }}>
+                <Box
+                  component='span'
+                  color='#98b720'
+                  sx={{ textDecoration: "underline", cursor: "pointer" }}>
                   {t("contact_support")}
                 </Box>
               </Typography>

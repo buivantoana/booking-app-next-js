@@ -41,13 +41,17 @@ export const metadata: Metadata = {
       },
     ],
   },
+  metadataBase: new URL("https://booking-app-next-js-alpha.vercel.app"),
+  alternates: {
+    canonical: "/",
+  },
 };
 export default function Home() {
   return (
-   <>
-   <Header />
-   <HomeController/>
-   <Footer />
-   </>
+    <>
+      <Header />
+      <HomeController />
+      <Footer />
+    </>
   );
 }

@@ -66,16 +66,16 @@ const DetailRoomView = ({
   hastag,
   amenities,
   rooms,
-  attribute
+  attribute,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
-  const t = useTranslations()
+  const t = useTranslations();
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [tabValue, setTabValue] = useState(0);
-  const location = usePathname()
+  const location = usePathname();
   const section1Ref = useRef(null);
   const section2Ref = useRef(null);
   const section3Ref = useRef(null);
@@ -135,7 +135,6 @@ const DetailRoomView = ({
   };
   const [locationAddress, setLocationAddress] = useState([]);
 
-
   useEffect(() => {
     (async () => {
       try {
@@ -154,9 +153,9 @@ const DetailRoomView = ({
   const handleShare = async () => {
     try {
       const url = window.location.href;
-  
+
       await navigator.clipboard.writeText(url);
-  
+
       toast.success(t("share_copied_success"));
     } catch (err) {
       toast.error(t("share_copied_error"));
@@ -164,7 +163,7 @@ const DetailRoomView = ({
   };
   return (
     <Box sx={{ bgcolor: "#f9f9f9", py: { xs: 2, md: 4 } }}>
-       {isMobile && <SearchBarWithDropdown locationAddress={locationAddress} />}
+      {isMobile && <SearchBarWithDropdown locationAddress={locationAddress} />}
       <Lightbox
         open={lightboxOpen}
         close={() => setLightboxOpen(false)}
@@ -182,18 +181,25 @@ const DetailRoomView = ({
             </Stack>
           ) : (
             <Stack>
-              <Typography suppressHydrationWarning 
+              <Typography
+                suppressHydrationWarning
                 fontWeight={700}
+
                 fontSize={{ xs: "1.25rem", md: "1.5rem" }}
                 color='#333'>
                 {detailHotel?.hotel?.name?.vi || detailHotel?.hotel?.name?.en}
               </Typography>
               <Stack direction='row' alignItems='center' spacing={1} mt={0.5}>
                 <LocationOnIcon sx={{ fontSize: 18, color: "#98b720" }} />
-                <Typography suppressHydrationWarning  fontSize='0.9rem' color='#666'>
-                  {detailHotel?.hotel?.address?.vi ||detailHotel?.hotel?.address?.en}
+                <Typography
+                  suppressHydrationWarning
+                  fontSize='0.9rem'
+                  color='#666'>
+                  {detailHotel?.hotel?.address?.vi ||
+                    detailHotel?.hotel?.address?.en}
                 </Typography>
-                <Typography suppressHydrationWarning 
+                <Typography
+                  suppressHydrationWarning
                   onClick={() =>
                     openMap(
                       detailHotel?.hotel?.latitude,
@@ -203,20 +209,25 @@ const DetailRoomView = ({
                   fontSize='0.85rem'
                   color='#98b720'
                   sx={{ cursor: "pointer", textDecoration: "underline" }}>
-                {t("view_map")}
+                  {t("view_map")}
                 </Typography>
               </Stack>
               <Stack direction='row' alignItems='center' spacing={1} mt={1}>
                 <Stack direction='row' alignItems='center' spacing={0.5}>
                   <StarIcon sx={{ fontSize: 18, color: "#98b720" }} />
-                  <Typography suppressHydrationWarning 
+                  <Typography
+                    suppressHydrationWarning
                     fontWeight={600}
                     color='#98b720'
                     fontSize='0.9rem'>
                     {detailHotel?.hotel?.rating}
                   </Typography>
-                  <Typography suppressHydrationWarning  fontSize='0.85rem' color='#666'>
-                    ({detailHotel?.hotel?.review_count || 0} {t("reviews_count")})
+                  <Typography
+                    suppressHydrationWarning
+                    fontSize='0.85rem'
+                    color='#666'>
+                    ({detailHotel?.hotel?.review_count || 0}{" "}
+                    {t("reviews_count")})
                   </Typography>
                 </Stack>
                 <Box sx={{ flex: 1 }} />
@@ -226,13 +237,17 @@ const DetailRoomView = ({
                   size='small'
                   sx={{ textTransform: "none", color: "#666" }}></Button>
               </Stack>
-           {detailHotel?.hotel?.phone&&   <Stack direction='row' alignItems='center' spacing={1} mt={1}>
-                <Phone sx={{ fontSize: 18, color: "#98b720" }} />
-                <Typography suppressHydrationWarning  fontSize='0.9rem' color='#666'>
-                  {detailHotel?.hotel?.phone }
-                </Typography>
-               
-              </Stack>}
+              {detailHotel?.hotel?.phone && (
+                <Stack direction='row' alignItems='center' spacing={1} mt={1}>
+                  <Phone sx={{ fontSize: 18, color: "#98b720" }} />
+                  <Typography
+                    suppressHydrationWarning
+                    fontSize='0.9rem'
+                    color='#666'>
+                    {detailHotel?.hotel?.phone}
+                  </Typography>
+                </Stack>
+              )}
             </Stack>
           )}
 
@@ -256,7 +271,7 @@ const DetailRoomView = ({
               scrollButtons={false}
               sx={{
                 position: "sticky",
-                top: isMobile?70:80,
+                top: isMobile ? 70 : 80,
                 background: "#f9f9f9",
                 borderBottom: "1px solid #ccc",
                 zIndex: "35",
