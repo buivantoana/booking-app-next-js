@@ -173,7 +173,7 @@ export default function Header() {
               </Box>
             )}
 
-            {/* RIGHT: USER / AUTH */}
+            <LanguagePopover />
             <Box>
               {Object.keys(context.state.user || {}).length > 0 ? (
                 <UserDropdownMenuV2 context={context} />
@@ -190,9 +190,10 @@ export default function Header() {
                           border: "none",
                           color: "#5D6679",
                           borderRadius: "16px",
-                          px: isMobile ? 1 : 3,
+                          px: isMobile ? 1 : 2,
                           py: isMobile ? 1 : 1.2,
                           textTransform: "none",
+                          width: "120px",
                         }}>
                         {t("header_login")}
                       </Button>
@@ -204,9 +205,10 @@ export default function Header() {
                           bgcolor: "#98b720",
                           color: "white",
                           borderRadius: "16px",
-                          px: isMobile ? 1 : 3,
+                          px: isMobile ? 1 : 2,
                           py: isMobile ? 1 : 1.2,
                           textTransform: "none",
+                          width: "100px",
                         }}>
                         {t("header_register")}
                       </Button>
@@ -282,6 +284,7 @@ import {
   RoomPreferencesOutlined as BookingIcon,
 } from "@mui/icons-material";
 import { usePathname } from "@/translation/navigation";
+import LanguagePopover from "./LanguagePopover";
 
 interface UserDropdownMenuV2Props {
   context: any;
