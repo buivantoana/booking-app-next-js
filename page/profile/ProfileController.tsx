@@ -16,21 +16,35 @@ const ProfileController = (props: Props) => {
     total: 0,
     total_pages: 0,
   });
+  const [sortValue, setSortValue] = useState("all");
   useEffect(() => {
     getHistoryBooking(1);
-  }, []);
-  const getHistoryBooking = async (page) => {
-    setLoading(true);
+  }, [sortValue]);
+  useEffect(()=>{
+    getHashTags()
+  },[])
+  const getHashTags =async () => {
     try {
-
       let hastag = await getHashtags();
       if (hastag?.hashtags?.length) {
         setHastag(hastag?.hashtags);
       }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  const getHistoryBooking = async (page) => {
+    setLoading(true);
+    try {
+
+      
       let query: any = {
         page: page || pagination.page,
         limit: pagination.limit,
       };
+      if(sortValue != "all"){
+        query.status = sortValue
+      }
       let result = await historyBookingContact(query);
       console.log("AAAA result", result);
       if (result?.bookings) {
@@ -63,6 +77,8 @@ const ProfileController = (props: Props) => {
       loading={loading}
       pagination={pagination}
       onPageChange={handlePageChange}
+      setSortValue={setSortValue}
+      sortValue={sortValue}
     />
   );
 };

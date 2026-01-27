@@ -124,6 +124,8 @@ const BookingCard = ({
   getHistoryBooking,
   hastag,
   navigateToRoom,
+  bookingRefs,
+  lastBookingIdRef
 }) => {
   const t = useTranslations();
   const theme = useTheme();
@@ -151,14 +153,14 @@ const BookingCard = ({
       return { label: t("cancelled_status"), color: "#E91E1E", bg: "#FFEBEE" };
     }
 
-    if (bookingStatus === "confirmed" && paymentStatus === "paid") {
+    if (bookingStatus === "confirmed" ) {
       return {
         label: t("waiting_checkin_status"),
         color: "#0066CC",
         bg: "#E6F0FA",
       };
     }
-    if (bookingStatus === "no_show" && paymentStatus === "paid") {
+    if (bookingStatus === "no_show" ) {
       return { label: t("no_show_status"), color: "#E91E1E", bg: "#FFEBEE" };
     }
 
@@ -300,6 +302,7 @@ const BookingCard = ({
       />
 
       <Box
+       ref={(el:any) => (bookingRefs.current[booking.booking_id] = el)}
         sx={{
           background: "#fff",
           borderRadius: "16px",
@@ -423,7 +426,14 @@ const BookingCard = ({
                 </Box>
               </Stack>
               <Typography
-                onClick={() => setDetailBooking(booking)}
+                onClick={() => {
+                  lastBookingIdRef.current = booking.booking_id;
+                  setDetailBooking(booking)
+                  
+                  requestAnimationFrame(() => {
+                    window.scrollTo({ top: 0, behavior: 'auto' });
+                  });
+                }}
                 fontSize='14px'
                 sx={{ textDecoration: "underline", cursor: "pointer" }}
                 color='rgba(72, 80, 94, 1)'>
@@ -1092,11 +1102,16 @@ export default function MyBookingsPage({
   onPageChange,
   setDetailBooking,
   navigateToRoom,
+  bookingRefs,
+  lastBookingIdRef,
+  sortValue,
+  setSortValue
+
 }) {
   const t = useTranslations();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [sortValue, setSortValue] = useState("all");
+  
 
   const getBookingStatus = (booking: any) => {
     const paymentStatus = getPaymentStatus(booking.payments);
@@ -1185,7 +1200,7 @@ export default function MyBookingsPage({
           <BookingCardSkeleton />
         ) : (
           <>
-            {filtered.length === 0 ? (
+            {historyBooking.length === 0 ? (
               <Box
                 display='flex'
                 flexDirection='column'
@@ -1205,7 +1220,7 @@ export default function MyBookingsPage({
               </Box>
             ) : (
               <>
-                {filtered.map((booking) => (
+                {historyBooking.map((booking) => (
                   <BookingCard
                     key={booking.booking_id}
                     booking={booking}
@@ -1213,6 +1228,8 @@ export default function MyBookingsPage({
                     getHistoryBooking={getHistoryBooking}
                     hastag={hastag}
                     navigateToRoom={navigateToRoom}
+                    bookingRefs={bookingRefs}
+                    lastBookingIdRef={lastBookingIdRef}
                   />
                 ))}
 

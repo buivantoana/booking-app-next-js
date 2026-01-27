@@ -3,7 +3,7 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import Image from "next/image";
@@ -355,6 +355,8 @@ const ProfileView = ({
   loading,
   pagination,
   onPageChange,
+  setSortValue,
+  sortValue,
 }) => {
   const t = useTranslations();
   const locale = useLocale();
@@ -372,7 +374,8 @@ const ProfileView = ({
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [openCancelBooking, setOpenCancelBooking] = useState(false);
   const [openReason, setOpenReason] = useState(false);
-
+  const bookingRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const lastBookingIdRef = useRef<string | null>(null);
   const menuItems = [
     { text: t("profile_menu"), icon: <PersonIcon />, active: false },
     { text: t("account_settings_menu"), icon: <SettingsIcon />, active: false },
@@ -380,6 +383,27 @@ const ProfileView = ({
     { text: t("logout_menu"), icon: <LogoutIcon />, active: false },
   ];
 
+  useEffect(() => {
+    // chỉ chạy khi quay về list
+    console.log('lastId:', lastBookingIdRef.current);
+console.log('el:', bookingRefs.current[lastBookingIdRef.current!]);
+    if (detailBooking !== null) return;
+  
+    const id = lastBookingIdRef.current;
+    if (!id) return;
+  
+    const el = bookingRefs.current[id];
+    if (!el) return;
+  
+    console.log('lastId:', lastBookingIdRef.current);
+console.log('el:', bookingRefs.current[lastBookingIdRef.current!]);
+    requestAnimationFrame(() => {
+      el.scrollIntoView({
+        behavior: 'auto',
+        block: 'center',
+      });
+    });
+  }, [detailBooking]);
   useEffect(() => {
     if (detailBooking) {
       setDetailBooking(
@@ -841,7 +865,10 @@ const ProfileView = ({
     return (
       <Stack spacing={3}>
         <Stack direction='row' alignItems='center' spacing={1}>
-          <IconButton size='small' onClick={() => setDetailBooking(null)}>
+          <IconButton size='small' onClick={() => {
+            setDetailBooking(null)
+          
+            }}>
             <ArrowBackIcon sx={{ fontSize: 20 }} />
           </IconButton>
           <Typography fontWeight={600} fontSize='1.1rem' color='#333'>
@@ -1408,6 +1435,10 @@ const ProfileView = ({
                 pagination={pagination}
                 onPageChange={onPageChange}
                 navigateToRoom={navigateToRoom}
+                bookingRefs={bookingRefs}
+                lastBookingIdRef={lastBookingIdRef}
+                setSortValue={setSortValue}
+                sortValue={sortValue}
               />
             )}
           </Grid>

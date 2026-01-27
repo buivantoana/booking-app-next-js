@@ -281,7 +281,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                                 ? "rgba(152, 183, 32, 1)"
                                 : "transparent",
                               color: isSelected ? "white" : "inherit",
-                              "&:hover": { bgcolor: "#f0f8f0" },
+                             
                             }}>
                             {props.day.format("D")}
                           </Button>
@@ -495,7 +495,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                                     ? "#f0f8f0"
                                     : "transparent",
                               color: isStart || isEnd ? "white" : "inherit",
-                              "&:hover": { bgcolor: "#e8f5e8" },
+                             
                             }}>
                             {props.day.format("D")}
                           </Button>
@@ -549,7 +549,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                                       ? "#f0f8f0"
                                       : "transparent",
                                 color: isStart || isEnd ? "white" : "inherit",
-                                "&:hover": { bgcolor: "#e8f5e8" },
+                               
                               }}>
                               {props.day.format("D")}
                             </Button>
