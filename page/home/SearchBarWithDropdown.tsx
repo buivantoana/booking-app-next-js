@@ -60,7 +60,7 @@ import { useRouter } from "next/navigation";
 interface DateRangePickerProps {
   open: boolean;
   anchorEl: HTMLElement | null;
-  onClose: () => void;
+  onClose: any;
   onApply: (
     checkIn: Dayjs | null,
     checkOut: Dayjs | null,
@@ -101,7 +101,31 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const hourIndex = hours.indexOf(time);
   const durationIndex = durations.indexOf(duration);
 
+  useEffect(() => {
+  if(!open){
+
+    if (!checkIn) return;
+  
+    if (bookingType === "hourly") {
+      if (time && duration) {
+        const endTime = checkIn
+          .hour(parseInt(time.split(":")[0]))
+          .minute(0)
+          .add(duration, "hour");
+        onApply(checkIn, endTime, time, duration);
+      }
+    } else {
+      // overnight & daily
+      let finalCheckOut = checkOut;
+      if (!finalCheckOut || finalCheckOut.isBefore(checkIn)) {
+        finalCheckOut = checkIn.add(1, "day");
+      }
+      onApply(checkIn, finalCheckOut);
+    }
+  }
+}, [open]);
   const handleApply = () => {
+    
     if (bookingType === "hourly" && checkIn) {
       const endTime = checkIn
         .hour(parseInt(time.split(":")[0]))
@@ -1142,7 +1166,7 @@ const SearchBarWithDropdown = ({ location, address }) => {
                                   current.type = "hourly";
 
                                   // ---- build URL ---- //
-                                  navigate(
+                                  navigate.push(
                                     `/room/${loc.id}?${new URLSearchParams(
                                       current
                                     ).toString()}&name=${parseName(loc.name,locale)}`

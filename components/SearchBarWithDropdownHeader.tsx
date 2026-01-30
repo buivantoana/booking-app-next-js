@@ -150,6 +150,19 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const hourIndex = hours.indexOf(time);
   const durationIndex = durations.indexOf(duration);
 
+  useEffect(()=>{
+    if(!open){
+      if (bookingType === "hourly" && checkIn) {
+        const endTime = checkIn
+          .hour(parseInt(time.split(":")[0]))
+          .minute(0)
+          .add(duration, "hour");
+        onApply(checkIn, endTime, time, duration);
+      } else {
+        onApply(checkIn, checkOut);
+      }
+    }
+  },[open])
   const handleApply = () => {
     if (bookingType === "hourly" && checkIn) {
       const endTime = checkIn
