@@ -81,6 +81,7 @@ export default function LanguagePopover() {
         onClick={handleOpen}
         sx={{
           borderRadius: 2,
+          
           "&:hover": {
             backgroundColor: "transparent",
           },

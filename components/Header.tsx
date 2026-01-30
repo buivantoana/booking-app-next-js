@@ -173,8 +173,8 @@ export default function Header() {
               </Box>
             )}
 
+            <Box display={"flex"}>
             <LanguagePopover />
-            <Box>
               {Object.keys(context.state.user || {}).length > 0 ? (
                 <UserDropdownMenuV2 context={context} />
               ) : (
