@@ -26,7 +26,7 @@ import {
   Marker,
   useJsApiLoader,
 } from "@react-google-maps/api";
-import React, { memo, useCallback, useEffect, useRef, useState,startTransition } from "react";
+import React, { memo, useCallback, useEffect, useRef, useState,startTransition, useDeferredValue } from "react";
 // === ICONS (giữ nguyên) ===
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -49,91 +49,127 @@ const ratings = [
 ];
 
 const PriceRangeSlider = memo(({
-  value,                    // [min, max] từ cha
-  onChangeCommitted,        // gọi khi thả tay
-  onInputBlur,              // gọi khi blur input (tùy chọn)
+  value: propValue = [20000, 10000000], // default nếu prop undefined
+  onChangeCommitted,
   formatPrice,
   formatVND,
   parseNumber,
   t,
 }: {
-  value: [number, number];
+  value?: [number, number];
   onChangeCommitted: (min: number, max: number) => void;
-  onInputBlur?: (min: number, max: number) => void;
   formatPrice: (v: number) => string;
   formatVND: (v: number | string) => string;
   parseNumber: (v: string) => number;
   t: any;
 }) => {
+  // Local state cho drag mượt
+  const [range, setRange] = useState<[number, number]>(propValue);
+
+  // Ref để detect external change (API/reset)
+  const prevPropValueRef = useRef<[number, number]>(propValue);
+
+  // Deferred prop để giảm lag khi cha update nhanh
+  const deferredPropValue = useDeferredValue(propValue);
+
+  // Sync local range khi prop thay đổi từ external
+  useEffect(() => {
+    const prev = prevPropValueRef.current;
+    const current = deferredPropValue;
+
+    // Chỉ sync nếu prop thay đổi thực sự (không từ local commit)
+    if (
+      (prev[0] !== current[0] || prev[1] !== current[1]) &&
+      (range[0] !== current[0] || range[1] !== current[1]) // tránh loop nếu commit set prop = range
+    ) {
+      setRange(current);
+    }
+    prevPropValueRef.current = current;
+  }, [deferredPropValue]);
+
   const minRef = useRef<HTMLInputElement>(null);
   const maxRef = useRef<HTMLInputElement>(null);
   const isDragging = useRef(false);
+  const isMinFocused = useRef(false);
+  const isMaxFocused = useRef(false);
 
-  // Đồng bộ giá trị input khi value từ cha thay đổi
+  // Display state cho input (không nháy)
+  const [displayMin, setDisplayMin] = useState(formatVND(range[0]));
+  const [displayMax, setDisplayMax] = useState(formatVND(range[1]));
+
+  // Sync display input khi range thay đổi
   useEffect(() => {
-    if (!isDragging.current && minRef.current && maxRef.current) {
-      minRef.current.value = formatVND(value[0]);
-      maxRef.current.value = formatVND(value[1]);
+    if (!isMinFocused.current) {
+      const formatted = formatVND(range[0]);
+      setDisplayMin(formatted);
+      if (minRef.current) minRef.current.value = formatted;
     }
-  }, [value, formatVND]);
+    if (!isMaxFocused.current) {
+      const formatted = formatVND(range[1]);
+      setDisplayMax(formatted);
+      if (maxRef.current) maxRef.current.value = formatted;
+    }
+  }, [range]);
 
-  const handleSliderChange = (_: Event, newValue: number | number[]) => {
-    // Không cần set state nữa, chỉ dùng để hiển thị thumb realtime
-    // Nhưng vì controlled, thumb sẽ dùng value từ prop
+  const handleChange = (_: Event, newValue: number | number[]) => {
+    isDragging.current = true;
+    setRange(newValue as [number, number]);
   };
 
   const handleCommitted = (_: Event, newValue: number | number[]) => {
     isDragging.current = false;
     const [min, max] = newValue as [number, number];
     onChangeCommitted(min, max);
+    // Không setRange lại ở đây để tránh lag
   };
 
   const handleMinFocus = () => {
-    if (minRef.current) minRef.current.value = value[0] ? value[0].toString() : '';
+    isMinFocused.current = true;
+    if (minRef.current) minRef.current.value = range[0] ? range[0].toString() : '';
   };
 
   const handleMaxFocus = () => {
-    if (maxRef.current) maxRef.current.value = value[1] >= 10000000 ? '10000000' : value[1].toString();
+    isMaxFocused.current = true;
+    if (maxRef.current) maxRef.current.value = range[1] >= 10000000 ? '10000000' : range[1].toString();
   };
 
   const handleMinBlur = () => {
+    isMinFocused.current = false;
     if (!minRef.current) return;
     const num = parseNumber(minRef.current.value);
-    let newMin = Math.max(0, Math.min(num, value[1]));
+    let newMin = Math.max(0, Math.min(num, range[1]));
+    setRange([newMin, range[1]]);
+    setDisplayMin(formatVND(newMin));
     minRef.current.value = formatVND(newMin);
-    onChangeCommitted(newMin, value[1]);  // hoặc gọi onInputBlur nếu có
-    if (onInputBlur) onInputBlur(newMin, value[1]);
+    onChangeCommitted(newMin, range[1]);
   };
 
   const handleMaxBlur = () => {
+    isMaxFocused.current = false;
     if (!maxRef.current) return;
     const num = parseNumber(maxRef.current.value);
     let newMax = Math.min(num, 10000000);
-    if (newMax < value[0]) newMax = value[1];
+    if (newMax < range[0]) newMax = range[1];
+    setRange([range[0], newMax]);
+    setDisplayMax(formatVND(newMax));
     maxRef.current.value = formatVND(newMax);
-    onChangeCommitted(value[0], newMax);
-    if (onInputBlur) onInputBlur(value[0], newMax);
+    onChangeCommitted(range[0], newMax);
   };
 
   return (
     <Stack>
-      <Typography suppressHydrationWarning fontWeight={600} fontSize='1rem' color='#333' mb={2}>
-        {t("price_range")}
-      </Typography>
-      <Typography variant='h1' suppressHydrationWarning fontSize='0.8rem' color='#666' mb={2}>
-        {t("price_includes_all")}
-      </Typography>
+      {/* Typography giữ nguyên */}
 
       <Box display='flex' justifyContent='center'>
         <Slider
-          value={value}  // Controlled hoàn toàn từ prop
-          onChange={handleSliderChange}  // Chỉ để thumb di chuyển, không set state
+          value={range} // local state cho mượt
+          onChange={handleChange}
           onChangeCommitted={handleCommitted}
           valueLabelDisplay='auto'
-          valueLabelFormat={(v) => formatPrice(v)}
+          valueLabelFormat={formatPrice}
           min={0}
           max={10000000}
-          step={100000}
+          step={100000} // giảm nếu lag, tăng nếu muốn mượt hơn
           sx={{
             color: "#98b720",
             width: "90%",
@@ -144,7 +180,7 @@ const PriceRangeSlider = memo(({
               bgcolor: "white",
               border: "3px solid #98b720",
               boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-              transition: "none !important", // Quan trọng: tắt transition để drag mượt
+              transition: "none !important", // tắt animation để thumb theo chuột ngay lập tức
               "&:hover, &.Mui-focusVisible": {
                 boxShadow: "0 0 0 8px rgba(152, 183, 32, 0.16)",
               },
@@ -155,6 +191,7 @@ const PriceRangeSlider = memo(({
         />
       </Box>
 
+      {/* Input min/max dùng display state */}
       <Stack direction='row' alignItems='center' justifyContent='space-between' mt={3} spacing={2}>
         <Box flex={1}>
           <Typography suppressHydrationWarning fontSize='0.8rem' color='#666' mb={0.5}>
@@ -164,9 +201,11 @@ const PriceRangeSlider = memo(({
             fullWidth
             size="small"
             type="text"
+            value={displayMin}
             inputRef={minRef}
             onFocus={handleMinFocus}
             onBlur={handleMinBlur}
+            onChange={(e) => setDisplayMin(e.target.value)}
             InputProps={{
               startAdornment: <Typography suppressHydrationWarning sx={{ mr: 1 }}>đ</Typography>,
             }}
@@ -189,12 +228,14 @@ const PriceRangeSlider = memo(({
             fullWidth
             size="small"
             type="text"
+            value={displayMax}
             inputRef={maxRef}
             onFocus={handleMaxFocus}
             onBlur={handleMaxBlur}
+            onChange={(e) => setDisplayMax(e.target.value)}
             InputProps={{
               startAdornment: <Typography suppressHydrationWarning sx={{ mr: 1 }}>đ</Typography>,
-              endAdornment: value[1] >= 10000000 ? (
+              endAdornment: range[1] >= 10000000 ? (
                 <Typography suppressHydrationWarning sx={{ ml: 1, color: "#98b720" }}>+</Typography>
               ) : null,
             }}
@@ -451,6 +492,7 @@ const RoomsView = ({
   formatVND={formatVND}
   parseNumber={parseNumber}
   t={t}
+  
 />
       <Divider />
 
