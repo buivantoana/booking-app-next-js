@@ -45,6 +45,7 @@ import building from "../images/buildings.png";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "@/translation/navigation";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 // === DROPDOWN CHỌN LOẠI (giống ảnh) ===
 const BookingTypeDropdown: React.FC<{
   open: boolean;
@@ -1394,7 +1395,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                                     "&:hover": { bgcolor: "#f0f8f0" },
                                   }}>
                                   <ListItemIcon sx={{ minWidth: 36 }}>
-                                    <img src={building} alt='' />
+                                    <Image src={building} alt='' />
                                   </ListItemIcon>
                                   <Box>
                                     <ListItemText

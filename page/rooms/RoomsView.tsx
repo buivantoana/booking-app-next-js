@@ -26,7 +26,7 @@ import {
   Marker,
   useJsApiLoader,
 } from "@react-google-maps/api";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { memo, useCallback, useEffect, useRef, useState,startTransition } from "react";
 // === ICONS (giữ nguyên) ===
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -47,6 +47,174 @@ const ratings = [
   { label: "≥ 4.0", active: false, value: 4 },
   { label: "≥ 4.5", active: false, value: 4.5 },
 ];
+
+const PriceRangeSlider = memo(({
+  value,                    // [min, max] từ cha
+  onChangeCommitted,        // gọi khi thả tay
+  onInputBlur,              // gọi khi blur input (tùy chọn)
+  formatPrice,
+  formatVND,
+  parseNumber,
+  t,
+}: {
+  value: [number, number];
+  onChangeCommitted: (min: number, max: number) => void;
+  onInputBlur?: (min: number, max: number) => void;
+  formatPrice: (v: number) => string;
+  formatVND: (v: number | string) => string;
+  parseNumber: (v: string) => number;
+  t: any;
+}) => {
+  const minRef = useRef<HTMLInputElement>(null);
+  const maxRef = useRef<HTMLInputElement>(null);
+  const isDragging = useRef(false);
+
+  // Đồng bộ giá trị input khi value từ cha thay đổi
+  useEffect(() => {
+    if (!isDragging.current && minRef.current && maxRef.current) {
+      minRef.current.value = formatVND(value[0]);
+      maxRef.current.value = formatVND(value[1]);
+    }
+  }, [value, formatVND]);
+
+  const handleSliderChange = (_: Event, newValue: number | number[]) => {
+    // Không cần set state nữa, chỉ dùng để hiển thị thumb realtime
+    // Nhưng vì controlled, thumb sẽ dùng value từ prop
+  };
+
+  const handleCommitted = (_: Event, newValue: number | number[]) => {
+    isDragging.current = false;
+    const [min, max] = newValue as [number, number];
+    onChangeCommitted(min, max);
+  };
+
+  const handleMinFocus = () => {
+    if (minRef.current) minRef.current.value = value[0] ? value[0].toString() : '';
+  };
+
+  const handleMaxFocus = () => {
+    if (maxRef.current) maxRef.current.value = value[1] >= 10000000 ? '10000000' : value[1].toString();
+  };
+
+  const handleMinBlur = () => {
+    if (!minRef.current) return;
+    const num = parseNumber(minRef.current.value);
+    let newMin = Math.max(0, Math.min(num, value[1]));
+    minRef.current.value = formatVND(newMin);
+    onChangeCommitted(newMin, value[1]);  // hoặc gọi onInputBlur nếu có
+    if (onInputBlur) onInputBlur(newMin, value[1]);
+  };
+
+  const handleMaxBlur = () => {
+    if (!maxRef.current) return;
+    const num = parseNumber(maxRef.current.value);
+    let newMax = Math.min(num, 10000000);
+    if (newMax < value[0]) newMax = value[1];
+    maxRef.current.value = formatVND(newMax);
+    onChangeCommitted(value[0], newMax);
+    if (onInputBlur) onInputBlur(value[0], newMax);
+  };
+
+  return (
+    <Stack>
+      <Typography suppressHydrationWarning fontWeight={600} fontSize='1rem' color='#333' mb={2}>
+        {t("price_range")}
+      </Typography>
+      <Typography variant='h1' suppressHydrationWarning fontSize='0.8rem' color='#666' mb={2}>
+        {t("price_includes_all")}
+      </Typography>
+
+      <Box display='flex' justifyContent='center'>
+        <Slider
+          value={value}  // Controlled hoàn toàn từ prop
+          onChange={handleSliderChange}  // Chỉ để thumb di chuyển, không set state
+          onChangeCommitted={handleCommitted}
+          valueLabelDisplay='auto'
+          valueLabelFormat={(v) => formatPrice(v)}
+          min={0}
+          max={10000000}
+          step={100000}
+          sx={{
+            color: "#98b720",
+            width: "90%",
+            height: 6,
+            "& .MuiSlider-thumb": {
+              width: 18,
+              height: 18,
+              bgcolor: "white",
+              border: "3px solid #98b720",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+              transition: "none !important", // Quan trọng: tắt transition để drag mượt
+              "&:hover, &.Mui-focusVisible": {
+                boxShadow: "0 0 0 8px rgba(152, 183, 32, 0.16)",
+              },
+            },
+            "& .MuiSlider-track": { bgcolor: "#98b720", border: "none" },
+            "& .MuiSlider-rail": { bgcolor: "#e0e0e0", opacity: 1 },
+          }}
+        />
+      </Box>
+
+      <Stack direction='row' alignItems='center' justifyContent='space-between' mt={3} spacing={2}>
+        <Box flex={1}>
+          <Typography suppressHydrationWarning fontSize='0.8rem' color='#666' mb={0.5}>
+            {t("min_price")}
+          </Typography>
+          <TextField
+            fullWidth
+            size="small"
+            type="text"
+            inputRef={minRef}
+            onFocus={handleMinFocus}
+            onBlur={handleMinBlur}
+            InputProps={{
+              startAdornment: <Typography suppressHydrationWarning sx={{ mr: 1 }}>đ</Typography>,
+            }}
+            placeholder='0'
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "16px",
+                backgroundColor: "#fff",
+                "&.Mui-focused fieldset": { borderColor: "#98b720", borderWidth: 1.5 },
+              },
+            }}
+          />
+        </Box>
+
+        <Box flex={1}>
+          <Typography suppressHydrationWarning fontSize='0.8rem' color='#666' mb={0.5}>
+            {t("max_price")}
+          </Typography>
+          <TextField
+            fullWidth
+            size="small"
+            type="text"
+            inputRef={maxRef}
+            onFocus={handleMaxFocus}
+            onBlur={handleMaxBlur}
+            InputProps={{
+              startAdornment: <Typography suppressHydrationWarning sx={{ mr: 1 }}>đ</Typography>,
+              endAdornment: value[1] >= 10000000 ? (
+                <Typography suppressHydrationWarning sx={{ ml: 1, color: "#98b720" }}>+</Typography>
+              ) : null,
+            }}
+            placeholder='10.000.000'
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "16px",
+                backgroundColor: "#fff",
+                "&.Mui-focused fieldset": { borderColor: "#98b720", borderWidth: 1.5 },
+              },
+            }}
+          />
+        </Box>
+      </Stack>
+    </Stack>
+  );
+});
+
+PriceRangeSlider.displayName = 'PriceRangeSlider';
+
 
 const RoomsView = ({
   dataHotel,
@@ -71,6 +239,7 @@ const RoomsView = ({
   const [activeMap, setActiveMap] = useState(false);
   const [ratingList, setRatingList] = useState(ratings);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [filterLoading, setFilterLoading] = useState(false);
   const location = usePathname();
   const context = useBookingContext();
   const t = useTranslations();
@@ -135,117 +304,61 @@ const RoomsView = ({
       min_rating: ratingList[index].value.toString(), // chỉ 1 giá trị
     });
   };
-  const [priceRange, setPriceRange] = useState<[number, number]>([
-    20000, 10000000,
-  ]);
-  const [minPriceRaw, setMinPriceRaw] = useState<string>(""); // raw khi focus
-  const [maxPriceRaw, setMaxPriceRaw] = useState<string>("");
+  const [priceRange, setPriceRange] = useState<[number, number]>([20000, 10000000]);
+  const minRef = useRef<HTMLInputElement>(null);
+  const maxRef = useRef<HTMLInputElement>(null);
+  const parseNumber = (v: string) =>
+    Number(v.replace(/[^0-9]/g, '') || 0);
   // Hàm xử lý khi kéo slider (onChange)
+  useEffect(() => {
+    if (minRef.current) {
+      minRef.current.value = formatVND(priceRange[0]);
+    }
+    if (maxRef.current) {
+      maxRef.current.value = formatVND(priceRange[1]);
+    }
+  }, [priceRange]);
 
   // Hàm chung để gọi API sau debounce (dùng cho cả slider và input)
   const debounceUpdateQuery = (newMin: number, newMax: number) => {
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
     }
-
+  
     debounceTimeout.current = setTimeout(() => {
-      console.log("Debounce gọi API với giá:", newMin, newMax); // debug
-      setQueryHotel((prev) => ({
-        ...prev,
-        min_price: newMin,
-        max_price: newMax,
-        page: 1,
-      }));
-    }, 800); // 800ms hoặc 1000ms tùy bạn
+      startTransition(() => {
+        setQueryHotel((prev) => ({
+          ...prev,
+          min_price: newMin,
+          max_price: newMax,
+          page: 1,
+        }));
+        setPriceRange([newMin, newMax]); // sync ngay để slider không nháy
+        setFilterLoading(false)
+      });
+    }, 1000);// 500–800ms là mượt
   };
-  const handlePriceChange = (_: Event, newValue: number | number[]) => {
-    let [newMin, newMax] = newValue as [number, number];
+  
 
-    // Nếu kéo min vượt quá max → giữ nguyên min cũ
-    if (newMin > newMax) {
-      newMin = priceRange[0]; // Giữ nguyên min cũ
-    }
-
-    // Nếu kéo max nhỏ hơn min → giữ nguyên max cũ
-    if (newMax < newMin) {
-      newMax = priceRange[1]; // Giữ nguyên max cũ
-    }
-
-    // Cập nhật state
-    setPriceRange([newMin, newMax]);
-
-    // Debounce gọi API
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
-    debounceUpdateQuery(newMin, newMax);
+  const handlePriceCommit = (min: number, max: number) => {
+    setFilterLoading(true);
+    debounceUpdateQuery(min, max);
+    setPriceRange([min, max]);  // Cập nhật state cha → slider sẽ sync theo
   };
+  // Hàm xử lý khi người dùng nhập tay vào input min/max
+
 
   // Hàm format VND (dùng khi blur hoặc hiển thị không focus)
   const formatVND = (value: number | string): string => {
-    const num =
-      typeof value === "string"
-        ? parseInt(value.replace(/[^0-9]/g, "") || "0")
-        : value;
-    if (num === 0) return "";
-    if (num >= 10000000) return "10.000.000+";
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    const num = typeof value === 'string' ? parseInt(value.replace(/[^0-9]/g, '') || '0') : value;
+    if (num === 0) return '';
+    if (num >= 10000000) return '10.000.000+';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   };
 
   // Khi focus: hiển thị số thô
-  const handleMinFocus = () => {
-    setMinPriceRaw(priceRange[0] === 0 ? "" : priceRange[0].toString());
-    setIsMinFocused(true);
-  };
-
-  const handleMaxFocus = () => {
-    setMaxPriceRaw(
-      priceRange[1] >= 10000000 ? "10000000" : priceRange[1].toString()
-    );
-    setIsMaxFocused(true);
-  };
-
-  // Khi blur: format lại đẹp và cập nhật priceRange
-  const handleMinBlur = () => {
-    const num = parseInt(minPriceRaw.replace(/[^0-9]/g, "") || "0");
-    const newMin = Math.max(0, Math.min(num, priceRange[1]));
-    setPriceRange([newMin, priceRange[1]]);
-    // Không cần set lại raw, vì focus sẽ set lại
-    setIsMinFocused(false);
-  };
-
-  const handleMaxBlur = () => {
-    const num = parseInt(maxPriceRaw.replace(/[^0-9]/g, "") || "0");
-    const newMax = Math.min(10000000, Math.max(num, priceRange[0]));
-    setPriceRange([priceRange[0], newMax]);
-    // Không set raw ở đây
-    setIsMinFocused(false);
-  };
-
-  // onChange: chỉ cập nhật raw (giữ nguyên số khi gõ)
-  const handleMinInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, "");
-    setMinPriceRaw(value);
-
-    const num = value ? Number(value) : 0;
-    const newMin = Math.max(0, Math.min(num, priceRange[1]));
-    setPriceRange([newMin, priceRange[1]]);
-    debounceUpdateQuery(newMin, priceRange[1]);
-  };
-
-  const handleMaxInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, "");
-    setMaxPriceRaw(value);
-
-    const num = value ? Number(value) : 0;
-    const newMax = Math.min(10000000, Math.max(num, priceRange[0]));
-    setPriceRange([priceRange[0], newMax]);
-    debounceUpdateQuery(priceRange[0], newMax);
-  };
 
   // Quan trọng: value của TextField sẽ thay đổi theo trạng thái focus/blur
-  const [isMinFocused, setIsMinFocused] = useState(false);
-  const [isMaxFocused, setIsMaxFocused] = useState(false);
 
   // Đừng quên cleanup khi component unmount
   useEffect(() => {
@@ -256,6 +369,7 @@ const RoomsView = ({
     };
   }, []);
   const [locationAddress, setLocationAddress] = useState([]);
+
 
   useEffect(() => {
     (async () => {
@@ -274,7 +388,8 @@ const RoomsView = ({
   }, [location]);
 
   // Component con để render phần filter (tránh lặp code)
-  const FilterSection = () => (
+  const FilterSection = memo(
+    () => (
     <Stack spacing={4}>
       {/* MAP */}
       <Box
@@ -329,151 +444,14 @@ const RoomsView = ({
       </Box>
 
       {/* KHOẢNG GIÁ */}
-      <Stack>
-        <Typography
-          suppressHydrationWarning
-          fontWeight={600}
-          fontSize='1rem'
-          color='#333'
-          mb={2}>
-          {t("price_range")}
-        </Typography>
-        <Typography
-          variant='h1'
-          suppressHydrationWarning
-          fontSize='0.8rem'
-          color='#666'
-          mb={2}>
-          {t("price_includes_all")}
-        </Typography>
-
-        <Box display='flex' justifyContent='center'>
-          <Slider
-            value={priceRange}
-            onChange={handlePriceChange}
-            valueLabelDisplay='auto'
-            valueLabelFormat={(value) => formatPrice(value)}
-            min={0}
-            max={10000000}
-            step={10000}
-            sx={{
-              color: "#98b720",
-              width: "90%",
-              height: 6,
-              "& .MuiSlider-thumb": {
-                width: 18,
-                height: 18,
-                bgcolor: "white",
-                border: "3px solid #98b720",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                "&:hover, &.Mui-focusVisible": {
-                  boxShadow: "0 0 0 8px rgba(152, 183, 32, 0.16)",
-                },
-              },
-              "& .MuiSlider-track": {
-                bgcolor: "#98b720",
-                border: "none",
-              },
-              "& .MuiSlider-rail": {
-                bgcolor: "#e0e0e0",
-                opacity: 1,
-              },
-            }}
-          />
-        </Box>
-
-        {/* Input nhập tay min & max */}
-        <Stack
-          direction='row'
-          alignItems='center'
-          justifyContent='space-between'
-          mt={3}
-          spacing={2}>
-          <Box flex={1}>
-            <Typography
-              suppressHydrationWarning
-              fontSize='0.8rem'
-              color='#666'
-              mb={0.5}>
-              {t("min_price")}
-            </Typography>
-            <TextField
-              id='min-price'
-              fullWidth
-              size='small'
-              type='text'
-              value={isMinFocused ? minPriceRaw : formatVND(priceRange[0])}
-              onChange={handleMinInputChange}
-              onFocus={handleMinFocus}
-              onBlur={handleMinBlur}
-              InputProps={{
-                startAdornment: (
-                  <Typography suppressHydrationWarning sx={{ mr: 1 }}>
-                    ₫
-                  </Typography>
-                ),
-              }}
-              placeholder='0'
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "16px",
-                  backgroundColor: "#fff",
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#98b720",
-                    borderWidth: 1.5,
-                  },
-                },
-              }}
-            />
-          </Box>
-
-          <Box flex={1}>
-            <Typography
-              suppressHydrationWarning
-              fontSize='0.8rem'
-              color='#666'
-              mb={0.5}>
-              {t("max_price")}
-            </Typography>
-            <TextField
-              id='max-price'
-              fullWidth
-              size='small'
-              type='text'
-              value={isMaxFocused ? maxPriceRaw : formatVND(priceRange[1])}
-              onChange={handleMaxInputChange}
-              onFocus={handleMaxFocus}
-              onBlur={handleMaxBlur}
-              InputProps={{
-                startAdornment: (
-                  <Typography suppressHydrationWarning sx={{ mr: 1 }}>
-                    ₫
-                  </Typography>
-                ),
-                endAdornment:
-                  priceRange[1] >= 10000000 ? (
-                    <Typography
-                      suppressHydrationWarning
-                      sx={{ ml: 1, color: "#98b720" }}>
-                      +
-                    </Typography>
-                  ) : null,
-              }}
-              placeholder='10.000.000'
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "16px",
-                  backgroundColor: "#fff",
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#98b720",
-                    borderWidth: 1.5,
-                  },
-                },
-              }}
-            />
-          </Box>
-        </Stack>
-      </Stack>
+      <PriceRangeSlider
+  value={priceRange}  // Truyền state từ cha
+  onChangeCommitted={handlePriceCommit}
+  formatPrice={formatPrice}
+  formatVND={formatVND}
+  parseNumber={parseNumber}
+  t={t}
+/>
       <Divider />
 
       {/* ĐIỂM ĐÁNH GIÁ */}
@@ -568,7 +546,7 @@ const RoomsView = ({
         </Grid>
       </Stack>
     </Stack>
-  );
+  ));
 
   return (
     <Container
@@ -1096,7 +1074,7 @@ const FilterMap = ({
   );
 };
 
-const ItemHotel = ({
+const ItemHotel = memo(({
   dataHotel,
   loading,
   isMobile,
@@ -1245,8 +1223,7 @@ const ItemHotel = ({
                     navigate.push(
                       `/room/${hotel.id}?${new URLSearchParams(
                         current
-                      ).toString()}&name=${
-                        JSON.parse(hotel.name).vi || JSON.parse(hotel.name).en
+                      ).toString()}&name=${JSON.parse(hotel.name).vi || JSON.parse(hotel.name).en
                       }`
                     );
                   }}
@@ -1511,7 +1488,7 @@ const ItemHotel = ({
       )}
     </>
   );
-};
+});
 
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
