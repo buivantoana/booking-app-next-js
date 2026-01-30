@@ -46,6 +46,25 @@ import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "@/translation/navigation";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
+
+// === INTERFACE ===
+interface DateRangePickerProps {
+  open: boolean;
+  anchorEl: HTMLElement | null;
+  onClose: () => void;
+  onApply: (
+    checkIn: Dayjs | null,
+    checkOut: Dayjs | null,
+    time?: string,
+    duration?: number
+  ) => void;
+  bookingType: string;
+  initialCheckIn?: Dayjs | null;
+  initialCheckOut?: Dayjs | null;
+  initialTime?: string;
+  initialDuration?: number;
+}
+
 // === DROPDOWN CHỌN LOẠI (giống ảnh) ===
 const BookingTypeDropdown: React.FC<{
   open: boolean;
@@ -132,10 +151,12 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   initialTime,
   initialDuration,
 }) => {
-  const [checkIn, setCheckIn] = useState<Dayjs | null>(initialCheckIn);
-  const [checkOut, setCheckOut] = useState<Dayjs | null>(initialCheckOut);
-  const [time, setTime] = useState<string>(initialTime);
+  const [checkIn, setCheckIn] = useState<Dayjs | null>(initialCheckIn || dayjs());
+  const [checkOut, setCheckOut] = useState<Dayjs | null>(initialCheckOut || null);
+  const [time, setTime] = useState<string>(initialTime || "");
   const [duration, setDuration] = useState<number>(initialDuration || 2);
+  const [selecting, setSelecting] = useState<"checkIn" | "checkOut">("checkIn");
+  
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const t = useTranslations();
@@ -150,19 +171,52 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const hourIndex = hours.indexOf(time);
   const durationIndex = durations.indexOf(duration);
 
-  useEffect(()=>{
-    if(!open){
-      if (bookingType === "hourly" && checkIn) {
-        const endTime = checkIn
-          .hour(parseInt(time.split(":")[0]))
-          .minute(0)
-          .add(duration, "hour");
-        onApply(checkIn, endTime, time, duration);
+  // Thiết lập giá trị mặc định khi mở popup
+  useEffect(() => {
+    if (open) {
+      if (initialCheckIn) {
+        setCheckIn(initialCheckIn);
+      } else if (bookingType !== "hourly") {
+        setCheckIn(now);
+      }
+      
+      if (initialCheckOut) {
+        setCheckOut(initialCheckOut);
+      } else if (bookingType === "daily" && initialCheckIn) {
+        setCheckOut(initialCheckIn.add(1, "day"));
+      } else if (bookingType === "overnight" && initialCheckIn) {
+        setCheckOut(initialCheckIn.add(1, "day"));
+      }
+      
+      // Mặc định đang chọn checkIn
+      setSelecting("checkIn");
+    }
+  }, [open, bookingType]);
+
+  // Hiệu ứng tự động apply khi đóng
+  useEffect(() => {
+    if (!open) {
+      if (!checkIn) return;
+
+      if (bookingType === "hourly") {
+        if (time && duration) {
+          const endTime = checkIn
+            .hour(parseInt(time.split(":")[0]))
+            .minute(0)
+            .add(duration, "hour");
+          onApply(checkIn, endTime, time, duration);
+        }
       } else {
-        onApply(checkIn, checkOut);
+        // overnight & daily
+        let finalCheckOut = checkOut;
+        if (!finalCheckOut || finalCheckOut.isBefore(checkIn)) {
+          finalCheckOut = checkIn.add(1, "day");
+        }
+        onApply(checkIn, finalCheckOut);
       }
     }
-  },[open])
+  }, [open]);
+
   const handleApply = () => {
     if (bookingType === "hourly" && checkIn) {
       const endTime = checkIn
@@ -179,12 +233,14 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const handleReset = () => {
     setCheckIn(dayjs());
     setCheckOut(null);
-    const now = dayjs();
-    const nextHour = now.add(1, "hour").startOf("hour"); // làm tròn lên giờ tiếp theo
-    const formatted = nextHour.format("HH:00");
-
-    setTime(formatted);
-    setDuration(2);
+    setSelecting("checkIn");
+    
+    if (bookingType === "hourly") {
+      const nextHour = now.add(1, "hour").startOf("hour");
+      const formatted = nextHour.format("HH:00");
+      setTime(formatted);
+      setDuration(2);
+    }
   };
 
   const isToday = checkIn && checkIn.isSame(now, "day");
@@ -192,61 +248,58 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const disabledHours = isToday
     ? hours.filter((h) => {
         const hourNum = parseInt(h.split(":")[0]);
-        return hourNum <= now.hour(); // disable những giờ đã qua
+        return hourNum <= now.hour();
       })
     : [];
-  const handleDateSelect = (date: Dayjs, isSecondCalendar: boolean = false) => {
-    if (bookingType === "overnight") {
+
+  // Hàm xử lý chọn ngày - Airbnb style chỉ cho daily booking
+  const handleDateSelectDaily = (date: Dayjs) => {
+    if (selecting === "checkIn") {
+      // Chọn checkIn
       setCheckIn(date);
-      setCheckOut(date.add(1, "day"));
-    } else if (bookingType === "daily") {
-      // Logic mới: Phân biệt theo calendar
-      if (isSecondCalendar) {
-        // Click ở calendar bên phải (tháng sau) → ưu tiên đặt checkOut
-        if (!checkIn) {
-          // Nếu chưa có checkIn → đặt checkIn trước
-          setCheckIn(date);
-          setCheckOut(null);
-        } else if (date.isAfter(checkIn)) {
-          // Đã có checkIn và ngày click sau checkIn → đặt checkOut
-          setCheckOut(date);
-        } else {
-          // Ngày click trước checkIn → reset checkIn thành ngày mới
-          setCheckIn(date);
-          setCheckOut(null);
-        }
-      } else {
-        // Click ở calendar bên trái (tháng hiện tại) → ưu tiên đặt checkIn
-        if (!checkIn || (checkOut && date.isBefore(checkIn))) {
-          setCheckIn(date);
-          setCheckOut(null);
-        } else if (!checkOut && date.isAfter(checkIn)) {
-          setCheckOut(date);
-        } else {
-          setCheckIn(date);
-          setCheckOut(null);
-        }
+      // Nếu checkOut tồn tại và nhỏ hơn hoặc bằng checkIn mới, reset checkOut
+      if (checkOut && (checkOut.isSame(date, "day") || checkOut.isBefore(date, "day"))) {
+        setCheckOut(null);
       }
-    } else if (bookingType === "hourly") {
-      setCheckIn(date);
-
-      const selectedIsToday = date.isSame(now, "day");
-
-      if (selectedIsToday) {
-        const nextHour = now.hour() + 1;
-        const nextHourStr = hours[nextHour] || hours[hours.length - 1];
-        setTime(nextHourStr);
+      setSelecting("checkOut");
+    } else {
+      // Chọn checkOut - phải sau checkIn
+      if (date.isAfter(checkIn, "day")) {
+        setCheckOut(date);
+        setSelecting("checkIn"); // Chuẩn bị cho lần chọn tiếp theo
       } else {
-        setTime("00:00");
+        // Nếu chọn ngày trước checkIn, coi như reset và chọn checkIn mới
+        setCheckIn(date);
+        setCheckOut(null);
+        setSelecting("checkOut");
       }
-
-      setDuration(2);
     }
+  };
+
+  // Hàm xử lý chọn ngày cho overnight - logic cũ
+  const handleDateSelectOvernight = (date: Dayjs) => {
+    setCheckIn(date);
+    setCheckOut(date.add(1, "day"));
+  };
+
+  // Hàm xử lý chọn ngày cho hourly - logic cũ
+  const handleDateSelectHourly = (date: Dayjs) => {
+    setCheckIn(date);
+    const selectedIsToday = date.isSame(now, "day");
+
+    if (selectedIsToday) {
+      const nextHour = now.hour() + 1;
+      const nextHourStr = hours[nextHour] || hours[hours.length - 1];
+      setTime(nextHourStr);
+    } else {
+      setTime("00:00");
+    }
+    setDuration(2);
   };
 
   if (!open || !anchorEl) return null;
 
-  const endTime = checkIn
+  const endTime = checkIn && time
     ? checkIn
         .hour(parseInt(time.split(":")[0]))
         .minute(0)
@@ -278,13 +331,11 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
         }}>
         <LocalizationProvider adapterLocale={locale} dateAdapter={AdapterDayjs}>
           <Stack>
-            {/* Header */}
+            {/* Header - Hiển thị tháng và năm */}
             <Box p={2} bgcolor='#f9f9f9' borderBottom='1px solid #eee'>
-              {/* <Typography suppressHydrationWarning  fontWeight={600} color='#333'>
-              {dayjs()
-        .locale(i18n.language)
-        .format("MMMM YYYY")}
-              </Typography> */}
+              <Typography suppressHydrationWarning fontWeight={600} color='#333'>
+                {checkIn ? checkIn.format("MMMM YYYY") : dayjs().format("MMMM YYYY")}
+              </Typography>
             </Box>
 
             {bookingType === "hourly" ? (
@@ -313,7 +364,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                         return (
                           <Button
                             {...validProps}
-                            onClick={() => handleDateSelect(props.day)}
+                            onClick={() => handleDateSelectHourly(props.day)}
                             sx={{
                               minWidth: 36,
                               height: 36,
@@ -322,7 +373,6 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                                 ? "rgba(152, 183, 32, 1)"
                                 : "transparent",
                               color: isSelected ? "white" : "inherit",
-                              
                             }}>
                             {props.day.format("D")}
                           </Button>
@@ -369,22 +419,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                               disabled={disabledHours.includes(h)}
                               variant={time === h ? "contained" : "text"}
                               size='small'
-                              onClick={() => {
-                                const hourNum = parseInt(h.split(":")[0]);
-
-                                if (isToday) {
-                                  if (hourNum <= now.hour()) {
-                                    const next =
-                                      hours[now.hour() + 1] ||
-                                      hours[hours.length - 1];
-                                    setTime(next);
-                                  } else {
-                                    setTime(h);
-                                  }
-                                } else {
-                                  setTime(h);
-                                }
-                              }}
+                              onClick={() => setTime(h)}
                               sx={{
                                 minWidth: 60,
                                 borderRadius: "12px",
@@ -513,117 +548,211 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                   </Box>
                 </Box>
               </Stack>
-            ) : (
-              /* === QUA ĐÊM / THEO NGÀY === */
-              <Stack
-                direction='row'
-                flexDirection={isMobile ? "column" : "row"}
-                spacing={0}>
-                {/* Tháng 1 */}
+            ) : bookingType === "daily" ? (
+              /* === THEO NGÀY (Airbnb Style với 2 calendar) === */
+              <Stack direction="row" spacing={0}>
+                {/* Calendar bên trái - Tháng hiện tại */}
                 <Box sx={{ flex: 1, p: 1, borderRight: "1px solid #eee" }}>
                   <DateCalendar
-                    value={checkIn}
+                    value={checkIn || dayjs()}
                     onChange={() => {}}
                     disablePast
+                    reduceAnimations
                     sx={{
                       width: "100%",
                       "& .MuiPickersDay-root": {
-                        borderRadius: "50%",
+                        borderRadius: "8px",
                         "&.Mui-selected": {
                           bgcolor: "rgba(152, 183, 32, 1) !important",
                           color: "white",
                         },
+                        "&.MuiPickersDay-today": {
+                          border: "1px solid rgba(152, 183, 32, 0.5)",
+                        },
                       },
                     }}
+                    dayOfWeekFormatter={(date) => date.format("dd")}
                     slots={{
                       day: (props) => {
-                        const isStart = checkIn?.isSame(props.day, "day");
-                        const isEnd = checkOut?.isSame(props.day, "day");
+                        const { day } = props;
+                        const isStart = checkIn?.isSame(day, "day");
+                        const isEnd = checkOut?.isSame(day, "day");
                         const isInRange =
                           checkIn &&
                           checkOut &&
-                          props.day.isAfter(checkIn) &&
-                          props.day.isBefore(checkOut);
+                          day.isAfter(checkIn, "day") &&
+                          day.isBefore(checkOut, "day");
+
+                        const isDisabled = day.isBefore(now, "day");
 
                         return (
                           <Button
                             {...props}
-                            onClick={() => handleDateSelect(props.day)}
+                            disabled={isDisabled || props.disabled}
+                            onClick={() => handleDateSelectDaily(day)}
                             sx={{
                               minWidth: 36,
                               height: 36,
-                              borderRadius: isStart || isEnd ? "50%" : "50%",
-                              bgcolor:
-                                isStart || isEnd
-                                  ? "rgba(152, 183, 32, 1)"
-                                  : isInRange
-                                  ? "#f0f8f0"
+                              borderRadius: "50%",
+                              bgcolor: isStart || isEnd
+                                ? "rgba(152, 183, 32, 1)"
+                                : isInRange
+                                  ? "rgba(152, 183, 32, 0.15)"
                                   : "transparent",
                               color: isStart || isEnd ? "white" : "inherit",
-                              
-                            }}>
-                            {props.day.format("D")}
+                              fontWeight: isStart || isEnd ? 600 : 400,
+                              position: "relative",
+                              "&:hover": {
+                                bgcolor: isStart || isEnd
+                                  ? "rgba(152, 183, 32, 0.9)"
+                                  : "rgba(152, 183, 32, 0.1)",
+                              },
+                              // Hiệu ứng range (Airbnb style)
+                              ...(isInRange && {
+                                borderRadius: 0,
+                              }),
+                              ...(isStart && checkOut && {
+                                borderTopRightRadius: 0,
+                                borderBottomRightRadius: 0,
+                              }),
+                              ...(isEnd && checkIn && {
+                                borderTopLeftRadius: 0,
+                                borderBottomLeftRadius: 0,
+                              }),
+                            }}
+                          >
+                            {day.format("D")}
                           </Button>
                         );
                       },
                     }}
                   />
                 </Box>
-
-                {/* Tháng 2 - Chỉ khi "Theo ngày" */}
-                {bookingType === "daily" && (
-                  <Box sx={{ flex: 1, p: 1 }}>
-                    <DateCalendar
-                      referenceDate={dayjs().add(1, "month")}
-                      // value={checkIn}
-                      onChange={() => {}}
-                      disablePast
-                      sx={{
-                        width: "100%",
-                        "& .MuiPickersDay-root": {
-                          borderRadius: "50%",
-                          "&.Mui-selected": {
-                            bgcolor: "rgba(152, 183, 32, 1) !important",
-                            color: "white",
-                          },
+          
+                {/* Calendar bên phải - Tháng kế tiếp */}
+                <Box sx={{ flex: 1, p: 1 }}>
+                  <DateCalendar
+                    value={checkIn ? checkIn.add(1, "month") : dayjs().add(1, "month")}
+                    referenceDate={checkIn ? checkIn.add(1, "month") : dayjs().add(1, "month")}
+                    onChange={() => {}}
+                    disablePast
+                    reduceAnimations
+                    sx={{
+                      width: "100%",
+                      "& .MuiPickersDay-root": {
+                        borderRadius: "8px",
+                        "&.Mui-selected": {
+                          bgcolor: "rgba(152, 183, 32, 1) !important",
+                          color: "white",
                         },
-                      }}
-                      slots={{
-                        day: (props) => {
-                          const isStart = checkIn?.isSame(props.day, "day");
-                          const isEnd = checkOut?.isSame(props.day, "day");
-                          const isInRange =
-                            checkIn &&
-                            checkOut &&
-                            props.day.isAfter(checkIn) &&
-                            props.day.isBefore(checkOut);
+                      },
+                    }}
+                    dayOfWeekFormatter={(date) => date.format("dd")}
+                    slots={{
+                      day: (props) => {
+                        const { day } = props;
+                        const isStart = checkIn?.isSame(day, "day");
+                        const isEnd = checkOut?.isSame(day, "day");
+                        const isInRange =
+                          checkIn &&
+                          checkOut &&
+                          day.isAfter(checkIn, "day") &&
+                          day.isBefore(checkOut, "day");
 
-                          return (
-                            <Button
-                              {...props}
-                              onClick={() => handleDateSelect(props.day, true)}
-                              sx={{
-                                minWidth: 36,
-                                height: 36,
-                                borderRadius: isStart || isEnd ? "50%" : "50%",
-                                bgcolor:
-                                  isStart || isEnd
-                                    ? "rgba(152, 183, 32, 1)"
-                                    : isInRange
-                                    ? "#f0f8f0"
-                                    : "transparent",
-                                color: isStart || isEnd ? "white" : "inherit",
-                                
-                              }}>
-                              {props.day.format("D")}
-                            </Button>
-                          );
-                        },
-                      }}
-                    />
-                  </Box>
-                )}
+                        const isDisabled = day.isBefore(now, "day");
+
+                        return (
+                          <Button
+                            {...props}
+                            disabled={isDisabled || props.disabled}
+                            onClick={() => handleDateSelectDaily(day)}
+                            sx={{
+                              minWidth: 36,
+                              height: 36,
+                              borderRadius: "50%",
+                              bgcolor: isStart || isEnd
+                                ? "rgba(152, 183, 32, 1)"
+                                : isInRange
+                                  ? "rgba(152, 183, 32, 0.15)"
+                                  : "transparent",
+                              color: isStart || isEnd ? "white" : "inherit",
+                              fontWeight: isStart || isEnd ? 600 : 400,
+                              position: "relative",
+                              "&:hover": {
+                                bgcolor: isStart || isEnd
+                                  ? "rgba(152, 183, 32, 0.9)"
+                                  : "rgba(152, 183, 32, 0.1)",
+                              },
+                              // Hiệu ứng range (Airbnb style)
+                              ...(isInRange && {
+                                borderRadius: 0,
+                              }),
+                              ...(isStart && checkOut && {
+                                borderTopRightRadius: 0,
+                                borderBottomRightRadius: 0,
+                              }),
+                              ...(isEnd && checkIn && {
+                                borderTopLeftRadius: 0,
+                                borderBottomLeftRadius: 0,
+                              }),
+                            }}
+                          >
+                            {day.format("D")}
+                          </Button>
+                        );
+                      },
+                    }}
+                  />
+                </Box>
               </Stack>
+            ) : (
+              /* === QUA ĐÊM (1 calendar như logic cũ) === */
+              <Box sx={{ p: 1 }}>
+                <DateCalendar
+                  value={checkIn}
+                  onChange={(newValue) => {
+                    if (newValue) {
+                      handleDateSelectOvernight(newValue);
+                    }
+                  }}
+                  disablePast
+                  sx={{
+                    width: "100%",
+                    "& .MuiPickersDay-root": {
+                      borderRadius: "50%",
+                      "&.Mui-selected": {
+                        bgcolor: "rgba(152, 183, 32, 1) !important",
+                        color: "white",
+                      },
+                    },
+                  }}
+                  dayOfWeekFormatter={(date) => date.format("dd")}
+                  slots={{
+                    day: (props) => {
+                      const { day } = props;
+                      const isSelected = checkIn?.isSame(day, "day");
+                      return (
+                        <Button
+                          {...props}
+                          onClick={() => handleDateSelectOvernight(day)}
+                          sx={{
+                            minWidth: 36,
+                            height: 36,
+                            borderRadius: "50%",
+                            bgcolor: isSelected
+                              ? "rgba(152, 183, 32, 1)"
+                              : "transparent",
+                            color: isSelected ? "white" : "inherit",
+                            fontWeight: isSelected ? 600 : 400,
+                          }}
+                        >
+                          {day.format("D")}
+                        </Button>
+                      );
+                    },
+                  }}
+                />
+              </Box>
             )}
 
             {/* Footer */}
@@ -648,6 +777,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
               <Button
                 variant='contained'
                 onClick={handleApply}
+                disabled={bookingType === "daily" && (!checkIn || !checkOut)}
                 sx={{
                   bgcolor: "rgba(152, 183, 32, 1)",
                   color: "white",
@@ -656,6 +786,10 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                   textTransform: "none",
                   fontSize: "0.9rem",
                   "&:hover": { bgcolor: "#43a047" },
+                  "&.Mui-disabled": {
+                    bgcolor: "#e0e0e0",
+                    color: "#999",
+                  },
                 }}>
                 {t("search_bar_apply_button")}
               </Button>
@@ -666,19 +800,19 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
     </Popper>
   );
 };
+
 const getNextHour = () => {
   const now = new Date();
   let hour = now.getHours();
   const minute = now.getMinutes();
 
-  // nếu phút > 0, tăng lên giờ tiếp theo
   if (minute > 0) hour += 1;
 
-  // đảm bảo 2 chữ số
   const hh = hour.toString().padStart(2, "0");
 
   return `${hh}:00`;
 };
+
 // === MAIN COMPONENT ===
 export default function SearchBarWithDropdown({ locationAddress }) {
   const [bookingType, setBookingType] = useState("hourly");
@@ -693,7 +827,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
   const [name, setName] = useState<string>("");
   const locale = useLocale()
   const addressOldRef = useRef("");
-  const isMobile = useMediaQuery("(max-width:900px)"); // Thêm breakpoint cho mobile
+  const isMobile = useMediaQuery("(max-width:900px)");
   const selectingRef = useRef(false);
   const [data, setData] = useState([]);
   const [dataLoading, setDataLoading] = useState(false);
@@ -701,8 +835,8 @@ export default function SearchBarWithDropdown({ locationAddress }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const inputId = useId();
+  
   useEffect(() => {
-    // nếu chưa nhập gì thì không call
     if (!searchValue.trim()) return;
 
     const timer = setTimeout(async () => {
@@ -715,11 +849,10 @@ export default function SearchBarWithDropdown({ locationAddress }) {
       setDataLoading(false);
     }, 500);
 
-    // nếu người dùng nhập tiếp -> huỷ timeout cũ
     return () => clearTimeout(timer);
   }, [searchValue]);
+  
   useEffect(() => {
-    // Giữ nguyên logic
     const locationParam = searchParams.get("location") || "";
     const typeParam = searchParams.get("type") || "hourly";
     const checkInTimeParam = searchParams.get("checkInTime");
@@ -806,6 +939,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
 
     updateParams({ location: locId || "" });
   }, [selectedAddress]);
+  
   useEffect(() => {
     updateParams({
       checkIn: checkIn ? checkIn.format("YYYY-MM-DD") : "",
@@ -836,9 +970,10 @@ export default function SearchBarWithDropdown({ locationAddress }) {
         const words = normalize(loc?.name?.vi).split(/\s+/);
 
         return words.some(
-          (word) => word.startsWith(keyword) // ho -> hồ, ha -> hà
+          (word) => word.startsWith(keyword)
         );
       });
+  
   const formatDateDisplay = () => {
     if (!checkIn) return t("search_bar_select_date");
 
@@ -909,7 +1044,6 @@ export default function SearchBarWithDropdown({ locationAddress }) {
     }, 300);
   };
 
-  console.log("AAA addressOldRef", addressOldRef);
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <ClickAwayListener
@@ -964,7 +1098,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                       }}
                       inputRef={inputRef}
                       onBlur={() => {
-                        if (selectingRef.current) return; // ✅ đang click item → bỏ qua blur
+                        if (selectingRef.current) return;
 
                         const isValid = locationAddress.some(
                           (loc) => loc.name.vi === searchValue
@@ -1012,7 +1146,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                             <ListItemButton
                               key={i}
                               onMouseDown={() => {
-                                selectingRef.current = true; // ✅ báo đang chọn
+                                selectingRef.current = true;
                               }}
                               onClick={() => {
                                 setSearchValue(loc.name.vi);
@@ -1203,13 +1337,12 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                       value={searchValue}
                       onChange={(e) => setSearchValue(e.target.value)}
                       onFocus={() => {
-                        // addressOldRef.current = selectedAddress;
                         setDropdownOpen(true);
                       }}
                       inputRef={inputRef}
                       onBlur={() => {
                         if (!name) {
-                          if (selectingRef.current) return; // ✅ đang click item → bỏ qua blur
+                          if (selectingRef.current) return;
 
                           const isValid = locationAddress.some(
                             (loc) => loc.name.vi === searchValue
@@ -1298,7 +1431,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                               <ListItemButton
                                 key={i}
                                 onMouseDown={() => {
-                                  selectingRef.current = true; // ✅ báo đang chọn
+                                  selectingRef.current = true;
                                 }}
                                 onClick={() => {
                                   setSearchValue(loc.name.vi);
@@ -1354,34 +1487,28 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                                 <ListItemButton
                                   key={i}
                                   onMouseDown={() => {
-                                    selectingRef.current = true; // 🔥 chặn blur
+                                    selectingRef.current = true;
                                   }}
                                   onClick={() => {
                                     const current = Object.fromEntries([]);
 
-                                    // ---- xử lý mặc định ---- //
                                     const now = new Date();
 
-                                    // format yyyy-MM-dd
                                     const formatDate = (d) =>
                                       d.toISOString().split("T")[0];
 
-                                    // format lên giờ chẵn
                                     const formatHour = (d) => {
                                       let hour = d.getHours();
                                       let minute = d.getMinutes();
 
-                                      // round up: nếu phút > 0 thì cộng 1 giờ
                                       if (minute > 0) hour++;
 
-                                      // format HH:00 (VD: 09:00, 20:00)
                                       return `${String(hour).padStart(
                                         2,
                                         "0"
                                       )}:00`;
                                     };
 
-                                    // Set mặc định nếu param không có
                                     current.checkIn =
                                       current.checkIn || formatDate(now);
                                     current.checkOut =
@@ -1391,7 +1518,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                                     current.duration = current.duration || 2;
                                     current.type = "hourly";
                                     setDropdownOpen(false);
-                                    // ---- build URL ---- //
+                                    
                                     navigate.push(
                                       `/room/${loc.id}?${new URLSearchParams(
                                         current
@@ -1557,7 +1684,6 @@ export default function SearchBarWithDropdown({ locationAddress }) {
             </Paper>
 
             {/* Dropdown loại (desktop) */}
-
             <BookingTypeDropdown
               open={typeDropdownOpen}
               anchorEl={typeRef.current}
@@ -1567,7 +1693,6 @@ export default function SearchBarWithDropdown({ locationAddress }) {
             />
 
             {/* Popup ngày giờ (desktop) */}
-
             <DateRangePicker
               open={pickerOpen}
               anchorEl={dateRef.current}
