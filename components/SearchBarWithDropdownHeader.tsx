@@ -333,9 +333,9 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
           <Stack>
             {/* Header - Hiển thị tháng và năm */}
             <Box p={2} bgcolor='#f9f9f9' borderBottom='1px solid #eee'>
-              <Typography suppressHydrationWarning fontWeight={600} color='#333'>
+              {/* <Typography suppressHydrationWarning fontWeight={600} color='#333'>
                 {checkIn ? checkIn.format("MMMM YYYY") : dayjs().format("MMMM YYYY")}
-              </Typography>
+              </Typography> */}
             </Box>
 
             {bookingType === "hourly" ? (
