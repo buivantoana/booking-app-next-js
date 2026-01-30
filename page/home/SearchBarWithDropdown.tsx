@@ -601,7 +601,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                             sx={{
                               minWidth: 36,
                               height: 36,
-                              borderRadius: "8px",
+                              borderRadius: "60px",
                               bgcolor: isStart || isEnd
                                 ? "rgba(152, 183, 32, 1)"
                                 : isInRange
