@@ -317,8 +317,8 @@ const BookingCard = ({
             direction='row'
             justifyContent='space-between'
             alignItems='center'>
-            <Typography fontSize='13px' color='black'>
-              {t("booking_code_label")} {booking.booking_code}
+            <Typography fontSize='14px' color='black'>
+              {t("booking_code_label")}: {booking.booking_code}
             </Typography>
             <Box display='flex' alignItems='center' gap={2}>
               <Chip
@@ -369,18 +369,16 @@ const BookingCard = ({
             <Box flex={1}>
               <Typography
                 fontSize='16px'
-                fontWeight={700}
+                fontWeight={500}
                 lineHeight={1.3}
+                color="#5D6679"
                 mb={0.5}>
                 {hotelName}
               </Typography>
-              <Typography fontSize='15px' fontWeight={500} color='#333' mb={1}>
+              <Typography  fontSize='17px' fontWeight={700} color='#333' mb={1}>
                 {roomName}
               </Typography>
-              <Typography fontSize='15px' fontWeight={500} color='#333' mb={1}>
-                {roomCount} {t("room")}{" "}
-                {booking.rent_type === "hourly" ? "(theo giờ)" : ""}
-              </Typography>
+             
               <Stack direction='row' alignItems='center' spacing={1}>
                 <AccessTimeIcon sx={{ fontSize: 16, color: "#98b720" }} />
                 <Typography fontSize='13px' color='#98b720'>
@@ -978,7 +976,7 @@ function IssueBooking({ open, onClose, id, title }) {
         toast.success("Báo cáo thành công");
         setIssueText("");
       } else {
-        toast.error(getErrorMessage(res.code) || res.message);
+        toast.error(getErrorMessage(res.code) || "Báo cáo thất bại");
       }
     } catch (err) {
       console.error(err);
