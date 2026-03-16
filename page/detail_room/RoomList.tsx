@@ -826,7 +826,8 @@ const RoomDetailModal = ({
 
 
   const handleBooking = () => {
-    if (localStorage.getItem("booking")) {
+    console.log("AAA toan")
+    // if (localStorage.getItem("booking")) {
       localStorage.setItem(
         "booking",
         JSON.stringify({
@@ -850,7 +851,7 @@ const RoomDetailModal = ({
       setTimeout(() => {
         navigate.push("/check-out");
       }, 300);
-    }
+    // }
   };
   const bedTypeIds = React.useMemo(() => {
     if (!room?.bed_type) return [];
