@@ -415,14 +415,14 @@
   "keep_loving_nights": "Cherish every loving night",
   "short_moments_long_memories": "Short moments, lasting memories",
   "enjoy_your_days_your_way": "Enjoy every day your way",
-  "sort":{
+  "sort": {
     "most_relevant": "Most relevant",
     "distance_near_to_far": "Distance: nearest first",
     "rating_high_to_low": "Rating: high to low",
     "price_low_to_high": "Price: low to high",
     "price_high_to_low": "Price: high to low"
   },
-  
+
   "cancel_booking": {
     "title": "Cancel booking",
     "submit": "Cancel booking",
@@ -438,17 +438,121 @@
       "other": "Other reason"
     }
   },
-  "hour":"Hour",
+  "hour": "Hour",
   "area_room": "Area",
   "bed_type": "Bed Type",
   "room_direction": "Room Direction",
-  "duration":"Duration",
-  "night":"Night",
-  "confirmation_and_payment":"Confirmation and payment",
-    "phone_required": "Phone number is required",
-    "name_required": "Name is required",
-    "cancel_booking_confirm":"This action cannot be undone. Are you sure you want to cancel this booking?",
-    "email_error_invalid": "Invalid email address"   
-  
-  
+  "duration": "Duration",
+  "night": "Night",
+  "confirmation_and_payment": "Confirmation and payment",
+  "phone_required": "Phone number is required",
+  "name_required": "Name is required",
+  "cancel_booking_confirm": "This action cannot be undone. Are you sure you want to cancel this booking?",
+  "email_error_invalid": "Invalid email address",
+
+  "about_title": "About Us",
+  "tabs_about": "About Us",
+  "tabs_terms": "Terms of Service",
+  "tabs_privacy": "Privacy Policy",
+  "tabs_payment": "Payment Policy",
+
+  "company_name": "BookingApp Vietnam Joint Stock Company",
+  "company_taxCode": "Tax code: 0311850218",
+  "company_taxDate": "Issued by Ho Chi Minh City Department of Planning and Investment on 11/06/2012",
+  "company_representative": "Legal Representative",
+  "company_ceo": "BYUN SUNG MIN – Position: General Director",
+
+  "contact_title": "Contact",
+  "contact_hotline": "Hotline",
+  "contact_customerSupport": "Customer Support",
+  "contact_business": "Business Cooperation",
+
+  "contact_email": "cskh@bookingapp.vn",
+  "contact_businessEmail": "support@bookingapp.vn",
+
+  "office_hcm": "Ho Chi Minh City",
+  "office_hcmAddress": "5A/2 Tran Phu Street, Cho Quan Ward, District 5, Ho Chi Minh City, Vietnam",
+  "office_hanoi": "Hanoi",
+  "office_hanoiAddress": "12th Floor, Mipec Tower, 229 Tay Son, Kim Lien Ward, Dong Da District, Hanoi",
+
+  "legal_title": "Legal Information",
+  "legal_companyName": "BOOKINGAPP VIETNAM JOINT STOCK COMPANY",
+  "legal_address": "Head office: 5A/2 Tran Phu Street, Cho Quan Ward, District 5, Ho Chi Minh City, Vietnam",
+  "legal_representative": "Legal Representative: BYUN SUNG MIN – Position: General Director",
+  "legal_taxCode": "Tax code: 0311850218 issued by Ho Chi Minh City Department of Planning and Investment on 11/06/2012",
+
+  "terms_warning": "YOU MUST READ THE FOLLOWING TERMS OF USE BEFORE USING THIS APPLICATION. USING THIS APPLICATION CONFIRMS YOUR ACCEPTANCE AND COMPLIANCE WITH THE FOLLOWING TERMS AND CONDITIONS.",
+  "terms_title": "TERMS OF USE AND OPERATING REGULATIONS",
+
+  "terms_section1_title": "1. Introduction",
+  "terms_section1_content": "BookingApp is built and developed to serve the needs of searching and booking hotels quickly, maximizing support for customers in finding hotels suitable for current location, reasonable prices, easy payment.",
+
+  "terms_section2_title": "2. Mission",
+  "terms_section2_content": "BookingApp's mission is to become a reliable, useful e-commerce application in the field of applying information technology to modern technological life. Merchants, organizations, and individuals participating in transactions on BookingApp are free to agree on the basis of the rights and legitimate interests of the parties involved in using services through contracts and not contrary to the provisions of current Vietnamese law.",
+
+  "terms_section3_title": "3. Member Information",
+  "terms_section3_content": "Information about merchants, organizations, and individuals participating as members on BookingApp must be transparent and accurate. Products and services participating in transactions on the Application must fully comply with relevant legal regulations, not falling into the cases of prohibited business and advertising as prescribed by law.",
+
+  "terms_section4_title": "4. Access Rights",
+  "terms_section4_content": "BookingApp has access to:",
+
+  "terms_access_identity": "Identity: Use one or more accounts on the device, negative data.",
+  "terms_access_location": "Location: Use the location of the device you are using to locate and determine current location.",
+  "terms_access_wifi": "WiFi connection information: Allow the application to view information about the wifi network, such as whether wifi is turned on and the names of connected wifi devices.",
+  "terms_access_device": "Device ID and call information: Allow the application to determine phone number and device ID.",
+
+  "terms_section5_title": "5. Information Changes",
+  "terms_section5_content": "Changes in conditions or circumstances may occur that may lead to changes in a short period of time causing the information provided to be inaccurate or not current. In case of any problems, you can contact customer service for support and answers.",
+
+  "terms_section6_title": "6. Ratings",
+  "terms_section6_content": "Service providers may be introduced in different rating categories based on factors including but not limited to user reviews, ratings or other factors of the service provider. The output rating has relatively high accuracy based on automatic algorithms that can be updated and changed from time to time, at our sole discretion.",
+
+  "terms_section7_title": "7. Members",
+  "terms_section7_content": "Members participating in transactions on BookingApp are merchants and individuals who need to provide and use services provided by BookingApp, including service providers and service users.",
+
+  "terms_member_note": "When registering as a member of BookingApp, members understand that:",
+  "terms_member_1": "- Members can create their own personal account to use the service.",
+  "terms_member_2": "- Members can provide or use services at the correct price and legal commitment standards announced on the Application.",
+  "terms_member_3": "- Members must protect their password and monitor the use of their accounts, understand and agree that members are responsible for all related personal information including the use of their account, fully responsible for anyone they allow to access it.",
+  "terms_member_4": "- The content of this Regulation complies with current Vietnamese regulations. Members when participating in BookingApp must commit to strictly comply with the content specified.",
+
+  "privacy_intro": "BookingApp is committed to protecting your personal information. This privacy policy explains how we collect, use, and protect your data:",
+
+  "privacy_section1_title": "1. Information Collection",
+  "privacy_section1_content": "We collect information you provide when booking: full name, phone number, email, payment information, and accommodation preferences.",
+
+  "privacy_section2_title": "2. Purpose of Use",
+  "privacy_section2_content": "Information is used to confirm bookings, contact when necessary, improve services, and send promotional information (if you agree).",
+
+  "privacy_section3_title": "3. Information Sharing",
+  "privacy_section3_content": "We share your booking information with accommodation service partners to complete bookings. We do not sell your personal information to third parties.",
+
+  "privacy_section4_title": "4. Information Security",
+  "privacy_section4_content": "We apply technical and organizational security measures to protect your information from unauthorized access.",
+
+  "privacy_section5_title": "5. User Rights",
+  "privacy_section5_content": "You have the right to request to view, modify, or delete your personal information by contacting us at cskh@bookingapp.vn.",
+
+  "privacy_section6_title": "6. Cookies",
+  "privacy_section6_content": "We use cookies to improve user experience. You can customize cookie settings in your browser.",
+
+  "payment_intro": "BookingApp offers various convenient payment methods. Please read the payment policy carefully before booking:",
+
+  "payment_section1_title": "1. Payment Methods",
+  "payment_section1_content": "We accept payments via: Credit/Debit cards (Visa, MasterCard, JCB), E-wallets (MoMo, ZaloPay), Bank transfer, Pay at hotel.",
+
+  "payment_section2_title": "2. Payment Time",
+  "payment_section2_content": "Online payment: made immediately upon booking. Pay at hotel: payment upon check-in or check-out depending on partner regulations.",
+
+  "payment_section3_title": "3. Payment Confirmation",
+  "payment_section3_content": "After successful payment, you will receive a booking confirmation email. Please check your email and contact us immediately if you do not receive confirmation.",
+
+  "payment_section4_title": "4. Refunds",
+  "payment_section4_content": "Refund time depends on payment method and partner policy. Typically 3-7 business days for card payments, 1-2 days for e-wallets.",
+
+  "payment_section5_title": "5. Payment Security",
+  "payment_section5_content": "We use SSL encryption technology to ensure the safety of your transactions. Credit card information is processed by reputable payment partners.",
+
+  "payment_section6_title": "6. Cancellation and Refund Policy",
+  "payment_section6_content": "Cancellation fees (if any) will be deducted directly from the amount you paid. The remaining amount will be refunded according to refund policy. Please check each partner's cancellation policy before booking."
 }

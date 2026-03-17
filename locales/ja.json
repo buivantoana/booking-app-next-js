@@ -414,14 +414,14 @@
   "keep_loving_nights": "愛に満ちた夜を大切に",
   "short_moments_long_memories": "短い瞬間、長く続く思い出",
   "enjoy_your_days_your_way": "あなたらしく毎日を楽しむ",
-  "sort":{
+  "sort": {
     "most_relevant": "おすすめ順",
     "distance_near_to_far": "距離が近い順",
     "rating_high_to_low": "評価が高い順",
     "price_low_to_high": "価格が安い順",
     "price_high_to_low": "価格が高い順"
   },
- 
+
   "cancel_booking": {
     "title": "予約のキャンセル",
     "submit": "予約をキャンセル",
@@ -436,17 +436,122 @@
       "price_higher": "ホテルより料金が高い",
       "other": "その他の理由"
     }
-  }
-  ,
-  "hour":"時間",
+  },
+  "hour": "時間",
   "area_room": "面積",
   "bed_type": "ベッドタイプ",
   "room_direction": "部屋の向き",
-  "confirmation_and_payment":"確認と支払い",
+  "confirmation_and_payment": "確認と支払い",
   "phone_required": "電話番号を入力してください",
   "name_required": "名前を入力してください",
-  "cancel_booking_confirm":"この操作は元に戻せません。本当にこの予約をキャンセルしますか？",
-  "duration":"間隔",
-  "night":"夜",
-  "email_error_invalid": "メールアドレスが無効です"  
+  "cancel_booking_confirm": "この操作は元に戻せません。本当にこの予約をキャンセルしますか？",
+  "duration": "間隔",
+  "night": "夜",
+  "email_error_invalid": "メールアドレスが無効です",
+
+  "about_title": "会社概要",
+  "tabs_about": "会社概要",
+  "tabs_terms": "利用規約",
+  "tabs_privacy": "プライバシーポリシー",
+  "tabs_payment": "支払いポリシー",
+
+  "company_name": "BookingAppベトナム株式会社",
+  "company_taxCode": "法人番号: 0311850218",
+  "company_taxDate": "2012年6月11日ホーチミン市計画投資局にて登録",
+  "company_representative": "法定代表者",
+  "company_ceo": "BYUN SUNG MIN – 役職: 総支配人",
+
+  "contact_title": "お問い合わせ",
+  "contact_hotline": "ホットライン",
+  "contact_customerSupport": "カスタマーサポート",
+  "contact_business": "ビジネス協力",
+
+  "contact_email": "cskh@bookingapp.vn",
+  "contact_businessEmail": "support@bookingapp.vn",
+
+  "office_hcm": "ホーチミン市",
+  "office_hcmAddress": "5A/2 チャンフー通り、チョークアン区、5区、ホーチミン市、ベトナム",
+  "office_hanoi": "ハノイ",
+  "office_hanoiAddress": "ミペックタワー12階、229タイソン、キムリエン区、ドンダー区、ハノイ",
+
+  "legal_title": "法的情報",
+  "legal_companyName": "BOOKINGAPPベトナム株式会社",
+  "legal_address": "本社: 5A/2 チャンフー通り、チョークアン区、5区、ホーチミン市、ベトナム",
+  "legal_representative": "法定代表者: BYUN SUNG MIN – 役職: 総支配人",
+  "legal_taxCode": "法人番号: 0311850218 (2012年6月11日ホーチミン市計画投資局登録)",
+
+  "terms_warning": "本アプリケーションを使用する前に、以下の利用規約をお読みください。本アプリケーションを使用することにより、以下の利用規約の受諾と遵守が確認されます。",
+  "terms_title": "利用規約および運営規定",
+
+  "terms_section1_title": "1. はじめに",
+  "terms_section1_content": "BookingAppは、ホテルの検索と予約のニーズに迅速に対応し、現在地に合ったホテル、リーズナブルな価格、簡単な支払い方法を見つけるためのお客様のサポートを最大化するために構築・開発されました。",
+
+  "terms_section2_title": "2. 使命",
+  "terms_section2_content": "BookingAppの使命は、現代のテクノロジーライフに情報技術を適用する分野において、信頼性が高く有用な電子商取引アプリケーションになることです。BookingAppで取引に参加する商人、組織、個人は、契約を通じてサービス利用活動に参加する当事者の権利と正当な利益に基づいて自由に合意することができ、ベトナムの現行法の規定に反しないものとします。",
+
+  "terms_section3_title": "3. 会員情報",
+  "terms_section3_content": "BookingAppで会員として参加する商人、組織、個人に関する情報は、透明性があり正確でなければなりません。アプリケーションで取引に参加する製品およびサービスは、関連する法的規制を完全に遵守し、法律の規定により禁止されている事業および広告のケースに該当してはなりません。",
+
+  "terms_section4_title": "4. アクセス権",
+  "terms_section4_content": "BookingAppは以下にアクセスできます:",
+
+  "terms_access_identity": "身元: デバイス上の1つ以上のアカウント、ネガティブデータを使用します。",
+  "terms_access_location": "位置情報: 現在位置を特定し決定するために、使用しているデバイスの位置情報を使用します。",
+  "terms_access_wifi": "WiFi接続情報: WiFiがオンになっているかどうか、接続されているWiFiデバイスの名前など、WiFiネットワークに関する情報をアプリケーションが表示できるようにします。",
+  "terms_access_device": "デバイスIDおよび通話情報: アプリケーションが電話番号とデバイスIDを特定できるようにします。",
+
+  "terms_section5_title": "5. 情報の変更",
+  "terms_section5_content": "状況や条件の変化が発生し、短期間で変化が生じ、提供された情報が不正確または最新でない可能性があります。問題がある場合は、カスタマーサービスにお問い合わせいただき、サポートと回答を受けることができます。",
+
+  "terms_section6_title": "6. 評価",
+  "terms_section6_content": "サービスプロバイダーは、ユーザーレビュー、評価、またはサービスプロバイダーのその他の要素を含むがこれらに限定されない要素に基づいて、さまざまな評価カテゴリーで紹介される場合があります。出力評価は、当社の単独の裁量により随時更新および変更される可能性のある自動アルゴリズムに基づいて、比較的高い精度を持っています。",
+
+  "terms_section7_title": "7. 会員",
+  "terms_section7_content": "BookingAppで取引に参加する会員は、BookingAppが提供するサービスを提供および利用する必要がある商人および個人であり、サービスプロバイダーとサービス利用者を含みます。",
+
+  "terms_member_note": "BookingAppの会員として登録する場合、会員は以下を理解します:",
+  "terms_member_1": "- 会員はサービスを利用するために自分の個人アカウントを作成できます。",
+  "terms_member_2": "- 会員はアプリケーションで公開された適切な価格と法的約束基準に従ってサービスを提供または利用できます。",
+  "terms_member_3": "- 会員は自分のパスワードを保護し、自分のアカウントの使用状況を監視する必要があり、関連するすべての個人情報および自分のアカウントの使用について会員が責任を負うことを理解し同意し、アクセスを許可した人に対して完全な責任を負います。",
+  "terms_member_4": "- 本規約の内容は、ベトナムの現行規制に準拠しています。BookingAppに参加する会員は、明記された内容を厳守することを約束しなければなりません。",
+
+  "privacy_intro": "BookingAppはお客様の個人情報を保護することに努めています。このプライバシーポリシーは、当社がお客様のデータを収集、使用、保護する方法を説明します:",
+
+  "privacy_section1_title": "1. 情報収集",
+  "privacy_section1_content": "当社は予約時にお客様が提供する情報（氏名、電話番号、メールアドレス、支払い情報、宿泊の嗜好）を収集します。",
+
+  "privacy_section2_title": "2. 使用目的",
+  "privacy_section2_content": "情報は予約の確認、必要時の連絡、サービスの改善、プロモーション情報の送信（同意した場合）に使用されます。",
+
+  "privacy_section3_title": "3. 情報共有",
+  "privacy_section3_content": "当社は予約を完了するため、お客様の予約情報を宿泊サービスパートナーと共有します。当社はお客様の個人情報を第三者に販売することはありません。",
+
+  "privacy_section4_title": "4. 情報セキュリティ",
+  "privacy_section4_content": "当社は、お客様の情報を不正アクセスから保護するため、技術的および組織的なセキュリティ対策を適用しています。",
+
+  "privacy_section5_title": "5. ユーザーの権利",
+  "privacy_section5_content": "お客様はcskh@bookingapp.vnまでご連絡いただければ、個人情報の閲覧、修正、削除を要求する権利があります。",
+
+  "privacy_section6_title": "6. クッキー",
+  "privacy_section6_content": "当社はユーザーエクスペリエンスを向上させるためにクッキーを使用しています。ブラウザでクッキー設定をカスタマイズできます。",
+
+  "payment_intro": "BookingAppは様々な便利な支払い方法を提供しています。予約前に支払いポリシーをよくお読みください:",
+
+  "payment_section1_title": "1. 支払い方法",
+  "payment_section1_content": "当社は以下の支払い方法に対応しています：クレジット/デビットカード（Visa、MasterCard、JCB）、電子マネー（MoMo、ZaloPay）、銀行振込、ホテル現地払い。",
+
+  "payment_section2_title": "2. 支払い時期",
+  "payment_section2_content": "オンライン支払い：予約時に即時行われます。ホテル現地払い：パートナーの規定に応じてチェックイン時またはチェックアウト時に支払います。",
+
+  "payment_section3_title": "3. 支払い確認",
+  "payment_section3_content": "支払いが完了すると、予約確認メールが届きます。メールを確認し、確認が届かない場合はすぐに当社までご連絡ください。",
+
+  "payment_section4_title": "4. 返金",
+  "payment_section4_content": "返金時期は支払い方法とパートナーのポリシーによって異なります。カード決済の場合は通常3-7営業日、電子マネーの場合は1-2日です。",
+
+  "payment_section5_title": "5. 支払いセキュリティ",
+  "payment_section5_content": "当社はSSL暗号化技術を使用して取引の安全性を確保しています。クレジットカード情報は信頼できる支払いパートナーによって処理されます。",
+
+  "payment_section6_title": "6. キャンセルと返金ポリシー",
+  "payment_section6_content": "キャンセル料（ある場合）はお支払いいただいた金額から直接差し引かれます。残りの金額は返金ポリシーに従って返金されます。予約前に各パートナーのキャンセルポリシーをご確認ください。"
 }

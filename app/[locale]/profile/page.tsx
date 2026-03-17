@@ -22,10 +22,10 @@ export const metadata: Metadata = {
 
 export default function Login() {
   return (
-   <PrivateRoute>
-   <Header />
-   <ProfileController/>
-   <Footer />
-   </PrivateRoute>
+    <PrivateRoute>
+      <Header />
+      <ProfileController />
+      <Footer />
+    </PrivateRoute>
   );
 }

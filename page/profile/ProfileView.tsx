@@ -385,22 +385,22 @@ const ProfileView = ({
 
   useEffect(() => {
     // chỉ chạy khi quay về list
-    console.log('lastId:', lastBookingIdRef.current);
-console.log('el:', bookingRefs.current[lastBookingIdRef.current!]);
+    console.log("lastId:", lastBookingIdRef.current);
+    console.log("el:", bookingRefs.current[lastBookingIdRef.current!]);
     if (detailBooking !== null) return;
-  
+
     const id = lastBookingIdRef.current;
     if (!id) return;
-  
+
     const el = bookingRefs.current[id];
     if (!el) return;
-  
-    console.log('lastId:', lastBookingIdRef.current);
-console.log('el:', bookingRefs.current[lastBookingIdRef.current!]);
+
+    console.log("lastId:", lastBookingIdRef.current);
+    console.log("el:", bookingRefs.current[lastBookingIdRef.current!]);
     requestAnimationFrame(() => {
       el.scrollIntoView({
-        behavior: 'auto',
-        block: 'center',
+        behavior: "auto",
+        block: "center",
       });
     });
   }, [detailBooking]);
@@ -865,9 +865,10 @@ console.log('el:', bookingRefs.current[lastBookingIdRef.current!]);
     return (
       <Stack spacing={3}>
         <Stack direction='row' alignItems='center' spacing={1}>
-          <IconButton size='small' onClick={() => {
-            setDetailBooking(null)
-          
+          <IconButton
+            size='small'
+            onClick={() => {
+              setDetailBooking(null);
             }}>
             <ArrowBackIcon sx={{ fontSize: 20 }} />
           </IconButton>
@@ -1282,14 +1283,15 @@ console.log('el:', bookingRefs.current[lastBookingIdRef.current!]);
           spacing={2}>
           <Typography
             onClick={() => {
-              if (
-                detailBooking.status === "confirmed" ||
-                detailBooking.status === "pending"
-              ) {
-                setOpenCancelBooking(true);
-              } else {
-                toast.warning("Đặt phòng đã quá thời gian huỷ");
-              }
+              router.push("/privacy");
+              // if (
+              //   detailBooking.status === "confirmed" ||
+              //   detailBooking.status === "pending"
+              // ) {
+              //   setOpenCancelBooking(true);
+              // } else {
+              //   toast.warning("Đặt phòng đã quá thời gian huỷ");
+              // }
             }}
             fontSize='16px'
             color='rgba(43, 47, 56, 1)'

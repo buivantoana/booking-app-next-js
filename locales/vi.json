@@ -458,14 +458,14 @@
   "keep_loving_nights": "Giữ trọn từng đêm yêu thương",
   "short_moments_long_memories": "Khoảnh khắc ngắn, kỷ niệm dài lâu",
   "enjoy_your_days_your_way": "Tận hưởng từng ngày theo cách của bạn",
-  "sort":{
+  "sort": {
     "most_relevant": "Phù hợp nhất",
     "distance_near_to_far": "Khoảng cách từ gần đến xa",
     "rating_high_to_low": "Điểm đánh giá từ cao đến thấp",
     "price_low_to_high": "Giá từ thấp đến cao",
     "price_high_to_low": "Giá từ cao đến thấp"
   },
-  
+
   "cancel_booking": {
     "title": "Hủy đặt phòng",
     "submit": "Hủy đặt phòng",
@@ -481,16 +481,121 @@
       "other": "Lý do khác"
     }
   },
-  "hour":"Giờ",
+  "hour": "Giờ",
   "area_room": "Diện tích",
   "bed_type": "Loại giường",
   "room_direction": "Hướng phòng",
-  "confirmation_and_payment":"Xác nhận và thanh toán",
+  "confirmation_and_payment": "Xác nhận và thanh toán",
   "phone_required": "Vui lòng nhập số điện thoại",
 
   "name_required": "Vui lòng nhập tên",
-  "cancel_booking_confirm":"Thao tác này không thể hoàn tác. Bạn có thực sự muốn hủy lịch đặt phòng không?",
-  "duration":"Thời gian",
-  "night":"Đêm",
-  "email_error_invalid": "Email không hợp lệ"
+  "cancel_booking_confirm": "Thao tác này không thể hoàn tác. Bạn có thực sự muốn hủy lịch đặt phòng không?",
+  "duration": "Thời gian",
+  "night": "Đêm",
+  "email_error_invalid": "Email không hợp lệ",
+
+  "about_title": "Về chúng tôi",
+  "tabs_about": "Về chúng tôi",
+  "tabs_terms": "Thỏa thuận dịch vụ",
+  "tabs_privacy": "Chính sách bảo mật",
+  "tabs_payment": "Chính sách thanh toán",
+
+  "company_name": "Công ty Cổ phần BookingApp Việt Nam",
+  "company_taxCode": "Mã số thuế: 0311850218",
+  "company_taxDate": "do Sở Kế hoạch và Đầu tư TP. Hồ Chí Minh cấp lần đầu ngày 11/06/2012",
+  "company_representative": "Người đại diện theo pháp luật",
+  "company_ceo": "BYUN SUNG MIN – chức vụ: Tổng Giám đốc",
+
+  "contact_title": "Liên hệ",
+  "contact_hotline": "Đường dây nóng",
+  "contact_customerSupport": "Hỗ trợ khách hàng",
+  "contact_business": "Liên hệ hợp tác",
+  "contact_email": "cskh@bookingapp.vn",
+  "contact_businessEmail": "support@bookingapp.vn",
+
+  "office_hcm": "TP Hồ Chí Minh",
+  "office_hcmAddress": "5A/2 đường Trần Phú, Phường Chợ Quán, Quận 5, Thành Phố Hồ Chí Minh, Việt Nam",
+  "office_hanoi": "Hà Nội",
+  "office_hanoiAddress": "Tầng 12, toà nhà Mipec, 229 Tây Sơn, phường Kim Liên, quận Đống Đa, Hà Nội",
+
+  "legal_title": "Thông tin pháp lý",
+  "legal_companyName": "CÔNG TY CỔ PHẦN BOOKINGAPP VIỆT NAM",
+  "legal_address": "Địa chỉ trụ sở: 5A/2 đường Trần Phú, Phường Chợ Quán, Quận 5, Thành Phố Hồ Chí Minh, Việt Nam",
+  "legal_representative": "Người đại diện theo pháp luật: BYUN SUNG MIN – chức vụ: Tổng Giám đốc",
+  "legal_taxCode": "Mã số thuế: 0311850218 do Sở Kế hoạch và Đầu tư TP. Hồ Chí Minh cấp lần đầu ngày 11/06/2012",
+
+  "terms_warning": "BẠN PHẢI ĐỌC NHỮNG ĐIỀU KHOẢN SỬ DỤNG DƯỚI ĐÂY TRƯỚC KHI SỬ DỤNG ỨNG DỤNG NÀY. VIỆC SỬ DỤNG ỨNG DỤNG NÀY XÁC NHẬN VIỆC CHẤP THUẬN VÀ TUÂN THỦ CÁC ĐIỀU KHOẢN VÀ ĐIỀU KIỆN DƯỚI ĐÂY.",
+  "terms_title": "ĐIỀU KHOẢN SỬ DỤNG VÀ QUY CHẾ HOẠT ĐỘNG",
+
+  "terms_section1_title": "1. Giới thiệu",
+  "terms_section1_content": "Ứng dụng BookingApp được xây dựng và phát triển nhằm phục vụ nhu cầu tìm kiếm và đặt phòng khách sạn một cách nhanh chóng, hỗ trợ tối đa cho khách hàng trong việc tìm kiếm khách sạn phù hợp với địa điểm hiện tại, mức giá hợp lý, thanh toán dễ dàng.",
+
+  "terms_section2_title": "2. Sứ mệnh",
+  "terms_section2_content": "Sứ mệnh của Ứng dụng BookingApp là trở thành Ứng dụng thương mại tin cậy, hữu ích trong lĩnh vực ứng dụng công nghệ thông tin vào đời sống công nghệ hiện nay. Thương nhân, tổ chức, cá nhân tham gia giao dịch tại Ứng dụng BookingApp tự do thỏa thuận trên cơ sở tồn trong quyền và lợi ích hợp pháp của các bên tham gia hoạt động sử dụng dịch vụ thông qua hợp đồng và không trái với quy định của pháp luật hiện hành của Việt Nam.",
+
+  "terms_section3_title": "3. Thông tin thành viên",
+  "terms_section3_content": "Thông tin về thương nhân, tổ chức, cá nhân tham gia là thành viên trên BookingApp phải minh bạch và chính xác. Sản phẩm, dịch vụ tham gia giao dịch trên Ứng dụng phải đáp ứng đầy đủ các quy định của pháp luật có liên quan, không thuộc các trường hợp cảm kinh doanh, cấm quảng cáo theo quy định của pháp luật.",
+
+  "terms_section4_title": "4. Quyền truy cập",
+  "terms_section4_content": "Ứng dụng BookingApp có quyền truy cập vào:",
+
+  "terms_access_identity": "Nhận dạng: Sử dụng một hoặc nhiều tài khoản trên thiết bị, dữ liệu tiêu cực.",
+  "terms_access_location": "Vị trí: Sử dụng vị trí của thiết bị mà bạn đang dùng để định vị và xác định vị trí hiện tại.",
+  "terms_access_wifi": "Thông tin về kết nối wifi: Cho phép ứng dụng xem thông tin về mạng wifi, chẳng hạn như wifi có được bật hay không và tên của các thiết bị wifi được kết nối.",
+  "terms_access_device": "ID thiết bị và thông tin cuộc gọi: Cho phép ứng dụng xác định số điện thoại và ID thiết bị.",
+
+  "terms_section5_title": "5. Thay đổi thông tin",
+  "terms_section5_content": "Có thể xảy ra những thay đổi về điều kiện hoặc hoàn cảnh thì trường mà có thể dẫn đến những thay đổi trong một thời gian ngắn khiến thông tin được cung cấp không chính xác hoặc không hiện hành. Trong trường hợp có bất kỳ vấn đề gì, bạn có thể liên hệ với bộ phận dịch vụ khách hàng để hỗ trợ và giải đáp thắc mắc cho bạn.",
+
+  "terms_section6_title": "6. Xếp hạng",
+  "terms_section6_content": "Các nhà cung cấp dịch vụ có thể được giới thiệu ở hình thức phân loại thử hạng khác nhau dựa trên các yếu tố bao gồm những không giới hạn các đánh giá, xếp hạng từ người dùng hoặc các yếu tố khác của nhà cung cấp dịch vụ. Sự xếp hạng đầu ra có tính chính xác tương đối cao dựa trên các thuật toán tự động có thể được cập nhật và thay đổi từ từng thời điểm, theo quyết định của riêng của chúng tôi.",
+
+  "terms_section7_title": "7. Thành viên",
+  "terms_section7_content": "Thành viên tham gia giao dịch trên Ứng dụng BookingApp là thương nhân, cá nhân có nhu cầu cung ứng và sử dụng dịch vụ mà Ứng dụng BookingApp mang lại, bao gồm người cung ứng dịch vụ và người sử dụng dịch vụ.",
+
+  "terms_member_note": "Khi đăng ký là thành viên của Ứng dụng BookingApp, thành viên hiểu rằng:",
+  "terms_member_1": "- Thành viên có thể tạo một tài khoản cá nhân của mình để sử dụng dịch vụ.",
+  "terms_member_2": "- Thành viên có thể cung ứng hoặc sử dụng dịch vụ theo đúng giá và quy chuẩn cam kết hợp pháp đã công bố trên Ứng dụng.",
+  "terms_member_3": "- Thành viên phải bảo vệ mật khẩu của mình và giám sát việc sử dụng các tài khoản của mình, hiểu và đồng ý rằng thành viên chịu trách nhiệm mọi thông tin cá nhân có liên quan kể cả việc sử dụng tài khoản của mình, chịu hoàn toàn trách nhiệm đối với bất cứ ai được thành viên cho phép truy cập vào nó.",
+  "terms_member_4": "- Nội dung bản Quy chế này tuân thủ theo các quy định hiện hành của Việt Nam. Thành viên khi tham gia vào Ứng dụng BookingApp phải cam kết thực hiện đúng những nội dung đã quy định.",
+
+  "privacy_intro": "BookingApp cam kết bảo vệ thông tin cá nhân của bạn. Chính sách bảo mật này giải thích cách chúng tôi thu thập, sử dụng và bảo vệ dữ liệu của bạn:",
+
+  "privacy_section1_title": "1. Thông tin thu thập",
+  "privacy_section1_content": "Chúng tôi thu thập thông tin bạn cung cấp khi đặt phòng: họ tên, số điện thoại, email, thông tin thanh toán và thông tin về sở thích lưu trú.",
+
+  "privacy_section2_title": "2. Mục đích sử dụng",
+  "privacy_section2_content": "Thông tin được sử dụng để xác nhận đặt phòng, liên hệ khi cần thiết, cải thiện dịch vụ và gửi thông tin khuyến mãi (nếu bạn đồng ý).",
+
+  "privacy_section3_title": "3. Chia sẻ thông tin",
+  "privacy_section3_content": "Chúng tôi chia sẻ thông tin đặt phòng của bạn với đối tác cung cấp dịch vụ lưu trú để hoàn tất đặt phòng. Chúng tôi không bán thông tin cá nhân của bạn cho bên thứ ba.",
+
+  "privacy_section4_title": "4. Bảo mật thông tin",
+  "privacy_section4_content": "Chúng tôi áp dụng các biện pháp bảo mật kỹ thuật và tổ chức để bảo vệ thông tin của bạn khỏi truy cập trái phép.",
+
+  "privacy_section5_title": "5. Quyền của người dùng",
+  "privacy_section5_content": "Bạn có quyền yêu cầu xem, sửa đổi hoặc xóa thông tin cá nhân của mình bằng cách liên hệ với chúng tôi qua email cskh@bookingapp.vn.",
+
+  "privacy_section6_title": "6. Cookie",
+  "privacy_section6_content": "Chúng tôi sử dụng cookie để cải thiện trải nghiệm người dùng. Bạn có thể tùy chỉnh cài đặt cookie trong trình duyệt của mình.",
+
+  "payment_intro": "BookingApp cung cấp nhiều phương thức thanh toán tiện lợi. Vui lòng đọc kỹ chính sách thanh toán trước khi thực hiện đặt phòng:",
+
+  "payment_section1_title": "1. Phương thức thanh toán",
+  "payment_section1_content": "Chúng tôi chấp nhận thanh toán qua: Thẻ tín dụng/ghi nợ (Visa, MasterCard, JCB), Ví điện tử (MoMo, ZaloPay), Chuyển khoản ngân hàng, Thanh toán tại khách sạn.",
+
+  "payment_section2_title": "2. Thời gian thanh toán",
+  "payment_section2_content": "Thanh toán trực tuyến: được thực hiện ngay khi đặt phòng. Thanh toán tại khách sạn: thanh toán khi nhận phòng hoặc trả phòng tùy theo quy định của từng đối tác.",
+
+  "payment_section3_title": "3. Xác nhận thanh toán",
+  "payment_section3_content": "Sau khi thanh toán thành công, bạn sẽ nhận được email xác nhận đặt phòng. Vui lòng kiểm tra email và liên hệ ngay với chúng tôi nếu không nhận được xác nhận.",
+
+  "payment_section4_title": "4. Hoàn tiền",
+  "payment_section4_content": "Thời gian hoàn tiền phụ thuộc vào phương thức thanh toán và chính sách của đối tác. Thông thường từ 3-7 ngày làm việc đối với thanh toán qua thẻ, 1-2 ngày đối với ví điện tử.",
+
+  "payment_section5_title": "5. Bảo mật thanh toán",
+  "payment_section5_content": "Chúng tôi sử dụng công nghệ mã hóa SSL để đảm bảo an toàn cho giao dịch của bạn. Thông tin thẻ tín dụng được xử lý bởi các đối tác thanh toán uy tín.",
+
+  "payment_section6_title": "6. Chính sách hủy và hoàn tiền",
+  "payment_section6_content": "Phí hủy phòng (nếu có) sẽ được khấu trừ trực tiếp từ số tiền bạn đã thanh toán. Số tiền còn lại sẽ được hoàn theo chính sách hoàn tiền. Vui lòng kiểm tra chính sách hủy của từng đối tác trước khi đặt."
 }
