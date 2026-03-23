@@ -804,6 +804,7 @@ const RoomsView = ({
                 total={total}
                 searchParams={searchParams}
                 loadingScroll={loadingScroll}
+                queryHotel={queryHotel}
               />
             </Grid>
           </Grid>
@@ -1130,6 +1131,7 @@ const ItemHotel = memo(({
   activeHotel,
   itemRefs,
   loadingScroll,
+  queryHotel
 }) => {
   const navigate = useRouter();
   const loadMoreRef = useRef(null);
@@ -1407,7 +1409,7 @@ const ItemHotel = memo(({
                               suppressHydrationWarning
                               fontSize='14px'
                               color='#999'>
-                              {t("price_for_short_stay")}
+                              {queryHotel?.rent_types == "hourly" ? t("price_for_short_stay") :""}
                             </Typography>
                             <Typography
                               suppressHydrationWarning
