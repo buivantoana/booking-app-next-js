@@ -447,7 +447,8 @@
   "confirmation_and_payment":"Confirmation and payment",
     "phone_required": "Phone number is required",
     "name_required": "Name is required",
-    "cancel_booking_confirm":"This action cannot be undone. Are you sure you want to cancel this booking?"
+    "cancel_booking_confirm":"This action cannot be undone. Are you sure you want to cancel this booking?",
+    "email_error_invalid": "Invalid email address"   
   
   
 }

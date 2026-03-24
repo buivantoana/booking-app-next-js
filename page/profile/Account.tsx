@@ -29,6 +29,7 @@ const Account = ({ context }: AccountProps) => {
   const [loading, setLoading] = useState(false);
   const [touchedDate, setTouchedDate] = useState(false);
   const [touchedName, setTouchedName] = useState(false);
+  const [touchedEmail, setTouchedEmail] = useState(false);
 
   // Sử dụng next-intl
   const t = useTranslations();
@@ -114,6 +115,11 @@ const Account = ({ context }: AccountProps) => {
 
     return vietnameseNameRegex.test(name);
   };
+  const isValidEmail = (email: string): boolean => {
+    if (!email) return false;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  };
 
   return (
     <Box sx={{ backgroundColor: "#f8f9fa" }}>
@@ -134,7 +140,7 @@ const Account = ({ context }: AccountProps) => {
           boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
           p: { xs: 3, sm: 4 },
         }}>
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           {/* Số điện thoại - KHÔNG CHO SỬA */}
           <Grid item xs={12} sm={6}>
             <Typography
@@ -255,6 +261,42 @@ const Account = ({ context }: AccountProps) => {
               }}
             />
           </Grid>
+          <Grid item xs={12} sm={6}>
+  <Typography
+    suppressHydrationWarning
+    variant='body2'
+    color='#6c757d'
+    mb={1}>
+    Email
+  </Typography>
+  <TextField
+    name='email'
+    fullWidth
+    placeholder='example@email.com'
+    value={formData.email}
+    onChange={handleChange}
+    onBlur={() => setTouchedEmail(true)}
+    error={touchedEmail && !isValidEmail(formData.email)}
+    helperText={
+      touchedEmail && !isValidEmail(formData.email)
+        ? t("email_error_invalid")
+        : ""
+    }
+    sx={{
+      mb: 3,
+      "& .MuiOutlinedInput-root": {
+        borderRadius: "16px",
+        height: "50px",
+        backgroundColor: "#fff",
+        "&.Mui-focused fieldset": {
+          borderColor: "#98b720",
+          borderWidth: 1.5,
+        },
+      },
+    }}
+  />
+</Grid>
+
 
           {/* Email - CHO SỬA */}
           <Grid item xs={12} sm={6}>
@@ -276,7 +318,7 @@ const Account = ({ context }: AccountProps) => {
                   fontWeight: 600,
                   textTransform: "none",
                   boxShadow: "0 4px 15px rgba(160, 212, 104, 0.4)",
-                  mt: 3.5,
+                  mt: 0,
                   "&:hover": {
                     backgroundColor: "rgba(152, 183, 32, 1)",
                   },

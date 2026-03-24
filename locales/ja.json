@@ -447,5 +447,6 @@
   "name_required": "名前を入力してください",
   "cancel_booking_confirm":"この操作は元に戻せません。本当にこの予約をキャンセルしますか？",
   "duration":"間隔",
-  "night":"夜"
+  "night":"夜",
+  "email_error_invalid": "メールアドレスが無効です"  
 }
