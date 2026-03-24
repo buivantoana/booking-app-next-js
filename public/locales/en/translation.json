@@ -439,6 +439,7 @@
   "area_room": "Area",
   "bed_type": "Bed Type",
   "room_direction": "Room Direction",
+  "duration":"Duration",
   "confirmation_and_payment":"Confirmation and payment",
     "phone_required": "Phone number is required",
     "name_required": "Name is required",

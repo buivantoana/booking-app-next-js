@@ -91,6 +91,10 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const [time, setTime] = useState<string>(initialTime || "");
   const [duration, setDuration] = useState<number>(initialDuration || 2);
   const [selecting, setSelecting] = useState<"checkIn" | "checkOut">("checkIn");
+  // Daily mode: 1 state baseMonth, 2 calendar luôn cách nhau 1 tháng (Booking.com style)
+  const [baseMonth, setBaseMonth] = useState<Dayjs>(dayjs());
+  // Hover preview range
+  const [hoverDate, setHoverDate] = useState<Dayjs | null>(null);
   
   const now = dayjs();
   const hours = Array.from(
@@ -120,6 +124,8 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
         setCheckOut(initialCheckIn.add(1, "day"));
       }
       
+      // Sync baseMonth với initialCheckIn
+      setBaseMonth(initialCheckIn || dayjs());
       // Mặc định đang chọn checkIn
       setSelecting("checkIn");
     }
@@ -176,6 +182,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
     setCheckIn(dayjs());
     setCheckOut(null);
     setSelecting("checkIn");
+    setBaseMonth(dayjs());
     
     if (bookingType === "hourly") {
       const nextHour = now.add(1, "hour").startOf("hour");
@@ -223,6 +230,10 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
     setCheckOut(date.add(1, "day"));
   };
 
+  // Điều hướng tháng đồng bộ cho daily (Booking.com style)
+  const handlePrevMonth = () => setBaseMonth((m) => m.subtract(1, "month"));
+  const handleNextMonth = () => setBaseMonth((m) => m.add(1, "month"));
+
   if (!open || !anchorEl) return null;
 
   const endTime = checkIn && time
@@ -263,12 +274,45 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
         }}>
         <LocalizationProvider adapterLocale={locale} dateAdapter={AdapterDayjs}>
           <Stack>
-            {/* Header - Hiển thị tháng và năm */}
-            <Box p={2} bgcolor='#f9f9f9' borderBottom='1px solid #eee'>
-              {/* <Typography suppressHydrationWarning fontWeight={600} color='#333'>
-                {checkIn ? checkIn.format("MMMM YYYY") : dayjs().format("MMMM YYYY")}
-              </Typography> */}
-            </Box>
+            {/* Header */}
+            {bookingType === "daily" ? (
+              <Box px={3} py={1.5} bgcolor="#f9f9f9" borderBottom="1px solid #eee">
+                <Stack direction="row" spacing={4}>
+                  <Box>
+                    <Typography fontSize="0.72rem" color="#888" fontWeight={600} textTransform="uppercase" letterSpacing={0.5}>
+                      {t('check_in')}
+                    </Typography>
+                    <Typography fontSize="0.95rem" fontWeight={700} color={checkIn ? "#1a1a1a" : "#bbb"}>
+                      {checkIn ? checkIn.format("DD/MM/YYYY") : "Chọn ngày"}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ width: "1px", bgcolor: "#ddd", alignSelf: "stretch" }} />
+                  <Box>
+                    <Typography fontSize="0.72rem" color="#888" fontWeight={600} textTransform="uppercase" letterSpacing={0.5}>
+                      {t('check_out')}
+                    </Typography>
+                    <Typography fontSize="0.95rem" fontWeight={700} color={checkOut ? "#1a1a1a" : "#bbb"}>
+                      {checkOut ? checkOut.format("DD/MM/YYYY") : "Chọn ngày"}
+                    </Typography>
+                  </Box>
+                  {checkIn && checkOut && (
+                    <>
+                      <Box sx={{ width: "1px", bgcolor: "#ddd", alignSelf: "stretch" }} />
+                      <Box>
+                        <Typography fontSize="0.72rem" color="#888" fontWeight={600} textTransform="uppercase" letterSpacing={0.5}>
+                          {t('duration')}
+                        </Typography>
+                        <Typography fontSize="0.95rem" fontWeight={700} color="rgba(152,183,32,1)">
+                          {checkOut.diff(checkIn, "day")} {t('night')}
+                        </Typography>
+                      </Box>
+                    </>
+                  )}
+                </Stack>
+              </Box>
+            ) : (
+              <Box p={2} bgcolor="#f9f9f9" borderBottom="1px solid #eee" />
+            )}
 
             {bookingType === "hourly" ? (
               /* === THEO GIỜ === */
@@ -481,162 +525,140 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 </Box>
               </Stack>
             ) : bookingType === "daily" ? (
-              /* === THEO NGÀY (Airbnb Style với 2 calendar) === */
-              <Stack direction="row" spacing={0}>
-                {/* Calendar bên trái - Tháng hiện tại */}
-                <Box sx={{ flex: 1, p: 1, borderRight: "1px solid #eee" }}>
-                  <DateCalendar
-                    value={checkIn || dayjs()}
-                    onChange={() => {}}
-                    disablePast
-                    reduceAnimations
-                    sx={{
-                      width: "100%",
-                      "& .MuiPickersDay-root": {
-                        borderRadius: "8px",
-                        "&.Mui-selected": {
-                          bgcolor: "rgba(152, 183, 32, 1) !important",
-                          color: "white",
-                        },
-                        "&.MuiPickersDay-today": {
-                          border: "1px solid rgba(152, 183, 32, 0.5)",
-                        },
-                      },
-                    }}
-                    dayOfWeekFormatter={(date) => date.format("dd")}
-                    slots={{
-                      day: (props) => {
-                        const { day } = props;
-                        const isStart = checkIn?.isSame(day, "day");
-                        const isEnd = checkOut?.isSame(day, "day");
-                        const isInRange =
-                          checkIn &&
-                          checkOut &&
-                          day.isAfter(checkIn, "day") &&
-                          day.isBefore(checkOut, "day");
+              /* === THEO NGÀY - Custom calendar giống Booking.com === */
+              (() => {
+                const DOW_LABELS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
-                        const isDisabled = day.isBefore(now, "day");
+                const buildCalendar = (monthDate: Dayjs) => {
+                  const firstDay = monthDate.startOf("month");
+                  const startPad = (firstDay.day() + 6) % 7;
+                  const daysInMonth = monthDate.daysInMonth();
+                  const totalCells = Math.ceil((startPad + daysInMonth) / 7) * 7;
+                  const cells: (Dayjs | null)[] = Array.from({ length: totalCells }, (_, i) => {
+                    const idx = i - startPad;
+                    if (idx < 0 || idx >= daysInMonth) return null;
+                    return firstDay.add(idx, "day");
+                  });
+                  const weeks: (Dayjs | null)[][] = [];
+                  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+                  return weeks;
+                };
 
-                        return (
-                          <Button
-                            {...props}
-                            disabled={isDisabled || props.disabled}
-                            onClick={() => handleDateSelectDaily(day)}
-                            sx={{
-                              minWidth: 36,
-                              height: 36,
-                              borderRadius: "60px",
-                              bgcolor: isStart || isEnd
-                                ? "rgba(152, 183, 32, 1)"
-                                : isInRange
-                                  ? "rgba(152, 183, 32, 0.15)"
-                                  : "transparent",
-                              color: isStart || isEnd ? "white" : "inherit",
-                              fontWeight: isStart || isEnd ? 600 : 400,
-                              position: "relative",
-                              "&:hover": {
-                                bgcolor: isStart || isEnd
-                                  ? "rgba(152, 183, 32, 0.9)"
-                                  : "rgba(152, 183, 32, 0.1)",
-                              },
-                              // Hiệu ứng range (Airbnb style)
-                              ...(isInRange && {
-                                borderRadius: 0,
-                              }),
-                              ...(isStart && checkOut && {
-                                borderTopRightRadius: 0,
-                                borderBottomRightRadius: 0,
-                              }),
-                              ...(isEnd && checkIn && {
-                                borderTopLeftRadius: 0,
-                                borderBottomLeftRadius: 0,
-                              }),
-                            }}
-                          >
-                            {day.format("D")}
-                          </Button>
-                        );
-                      },
-                    }}
-                  />
-                </Box>
-          
-                {/* Calendar bên phải - Tháng kế tiếp */}
-                <Box sx={{ flex: 1, p: 1 }}>
-                  <DateCalendar
-                    value={checkIn ? checkIn.add(1, "month") : dayjs().add(1, "month")}
-                    referenceDate={checkIn ? checkIn.add(1, "month") : dayjs().add(1, "month")}
-                    onChange={() => {}}
-                    disablePast
-                    reduceAnimations
-                    sx={{
-                      width: "100%",
-                      "& .MuiPickersDay-root": {
-                        borderRadius: "8px",
-                        "&.Mui-selected": {
-                          bgcolor: "rgba(152, 183, 32, 1) !important",
-                          color: "white",
-                        },
-                      },
-                    }}
-                    dayOfWeekFormatter={(date) => date.format("dd")}
-                    slots={{
-                      day: (props) => {
-                        const { day } = props;
-                        const isStart = checkIn?.isSame(day, "day");
-                        const isEnd = checkOut?.isSame(day, "day");
-                        const isInRange =
-                          checkIn &&
-                          checkOut &&
-                          day.isAfter(checkIn, "day") &&
-                          day.isBefore(checkOut, "day");
+                const previewEnd =
+                  selecting === "checkOut" && hoverDate && checkIn && hoverDate.isAfter(checkIn, "day")
+                    ? hoverDate : null;
+                const effectiveEnd = previewEnd || checkOut;
 
-                        const isDisabled = day.isBefore(now, "day");
+                const isPrevDisabled = baseMonth.isSame(now, "month") || baseMonth.isBefore(now, "month");
 
-                        return (
-                          <Button
-                            {...props}
-                            disabled={isDisabled || props.disabled}
-                            onClick={() => handleDateSelectDaily(day)}
-                            sx={{
-                              minWidth: 36,
-                              height: 36,
-                              borderRadius: "60px",
-                              bgcolor: isStart || isEnd
-                                ? "rgba(152, 183, 32, 1)"
-                                : isInRange
-                                  ? "rgba(152, 183, 32, 0.15)"
-                                  : "transparent",
-                              color: isStart || isEnd ? "white" : "inherit",
-                              fontWeight: isStart || isEnd ? 600 : 400,
-                              position: "relative",
-                              "&:hover": {
-                                bgcolor: isStart || isEnd
-                                  ? "rgba(152, 183, 32, 0.9)"
-                                  : "rgba(152, 183, 32, 0.1)",
-                              },
-                              // Hiệu ứng range (Airbnb style)
-                              ...(isInRange && {
-                                borderRadius: 0,
-                              }),
-                              ...(isStart && checkOut && {
-                                borderTopRightRadius: 0,
-                                borderBottomRightRadius: 0,
-                              }),
-                              ...(isEnd && checkIn && {
-                                borderTopLeftRadius: 0,
-                                borderBottomLeftRadius: 0,
-                              }),
-                            }}
-                          >
-                            {day.format("D")}
-                          </Button>
-                        );
-                      },
-                    }}
-                  />
-                </Box>
-              </Stack>
+                const renderCalendar = (monthDate: Dayjs, showPrev: boolean, showNext: boolean) => {
+                  const weeks = buildCalendar(monthDate);
+                  return (
+                    <Box sx={{ userSelect: "none", width: "100%" }}>
+                      {/* Header tháng */}
+                      <Stack direction="row" alignItems="center" justifyContent="space-between" px={0.5} pb={1.5}>
+                        {showPrev ? (
+                          <IconButton size="small" onClick={handlePrevMonth} disabled={isPrevDisabled}
+                            sx={{ color: isPrevDisabled ? "#ddd" : "#333", width: 32, height: 32 }}>
+                            <ChevronLeft fontSize="small" />
+                          </IconButton>
+                        ) : <Box sx={{ width: 32 }} />}
+                        <Typography fontWeight={700} fontSize="0.92rem" color="#1a1a1a">
+                          {monthDate.locale(locale).format("MMMM YYYY")}
+                        </Typography>
+                        {showNext ? (
+                          <IconButton size="small" onClick={handleNextMonth}
+                            sx={{ color: "#333", width: 32, height: 32 }}>
+                            <ChevronRight fontSize="small" />
+                          </IconButton>
+                        ) : <Box sx={{ width: 32 }} />}
+                      </Stack>
+
+                      {/* Nhãn thứ */}
+                      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", mb: 0.5 }}>
+                        {DOW_LABELS.map((d) => (
+                          <Box key={d} sx={{ textAlign: "center", py: 0.5 }}>
+                            <Typography fontSize="0.72rem" fontWeight={600} color="#aaa">{d}</Typography>
+                          </Box>
+                        ))}
+                      </Box>
+
+                      {/* Grid ngày */}
+                      {weeks.map((week, wi) => (
+                        <Box key={wi} sx={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
+                          {week.map((day, di) => {
+                            if (!day) return <Box key={`e-${wi}-${di}`} sx={{ height: 40 }} />;
+                            const isDisabled = day.isBefore(now, "day");
+                            const isStart = checkIn?.isSame(day, "day") ?? false;
+                            const isEnd = effectiveEnd?.isSame(day, "day") ?? false;
+                            const isInRange = !!(checkIn && effectiveEnd &&
+                              day.isAfter(checkIn, "day") && day.isBefore(effectiveEnd, "day"));
+                            const isToday = day.isSame(now, "day");
+                            const isHover = selecting === "checkOut" && !!(hoverDate?.isSame(day, "day")) &&
+                              !!(checkIn && hoverDate?.isAfter(checkIn, "day"));
+
+                            let rangeStyle: any = {};
+                            if (isStart && effectiveEnd && !isEnd) {
+                              rangeStyle.background = "linear-gradient(to right, transparent 50%, rgba(152,183,32,0.13) 50%)";
+                            } else if (isEnd && checkIn && !isStart) {
+                              rangeStyle.background = "linear-gradient(to left, transparent 50%, rgba(152,183,32,0.13) 50%)";
+                            } else if (isInRange) {
+                              rangeStyle.background = "rgba(152, 183, 32, 0.13)";
+                            }
+
+                            return (
+                              <Box key={day.toString()} sx={{ position: "relative", height: 40, ...rangeStyle }}>
+                                <Box component="button" disabled={isDisabled}
+                                  onClick={() => !isDisabled && handleDateSelectDaily(day)}
+                                  onMouseEnter={() => !isDisabled && setHoverDate(day)}
+                                  onMouseLeave={() => setHoverDate(null)}
+                                  sx={{
+                                    position: "absolute", top: "50%", left: "50%",
+                                    transform: "translate(-50%, -50%)",
+                                    width: 36, height: 36, border: "none", padding: 0,
+                                    cursor: isDisabled ? "default" : "pointer",
+                                    borderRadius: "50%",
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    fontSize: "0.875rem",
+                                    fontWeight: isStart || isEnd ? 700 : isToday ? 600 : 400,
+                                    transition: "background 0.12s, color 0.12s",
+                                    bgcolor: isStart || isEnd
+                                      ? "rgba(152, 183, 32, 1)"
+                                      : isHover ? "rgba(152, 183, 32, 0.25)" : "transparent",
+                                    color: isDisabled ? "#ccc"
+                                      : isStart || isEnd ? "#fff"
+                                      : isToday && !isInRange ? "rgba(152, 183, 32, 1)" : "#1a1a1a",
+                                    outline: isToday && !isStart && !isEnd
+                                      ? "1.5px solid rgba(152, 183, 32, 0.45)" : "none",
+                                    outlineOffset: "-1.5px",
+                                    boxShadow: isStart || isEnd ? "0 2px 8px rgba(152,183,32,0.35)" : "none",
+                                    "&:hover:not(:disabled)": {
+                                      bgcolor: isStart || isEnd
+                                        ? "rgba(120, 150, 20, 1)" : "rgba(152, 183, 32, 0.22)",
+                                    },
+                                  }}>
+                                  {day.format("D")}
+                                </Box>
+                              </Box>
+                            );
+                          })}
+                        </Box>
+                      ))}
+                    </Box>
+                  );
+                };
+
+                return (
+                  <Stack direction="row" spacing={0}>
+                    <Box sx={{ flex: 1, p: 2, borderRight: "1px solid #eee" }}>
+                      {renderCalendar(baseMonth, true, false)}
+                    </Box>
+                    <Box sx={{ flex: 1, p: 2 }}>
+                      {renderCalendar(baseMonth.add(1, "month"), false, true)}
+                    </Box>
+                  </Stack>
+                );
+              })()
             ) : (
               /* === QUA ĐÊM (1 calendar như logic cũ) === */
               <Box sx={{ p: 1 }}>

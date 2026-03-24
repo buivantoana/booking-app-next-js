@@ -489,5 +489,7 @@
   "phone_required": "Vui lòng nhập số điện thoại",
 
   "name_required": "Vui lòng nhập tên",
-  "cancel_booking_confirm":"Thao tác này không thể hoàn tác. Bạn có thực sự muốn hủy lịch đặt phòng không?"
+  "cancel_booking_confirm":"Thao tác này không thể hoàn tác. Bạn có thực sự muốn hủy lịch đặt phòng không?",
+  "duration":"Thời gian",
+  "night":"Đêm"
 }

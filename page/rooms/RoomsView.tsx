@@ -555,7 +555,7 @@ const RoomsView = ({
               <Chip
                 icon={
                   <Image
-                    alt={item.name[currentLang] || item.name.vi}
+                    alt={item?.name[currentLang] || item.name.vi}
                     src={item.icon}
                     width={20}
                     height={20}

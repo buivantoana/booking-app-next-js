@@ -444,5 +444,6 @@
   "phone_required": "전화번호를 입력해주세요",
  
   "name_required": "이름을 입력해주세요",
-  "cancel_booking_confirm":"이 작업은 되돌릴 수 없습니다. 정말로 예약을 취소하시겠습니까?"
+  "cancel_booking_confirm":"이 작업은 되돌릴 수 없습니다. 정말로 예약을 취소하시겠습니까?",
+  "duration":"지속"
 }
