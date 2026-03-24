@@ -75,7 +75,7 @@ const LoginView = () => {
         type: "LOGIN",
         payload: { ...context.state, user: { ...result.user } },
       });
-      toast.success("Login success");
+      toast.success("Đăng nhập thành công");
       setTimeout(() => navigate.push("/"), 300);
     }
   };
@@ -739,7 +739,7 @@ const RegistrationForm = ({
           type: "LOGIN",
           payload: { ...context.state, user: result.user },
         });
-        toast.success("Login success");
+        toast.success("Đăng nhập thành công");
         setTimeout(() => navigate.push("/"), 300);
       }
     } catch (error) {
@@ -796,7 +796,7 @@ const RegistrationForm = ({
             type: "LOGIN",
             payload: { ...context.state, user: result.user },
           });
-          toast.success("Login success");
+          toast.success("Đăng nhập thành công");
           setTimeout(() => navigate.push("/"), 300);
         }
       } catch (error) {

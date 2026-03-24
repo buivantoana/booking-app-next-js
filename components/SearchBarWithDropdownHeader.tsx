@@ -1043,12 +1043,13 @@ export default function SearchBarWithDropdown({ locationAddress }) {
   }, [bookingType, checkIn]);
 
   const updateParams = (newParams: Record<string, any>) => {
+    console.log("AAAA updated newParams",newParams)
     const current = Object.fromEntries([...searchParams]);
     const updated = {
       ...current,
       ...newParams,
     };
-    console.log("AAAA updated URLSearchParams",updated)
+    console.log("AAAA updated URLSearchParams",current)
     if (pathname != "/") {
       navigate.replace(
         `${pathname}?${new URLSearchParams(updated).toString()}`,
@@ -1057,9 +1058,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
     }
   };
 
-  useEffect(() => {
-    updateParams({ type: bookingType });
-  }, [bookingType]);
+ 
 
   useEffect(() => {
     const locId = locationAddress.find(
@@ -1075,8 +1074,9 @@ export default function SearchBarWithDropdown({ locationAddress }) {
       checkOut: checkOut ? checkOut.format("YYYY-MM-DD") : "",
       checkInTime,
       duration: checkInDuration || 2,
+      type: bookingType
     });
-  }, [checkIn, checkOut, checkInTime, checkInDuration]);
+  }, [checkIn, checkOut, checkInTime, checkInDuration,bookingType]);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const typeRef = useRef<HTMLDivElement>(null);
