@@ -646,77 +646,105 @@ const BookingCard = ({
 // Review Modal
 // ────────────────────────────────────────────────
 
-const ReviewModal = ({
+function ReviewModal({
   open,
   onClose,
-  hotelName,
-  roomType,
-  bookingTime,
   id,
   hastag,
   getHistoryBooking,
-  setIssueModalOpen,
-}) => {
-  const t = useTranslations();
+}: {
+  open: boolean;
+  onClose: () => void;
+  hotelName: string;
+  roomType: string;
+  bookingTime: string;
+}) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
-  const [rating, setRating] = useState(0);
+  const  t  = useTranslations();
+  const [rating, setRating] = useState<number | null>(0);
   const [reviewText, setReviewText] = useState("");
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [uploadedImages, setUploadedImages] = useState([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [fileObjects, setFileObjects] = useState<File[]>([]); // ← Thêm state này
   const [loading, setLoading] = useState(false);
-  const locale = useLocale();
-  const tags = hastag.map((item) => ({
-    value: item.name,
-    label: item.name,
-  }));
+  const tags = hastag.map((item) => {
+    return {
+      label: item.name.vi,
+      value: item.id,
+    };
+  });
 
-  const handleTagClick = (tag) => {
+  const handleTagClick = (item: { label: string; value: string }) => {
     setSelectedTags((prev) =>
-      prev.includes(tag.value)
-        ? prev.filter((t) => t !== tag.value)
-        : [...prev, tag.value]
+      prev.includes(item.value)
+        ? prev.filter((t) => t !== item.value)
+        : [...prev, item.value]
     );
   };
 
-  const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const newImages = files.map((file) => URL.createObjectURL(file));
-    setUploadedImages((prev) => [...prev, ...newImages]);
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newFiles = Array.from(files);
+    const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+
+    setFileObjects((prev) => [...prev, ...newFiles]);
+    setUploadedImages((prev) => [...prev, ...newPreviews]);
   };
 
-  const handleRemoveImage = (index) => {
+  const handleRemoveImage = (index: number) => {
     setUploadedImages((prev) => prev.filter((_, i) => i !== index));
+    setFileObjects((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async () => {
     setLoading(true);
-    const formData = new FormData();
-    formData.append("rating", rating.toString());
-    formData.append("content", reviewText.trim());
-    formData.append("tags", JSON.stringify(selectedTags));
+    if (!rating || rating === 0 || reviewText.trim() === "") return;
 
-    // Thêm hình ảnh nếu có
-    // Note: Nếu bạn cần upload file thật, cần xử lý file từ e.target.files, không phải URL.createObjectURL
-    // Ở đây giả định uploadedImages là array URL, nhưng để upload cần file gốc
+    const formData = new FormData();
+
+    // 1. rate
+    formData.append("rate", rating.toString());
+
+    // 2. hashtags → mảng tiếng Anh, không dấu, không khoảng trắng → JSON string
+    if (selectedTags.length > 0) {
+      formData.append("hashtags", JSON.stringify(selectedTags));
+      // Ví dụ: ["roombeautiful", "good", "nice_smell"]
+    }
+
+    // 3. comment
+    formData.append("comment", reviewText.trim());
+    formData.append("booking_id", id);
+
+    // 4. files
+    fileObjects.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    // Kiểm tra in ra console giống hệt ảnh bạn chụp
+    for (const [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
 
     try {
-      const res = await reviewBooking(id, formData);
-      if (res?.message) {
-        onClose();
-        toast.success(res?.message);
-        setReviewText("");
-        setRating(0);
-        setSelectedTags([]);
+      const res = await reviewBooking(formData);
+      if (res?.id) {
+        toast.success("Tạo review thành công");
+
         getHistoryBooking();
-        setIssueModalOpen(false); // nếu cần
+        setUploadedImages([]);
+        setRating(0);
+        setReviewText("");
+        setSelectedTags([]);
       } else {
         toast.error(getErrorMessage(res.code) || res.message);
       }
+      console.log("AAA res", res);
     } catch (err) {
       console.error(err);
-      toast.error("Lỗi mạng");
+      alert("Lỗi mạng");
     }
     setLoading(false);
   };
@@ -735,7 +763,9 @@ const ReviewModal = ({
         sx: { borderRadius: isMobile ? 0 : "24px", overflow: "hidden" },
       }}>
       <DialogTitle sx={{ pb: 1, position: "relative" }}>
-        <Typography fontWeight={700}>{t("review_modal_title")}</Typography>
+        <Typography variant='h6' fontWeight={700}>
+          {t("review_modal_title")}
+        </Typography>
         <Typography variant='body2' color='#666' sx={{ mt: 1 }}>
           {t("review_modal_subtitle")}
         </Typography>
@@ -765,10 +795,10 @@ const ReviewModal = ({
         </Box>
 
         <Stack direction='row' gap={1} flexWrap='wrap' mb={3}>
-          {tags.map((item, index) => (
+          {tags.map((item) => (
             <Chip
-              key={index}
-              label={item.label[locale]}
+              key={item.value}
+              label={item.label}
               onClick={() => handleTagClick(item)}
               color={selectedTags.includes(item.value) ? "success" : "default"}
               variant={
@@ -879,7 +909,7 @@ const ReviewModal = ({
             fontWeight: 600,
             textTransform: "none",
             bgcolor: "#98b720",
-            "&:hover": { bgcolor: "#f0f8f0" },
+            "&:hover": { bgcolor: "#8ab020" },
             "&.Mui-disabled": { bgcolor: "#ccc", color: "#999" },
           }}>
           {loading ? (
@@ -894,7 +924,8 @@ const ReviewModal = ({
       </Box>
     </Dialog>
   );
-};
+}
+
 
 // ────────────────────────────────────────────────
 // BookingCard Skeleton
