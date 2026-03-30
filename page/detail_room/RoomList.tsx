@@ -826,32 +826,49 @@ const RoomDetailModal = ({
 
 
   const handleBooking = () => {
-    console.log("AAA toan")
-    // if (localStorage.getItem("booking")) {
-      localStorage.setItem(
-        "booking",
-        JSON.stringify({
-          hotel_id: hotel.id,
-          rooms: [
-            {
-              quantity: 1,
-              room_type_id: room.id,
-            },
-          ],
-          price: room.price_daily,
-          address: parseName(hotel?.address,locale),
-          name: parseName(hotel?.name,locale),
-          image: hotel?.images?.[0],
-          ...Object.fromEntries([...searchParams]),
-          phone: "+84" + phoneNumber,
-          rent_types: hotel.rent_types,
-          room_name: parseName(room?.name,locale)
-        })
-      );
+    const type = searchParams.get("type") as "hourly" | "overnight" | "daily";
+    const checkIn = new Date(searchParams.get("checkIn") ?? "");
+    const checkOut = new Date(searchParams.get("checkOut") ?? "");
+    const duration = Number(searchParams.get("duration") ?? 1);
+    const quantity =  1;
+
+    const diffDays = Math.round(
+      (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    const unitPrice = {
+      hourly: room.price_hourly,
+      overnight: room.price_overnight,
+      daily: room.price_daily,
+    }[type] ?? room.price_daily;
+
+    const multiplier = {
+      hourly: duration,      // số giờ
+      overnight: diffDays,   // số đêm từ checkIn/checkOut
+      daily: diffDays,       // số ngày từ checkIn/checkOut
+    }[type] ?? 1;
+
+    const price = unitPrice * multiplier * quantity;
+
+    const bookingData = {
+      hotel_id: hotel.id,
+      rooms: [{ quantity, room_type_id: room.id }],
+      price,
+      address: parseName(hotel?.address, locale),
+      name: parseName(hotel?.name, locale),
+      image: hotel?.images?.[0],
+      ...Object.fromEntries([...searchParams]),
+      phone: "+84" + phoneNumber,
+      rent_types: hotel.rent_types,
+      room_name: parseName(room?.name, locale),
+    };
+
+    console.log("booking data", bookingData);
+    localStorage.setItem("booking", JSON.stringify(bookingData));
       setTimeout(() => {
         navigate.push("/check-out");
       }, 300);
-    // }
+    
   };
   const bedTypeIds = React.useMemo(() => {
     if (!room?.bed_type) return [];
