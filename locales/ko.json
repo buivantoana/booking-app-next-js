@@ -554,5 +554,14 @@
   "payment_section5_content": "당사는 SSL 암호화 기술을 사용하여 거래의 안전을 보장합니다. 신용카드 정보는 신뢰할 수 있는 결제 파트너에 의해 처리됩니다.",
 
   "payment_section6_title": "6. 취소 및 환불 정책",
-  "payment_section6_content": "취소 수수료(있는 경우)는 귀하가 결제한 금액에서 직접 공제됩니다. 잔여 금액은 환불 정책에 따라 환불됩니다. 예약 전 각 파트너의 취소 정책을 확인하시기 바랍니다."
+  "payment_section6_content": "취소 수수료(있는 경우)는 귀하가 결제한 금액에서 직접 공제됩니다. 잔여 금액은 환불 정책에 따라 환불됩니다. 예약 전 각 파트너의 취소 정책을 확인하시기 바랍니다.",
+  "day":"일",
+  
+    "price_per_night": "1박 가격",
+    "price_per_day": "1일 가격",
+    "daily_limit_label": "일수 제한:",
+"daily_unlimited": "제한 없음",
+"daily_max_days": "최대 {limit}일",
+"daily_max_days_note": "(최대 {limit}일)"
+  
 }

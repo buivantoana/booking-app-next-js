@@ -553,5 +553,14 @@
   "payment_section5_content": "当社はSSL暗号化技術を使用して取引の安全性を確保しています。クレジットカード情報は信頼できる支払いパートナーによって処理されます。",
 
   "payment_section6_title": "6. キャンセルと返金ポリシー",
-  "payment_section6_content": "キャンセル料（ある場合）はお支払いいただいた金額から直接差し引かれます。残りの金額は返金ポリシーに従って返金されます。予約前に各パートナーのキャンセルポリシーをご確認ください。"
+  "payment_section6_content": "キャンセル料（ある場合）はお支払いいただいた金額から直接差し引かれます。残りの金額は返金ポリシーに従って返金されます。予約前に各パートナーのキャンセルポリシーをご確認ください。",
+  "day":"日",
+  
+    "price_per_night": "1泊の料金",
+    "price_per_day": "1日の料金",
+    "daily_limit_label": "日数制限:",
+"daily_unlimited": "制限なし",
+"daily_max_days": "最大{limit}日",
+"daily_max_days_note": "(最大{limit}日)"
+  
 }

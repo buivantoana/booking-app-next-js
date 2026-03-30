@@ -166,6 +166,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const [selecting, setSelecting] = useState<"checkIn" | "checkOut">(
     "checkIn"
   );
+  const [maxDaysLimit, setMaxDaysLimit] = useState<number | null>(null); // null = không giới hạn, 30 = tối đa 30 ngày
 
   // 1 state duy nhất cho daily mode - 2 calendar luôn cách nhau đúng 1 tháng
   const [baseMonth, setBaseMonth] = useState<Dayjs>(
@@ -267,12 +268,12 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
 
   const disabledHours = isToday
     ? hours.filter((h) => {
-        const hourNum = parseInt(h.split(":")[0]);
-        return hourNum <= now.hour();
-      })
+      const hourNum = parseInt(h.split(":")[0]);
+      return hourNum <= now.hour();
+    })
     : [];
 
-  // Hàm xử lý chọn ngày - Airbnb style cho daily booking (không giới hạn số ngày)
+  // Hàm xử lý chọn ngày - Airbnb style cho daily booking
   const handleDateSelectDaily = (date: Dayjs) => {
     if (selecting === "checkIn") {
       setCheckIn(date);
@@ -285,6 +286,16 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
       setSelecting("checkOut");
     } else {
       if (date.isAfter(checkIn, "day")) {
+        // Kiểm tra giới hạn ngày nếu có
+        if (maxDaysLimit !== null) {
+          const diffDays = date.diff(checkIn, "day");
+          if (diffDays > maxDaysLimit) {
+            const limitedCheckOut = checkIn!.add(maxDaysLimit, "day");
+            setCheckOut(limitedCheckOut);
+            setSelecting("checkIn");
+            return;
+          }
+        }
         setCheckOut(date);
         setSelecting("checkIn");
       } else {
@@ -329,9 +340,9 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   const endTime =
     checkIn && time
       ? checkIn
-          .hour(parseInt(time.split(":")[0]))
-          .minute(0)
-          .add(duration, "hour")
+        .hour(parseInt(time.split(":")[0]))
+        .minute(0)
+        .add(duration, "hour")
       : null;
 
   // Custom calendar tự render hoàn toàn - không dùng MUI DateCalendar cho daily
@@ -414,13 +425,15 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
             {week.map((day, di) => {
               if (!day) return <Box key={`e-${wi}-${di}`} sx={{ height: 40 }} />;
 
-              const isDisabled = day.isBefore(now, "day");
+              const isDisabled = day.isBefore(now, "day") ||
+                (selecting === "checkOut" && maxDaysLimit !== null && checkIn !== null &&
+                  day.diff(checkIn, "day") > maxDaysLimit);
               const isStart = checkIn?.isSame(day, "day") ?? false;
               const isEnd = effectiveEnd?.isSame(day, "day") ?? false;
               const isInRange =
                 !!(checkIn && effectiveEnd &&
-                day.isAfter(checkIn, "day") &&
-                day.isBefore(effectiveEnd, "day"));
+                  day.isAfter(checkIn, "day") &&
+                  day.isBefore(effectiveEnd, "day"));
               const isToday = day.isSame(now, "day");
               const isHover =
                 selecting === "checkOut" &&
@@ -474,15 +487,15 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                         isStart || isEnd
                           ? "rgba(152, 183, 32, 1)"
                           : isHover
-                          ? "rgba(152, 183, 32, 0.25)"
-                          : "transparent",
+                            ? "rgba(152, 183, 32, 0.25)"
+                            : "transparent",
                       color: isDisabled
                         ? "#ccc"
                         : isStart || isEnd
-                        ? "#fff"
-                        : isToday && !isInRange
-                        ? "rgba(152, 183, 32, 1)"
-                        : "#1a1a1a",
+                          ? "#fff"
+                          : isToday && !isInRange
+                            ? "rgba(152, 183, 32, 1)"
+                            : "#1a1a1a",
                       outline:
                         isToday && !isStart && !isEnd
                           ? "1.5px solid rgba(152, 183, 32, 0.45)"
@@ -530,8 +543,8 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
               bookingType === "hourly"
                 ? 760
                 : bookingType === "daily"
-                ? 680
-                : 380,
+                  ? 680
+                  : 380,
           },
           bgcolor: "white",
         }}
@@ -540,41 +553,81 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
           <Stack>
             {/* Header */}
             {bookingType === "daily" ? (
-              <Box px={3} py={1.5} bgcolor="#f9f9f9" borderBottom="1px solid #eee">
-                <Box px={3} py={1.5} bgcolor="#f9f9f9" borderBottom="1px solid #eee">
-                <Stack direction="row" spacing={4}>
-                  <Box>
-                    <Typography fontSize="0.72rem" color="#888" fontWeight={600} textTransform="uppercase" letterSpacing={0.5}>
-                      {t('check_in')}
+              <Box px={1} py={1.5} bgcolor="#f9f9f9" borderBottom="1px solid #eee">
+                <Box px={1} py={1.5} bgcolor="#f9f9f9" borderBottom="1px solid #eee">
+                  {/* Toggle giới hạn ngày */}
+                  <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
+                    <Typography fontSize="0.8rem" color="#666" fontWeight={500}>
+                      {t("daily_limit_label")}
                     </Typography>
-                    <Typography fontSize="0.95rem" fontWeight={700} color={checkIn ? "#1a1a1a" : "#bbb"}>
-                      {checkIn ? checkIn.format("DD/MM/YYYY") : "Chọn ngày"}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ width: "1px", bgcolor: "#ddd", alignSelf: "stretch" }} />
-                  <Box>
-                    <Typography fontSize="0.72rem" color="#888" fontWeight={600} textTransform="uppercase" letterSpacing={0.5}>
-                      {t('check_out')}
-                    </Typography>
-                    <Typography fontSize="0.95rem" fontWeight={700} color={checkOut ? "#1a1a1a" : "#bbb"}>
-                      {checkOut ? checkOut.format("DD/MM/YYYY") : "Chọn ngày"}
-                    </Typography>
-                  </Box>
-                  {checkIn && checkOut && (
-                    <>
-                      <Box sx={{ width: "1px", bgcolor: "#ddd", alignSelf: "stretch" }} />
-                      <Box>
-                        <Typography fontSize="0.72rem" color="#888" fontWeight={600} textTransform="uppercase" letterSpacing={0.5}>
-                          {t('duration')}
-                        </Typography>
-                        <Typography fontSize="0.95rem" fontWeight={700} color="rgba(152,183,32,1)">
-                          {checkOut.diff(checkIn, "day")} {t('night')}
-                        </Typography>
-                      </Box>
-                    </>
-                  )}
-                </Stack>
-              </Box>
+                    <Stack direction="row" spacing={0.5}>
+                      {[null, 30].map((limit) => (
+                        <Box
+                          key={limit === null ? "unlimited" : limit}
+                          component="button"
+                          onClick={() => {
+                            setMaxDaysLimit(limit);
+                            if (limit !== null && checkIn && checkOut && checkOut.diff(checkIn, "day") > limit) {
+                              setCheckOut(checkIn.add(limit, "day"));
+                            }
+                          }}
+                          sx={{
+                            cursor: "pointer",
+                            border: maxDaysLimit === limit ? "1.5px solid #98b720" : "1.5px solid #ddd",
+                            borderRadius: "20px",
+                            px: 1.5,
+                            py: 0.4,
+                            bgcolor: maxDaysLimit === limit ? "rgba(152,183,32,0.1)" : "white",
+                            color: maxDaysLimit === limit ? "#98b720" : "#666",
+                            fontSize: "0.78rem",
+                            fontWeight: maxDaysLimit === limit ? 700 : 500,
+                            transition: "all 0.15s",
+                            "&:hover": { borderColor: "#98b720", color: "#98b720" },
+                          }}
+                        >
+                          {limit === null ? t("daily_unlimited") : t("daily_max_days", { limit })}
+                        </Box>
+                      ))}
+                    </Stack>
+                    {maxDaysLimit !== null && (
+                      <Typography fontSize="0.75rem" color="#aaa" fontStyle="italic">
+                        {t("daily_max_days_note", { limit: maxDaysLimit })}
+                      </Typography>
+                    )}
+                  </Stack>
+                  <Stack direction="row" spacing={4}>
+                    <Box>
+                      <Typography fontSize="0.72rem" color="#888" fontWeight={600} textTransform="uppercase" letterSpacing={0.5}>
+                        {t('check_in')}
+                      </Typography>
+                      <Typography fontSize="0.95rem" fontWeight={700} color={checkIn ? "#1a1a1a" : "#bbb"}>
+                        {checkIn ? checkIn.format("DD/MM/YYYY") : "Chọn ngày"}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ width: "1px", bgcolor: "#ddd", alignSelf: "stretch" }} />
+                    <Box>
+                      <Typography fontSize="0.72rem" color="#888" fontWeight={600} textTransform="uppercase" letterSpacing={0.5}>
+                        {t('check_out')}
+                      </Typography>
+                      <Typography fontSize="0.95rem" fontWeight={700} color={checkOut ? "#1a1a1a" : "#bbb"}>
+                        {checkOut ? checkOut.format("DD/MM/YYYY") : "Chọn ngày"}
+                      </Typography>
+                    </Box>
+                    {checkIn && checkOut && (
+                      <>
+                        <Box sx={{ width: "1px", bgcolor: "#ddd", alignSelf: "stretch" }} />
+                        <Box>
+                          <Typography fontSize="0.72rem" color="#888" fontWeight={600} textTransform="uppercase" letterSpacing={0.5}>
+                            {t('duration')}
+                          </Typography>
+                          <Typography fontSize="0.95rem" fontWeight={700} color="rgba(152,183,32,1)">
+                            {checkOut.diff(checkIn, "day")} {t('night')}
+                          </Typography>
+                        </Box>
+                      </>
+                    )}
+                  </Stack>
+                </Box>
               </Box>
             ) : (
               <Box p={2} bgcolor="#f9f9f9" borderBottom="1px solid #eee" />
@@ -587,7 +640,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 <Box sx={{ flex: 1, p: 1 }}>
                   <DateCalendar
                     value={checkIn}
-                    onChange={() => {}}
+                    onChange={() => { }}
                     disablePast
                     sx={{
                       width: "100%",
@@ -767,7 +820,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                         onClick={() =>
                           setDuration(
                             durations[
-                              Math.min(durations.length - 1, durationIndex + 1)
+                            Math.min(durations.length - 1, durationIndex + 1)
                             ]
                           )
                         }
@@ -990,17 +1043,17 @@ export default function SearchBarWithDropdown({ locationAddress }) {
     if (localStorage.getItem("location") && pathname == "/") {
       setSearchValue(
         name ||
-          locationAddress?.find(
-            (item) => item.id == localStorage.getItem("location")
-          )?.name?.vi ||
-          ""
+        locationAddress?.find(
+          (item) => item.id == localStorage.getItem("location")
+        )?.name?.vi ||
+        ""
       );
     } else {
       setSearchValue(
         name ||
-          locationAddress?.find((item) => item.id == locationParam)?.name
-            ?.vi ||
-          ""
+        locationAddress?.find((item) => item.id == locationParam)?.name
+          ?.vi ||
+        ""
       );
     }
     addressOldRef.current = locationAddress?.find(
@@ -1014,7 +1067,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
   }, [pathname, locationAddress]);
 
   useEffect(() => {
-    
+
     console.log("AAAA checkIn ", checkIn)
     console.log("AAAA bookingType ", bookingType)
     if (!checkIn) return;
@@ -1043,13 +1096,13 @@ export default function SearchBarWithDropdown({ locationAddress }) {
   }, [bookingType, checkIn]);
 
   const updateParams = (newParams: Record<string, any>) => {
-    console.log("AAAA updated newParams",newParams)
+    console.log("AAAA updated newParams", newParams)
     const current = Object.fromEntries([...searchParams]);
     const updated = {
       ...current,
       ...newParams,
     };
-    console.log("AAAA updated URLSearchParams",current)
+    console.log("AAAA updated URLSearchParams", current)
     if (pathname != "/") {
       navigate.replace(
         `${pathname}?${new URLSearchParams(updated).toString()}`,
@@ -1058,7 +1111,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
     }
   };
 
- 
+
 
   useEffect(() => {
     const locId = locationAddress.find(
@@ -1076,7 +1129,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
       duration: checkInDuration || 2,
       type: bookingType
     });
-  }, [checkIn, checkOut, checkInTime, checkInDuration,bookingType]);
+  }, [checkIn, checkOut, checkInTime, checkInDuration, bookingType]);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const typeRef = useRef<HTMLDivElement>(null);
@@ -1096,9 +1149,9 @@ export default function SearchBarWithDropdown({ locationAddress }) {
   const filteredLocations = !keyword
     ? locationAddress
     : locationAddress.filter((loc) => {
-        const words = normalize(loc?.name?.vi).split(/\s+/);
-        return words.some((word) => word.startsWith(keyword));
-      });
+      const words = normalize(loc?.name?.vi).split(/\s+/);
+      return words.some((word) => word.startsWith(keyword));
+    });
 
   const formatDateDisplay = () => {
     if (!checkIn) return t("search_bar_select_date");
@@ -1138,7 +1191,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
     }
     let params;
     if (name) {
-      console.log("AAA toan :",searchParams )
+      console.log("AAA toan :", searchParams)
       const current = Object.fromEntries([...searchParams]);
       params = {
         ...current,
@@ -1255,8 +1308,8 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                             border: dropdownOpen
                               ? "1px solid rgba(152, 183, 32, 1) !important"
                               : isMobile
-                              ? "1px solid rgba(152, 183, 32, 1) !important"
-                              : "none !important",
+                                ? "1px solid rgba(152, 183, 32, 1) !important"
+                                : "none !important",
                           },
                         },
                       }}
@@ -1673,8 +1726,7 @@ export default function SearchBarWithDropdown({ locationAddress }) {
                                     setDropdownOpen(false);
 
                                     navigate.push(
-                                      `/room/${
-                                        loc.id
+                                      `/room/${loc.id
                                       }?${new URLSearchParams(
                                         current
                                       ).toString()}&name=${parseName(

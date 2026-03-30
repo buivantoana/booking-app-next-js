@@ -23,7 +23,7 @@
   "top_voted": "Top được bình chọn",
   "new_hotels": "Khách sạn mới",
   "view_all": "Xem tất cả",
-  "from_only": "Chỉ từ",
+  "from_only": "Giá chỉ từ",
   "per_2_hours": "/ 2 giờ",
   "top_attractions_vietnam": "Các địa điểm thu hút nhất Việt Nam",
   "hotels": "Khách sạn",
@@ -150,6 +150,8 @@
   "sort_price_asc": "Giá từ thấp đến cao",
   "sort_price_desc": "Giá từ cao đến thấp",
   "price_for_short_stay": "Giá cho 2 giờ",
+    "price_per_night": "Giá cho 1 đêm",
+    "price_per_day": "Giá cho 1 ngày",
   "from_price": "Chỉ từ",
   "no_results": "Tệ thật, mình không thấy khách sạn nào phù hợp với tìm kiếm của bạn.",
   "promotion_title": "Nhận ưu đãi đặc biệt - khi đăng ký tài khoản ngay!",
@@ -597,5 +599,10 @@
   "payment_section5_content": "Chúng tôi sử dụng công nghệ mã hóa SSL để đảm bảo an toàn cho giao dịch của bạn. Thông tin thẻ tín dụng được xử lý bởi các đối tác thanh toán uy tín.",
 
   "payment_section6_title": "6. Chính sách hủy và hoàn tiền",
-  "payment_section6_content": "Phí hủy phòng (nếu có) sẽ được khấu trừ trực tiếp từ số tiền bạn đã thanh toán. Số tiền còn lại sẽ được hoàn theo chính sách hoàn tiền. Vui lòng kiểm tra chính sách hủy của từng đối tác trước khi đặt."
+  "payment_section6_content": "Phí hủy phòng (nếu có) sẽ được khấu trừ trực tiếp từ số tiền bạn đã thanh toán. Số tiền còn lại sẽ được hoàn theo chính sách hoàn tiền. Vui lòng kiểm tra chính sách hủy của từng đối tác trước khi đặt.",
+  "day":"ngày",
+  "daily_limit_label": "Giới hạn số ngày:",
+"daily_unlimited": "Không giới hạn",
+"daily_max_days": "Tối đa {limit} ngày",
+"daily_max_days_note": "(tối đa {limit} ngày)"
 }

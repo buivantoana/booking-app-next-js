@@ -1409,7 +1409,9 @@ const ItemHotel = memo(({
                               suppressHydrationWarning
                               fontSize='14px'
                               color='#999'>
-                              {queryHotel?.rent_types == "hourly" ? t("price_for_short_stay") :""}
+                              {searchParams.get("type") == "hourly" ? t("price_for_short_stay") :""}
+                              {searchParams.get("type") == "overnight" ? t("price_per_night") :""}
+                              {searchParams.get("type") == "daily" ? t("price_per_day") :""}
                             </Typography>
                             <Typography
                               suppressHydrationWarning

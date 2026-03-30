@@ -554,5 +554,12 @@
   "payment_section5_content": "We use SSL encryption technology to ensure the safety of your transactions. Credit card information is processed by reputable payment partners.",
 
   "payment_section6_title": "6. Cancellation and Refund Policy",
-  "payment_section6_content": "Cancellation fees (if any) will be deducted directly from the amount you paid. The remaining amount will be refunded according to refund policy. Please check each partner's cancellation policy before booking."
+  "payment_section6_content": "Cancellation fees (if any) will be deducted directly from the amount you paid. The remaining amount will be refunded according to refund policy. Please check each partner's cancellation policy before booking.",
+  "day":"day",
+    "price_per_night": "Price for 1 night",
+    "price_per_day": "Price for 1 day",
+    "daily_limit_label": "Day limit:",
+"daily_unlimited": "Unlimited",
+"daily_max_days": "Max {limit} days",
+"daily_max_days_note": "(max {limit} days)"
 }
